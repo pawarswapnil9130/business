@@ -1,0 +1,1088 @@
+<div class="dashboard-wrapper">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">👕 AppERP</div>
+      <p>Apparel Studio Admin</p>
+    </div>
+    
+    <nav class="sidebar-nav">
+      <a href="javascript:void(0)" [class.active]="currentTab === 'dashboard'" (click)="loadTab('dashboard')">
+        <span class="nav-icon">🏠</span> Home Dashboard
+      </a>
+      <a href="javascript:void(0)" [class.active]="currentTab === 'products'" (click)="loadTab('products')">
+        <span class="nav-icon">👕</span> Clothes Catalog
+      </a>
+      <a href="javascript:void(0)" [class.active]="currentTab === 'manufacturing'" (click)="loadTab('manufacturing')">
+        <span class="nav-icon">🧵</span> Make Clothes (Factory)
+      </a>
+      <a href="javascript:void(0)" [class.active]="currentTab === 'trading'" (click)="loadTab('trading')">
+        <span class="nav-icon">🏬</span> Buy Ready-made
+      </a>
+      <a href="javascript:void(0)" [class.active]="currentTab === 'inventory'" (click)="loadTab('inventory')">
+        <span class="nav-icon">📦</span> Warehouse Stock
+      </a>
+      <a href="javascript:void(0)" [class.active]="currentTab === 'sales'" (click)="loadTab('sales')">
+        <span class="nav-icon">🛍️</span> Sell & Invoice
+      </a>
+      <a href="javascript:void(0)" [class.active]="currentTab === 'reports'" (click)="loadTab('reports')">
+        <span class="nav-icon">💰</span> Income & Profits
+      </a>
+      <!-- Admin Tab (Visible to SUPER_ADMIN and ADMIN) -->
+      <a *ngIf="currentUser?.role === 'SUPER_ADMIN' || currentUser?.role === 'ADMIN'" href="javascript:void(0)" [class.active]="currentTab === 'users'" (click)="loadTab('users')">
+        <span class="nav-icon">🔐</span> Manage Team
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-badge">
+        <div class="user-avatar">👤</div>
+        <div class="user-info">
+          <p class="username">{{ currentUser?.username }}</p>
+          <p class="role">{{ currentUser?.role }}</p>
+        </div>
+      </div>
+      <button class="btn btn-danger btn-block" (click)="signout()">Sign Out</button>
+    </div>
+  </aside>
+
+  <!-- Main Content Area -->
+  <main class="main-content">
+    <header class="main-header">
+      <div class="header-titles">
+        <h2 *ngIf="currentTab === 'dashboard'">🏠 Home Dashboard Overview</h2>
+        <h2 *ngIf="currentTab === 'products'">👕 Clothes Catalog & Master List</h2>
+        <h2 *ngIf="currentTab === 'manufacturing'">🧵 Make Clothes (Factory Production)</h2>
+        <h2 *ngIf="currentTab === 'trading'">🏬 Buy Ready-made Clothes (Trading)</h2>
+        <h2 *ngIf="currentTab === 'inventory'">📦 Warehouse Stock Levels (Inventory)</h2>
+        <h2 *ngIf="currentTab === 'sales'">🛍️ Sell & Issue Invoice (Billing Desk)</h2>
+        <h2 *ngIf="currentTab === 'reports'">💰 Earnings & Profit Reports</h2>
+        <h2 *ngIf="currentTab === 'users'">🔐 Manage Team & User Accounts</h2>
+        <p class="header-subtitle">
+          <span *ngIf="currentTab === 'dashboard'">Track your studio's sales, earnings, factory alerts, and view live stock levels in one place.</span>
+          <span *ngIf="currentTab === 'products'">Register and manage clothes designs, colors, sizes, and pricing structures.</span>
+          <span *ngIf="currentTab === 'manufacturing'">Log fabric materials bought, run tailoring sewing batches, and cost finished shirts.</span>
+          <span *ngIf="currentTab === 'trading'">Manage external suppliers and buy pre-made garments directly into warehouse stock.</span>
+          <span *ngIf="currentTab === 'inventory'">Check all available pieces, types, categories, and stock alerts.</span>
+          <span *ngIf="currentTab === 'sales'">Build customer carts, apply discounts, issue GST invoices, and deduct stock automatically.</span>
+          <span *ngIf="currentTab === 'reports'">View itemized net profit margins computed based on factory costs or wholesale buy rates.</span>
+          <span *ngIf="currentTab === 'users'">Onboard new team members (Admin, Employee, CA) and manage team account approvals.</span>
+        </p>
+      </div>
+      <div class="header-right">
+        <span class="badge" 
+              [class.badge-primary]="currentUser?.role === 'SUPER_ADMIN'" 
+              [class.badge-secondary]="currentUser?.role === 'ADMIN'"
+              [class.badge-success]="currentUser?.role === 'EMPLOYEE'"
+              [class.badge-info]="currentUser?.role === 'CA'"
+              [class.badge-warning]="currentUser?.role === 'USER'">
+          Role: {{ currentUser?.role }}
+        </span>
+      </div>
+    </header>
+
+    <!-- Global Success & Error Alerts -->
+    <div class="content-container">
+      <div *ngIf="errorMessage" class="alert alert-danger dismissible">
+        {{ errorMessage }}
+        <button class="close-btn" (click)="clearMessages()">&times;</button>
+      </div>
+      <div *ngIf="successMessage" class="alert alert-success dismissible">
+        {{ successMessage }}
+        <button class="close-btn" (click)="clearMessages()">&times;</button>
+      </div>
+
+      <!-- ======================================================= -->
+      <!-- 1. DASHBOARD VIEW -->
+      <!-- ======================================================= -->
+      <section *ngIf="currentTab === 'dashboard'" class="tab-pane">
+        <div class="metrics-grid">
+          <div class="metric-card glass">
+            <div class="metric-icon">💰</div>
+            <div class="metric-details">
+              <h4>Total Sales (Revenue)</h4>
+              <p class="metric-value">₹{{ metrics.totalSales | number:'1.2-2' }}</p>
+              <p class="metric-sub">Total invoice billing</p>
+            </div>
+          </div>
+
+          <div class="metric-card glass">
+            <div class="metric-icon">📈</div>
+            <div class="metric-details">
+              <h4>Clear Earnings (Net Profit)</h4>
+              <p class="metric-value text-success">₹{{ metrics.totalProfit | number:'1.2-2' }}</p>
+              <p class="metric-sub">Sales minus garment costs</p>
+            </div>
+          </div>
+
+          <div class="metric-card glass">
+            <div class="metric-icon">🧵</div>
+            <div class="metric-details">
+              <h4>Factory Profit</h4>
+              <p class="metric-sub">Sales: ₹{{ metrics.mfgSales | number:'1.0-0' }}</p>
+              <p class="metric-value">₹{{ metrics.mfgProfit | number:'1.2-2' }}</p>
+            </div>
+          </div>
+
+          <div class="metric-card glass">
+            <div class="metric-icon">🏬</div>
+            <div class="metric-details">
+              <h4>Ready-made Profit</h4>
+              <p class="metric-sub">Sales: ₹{{ metrics.tradingSales | number:'1.0-0' }}</p>
+              <p class="metric-value">₹{{ metrics.tradingProfit | number:'1.2-2' }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="dashboard-secondary-grid">
+          <div class="panel glass">
+            <h3>⚠️ Alerts & Things to Do</h3>
+            <div class="alert-list">
+              <div class="alert-item" [class.danger]="metrics.lowStockProductsCount > 0">
+                <span class="alert-badge">⚠️</span>
+                <span>{{ metrics.lowStockProductsCount }} products are low in stock (less than 10 pieces remaining).</span>
+              </div>
+              <div class="alert-item" [class.info]="metrics.activeProductionBatchesCount > 0">
+                <span class="alert-badge">🧵</span>
+                <span>{{ metrics.activeProductionBatchesCount }} sewing runs are currently in progress in our factory.</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel glass">
+            <h3>💡 How AppERP Works</h3>
+            <div class="flow-list">
+              <div class="flow-step">
+                <span class="flow-bullet">🧵</span>
+                <p><strong>Factory Path (Make Shirts):</strong> Buy fabric roll &rarr; Create sewing batch &rarr; Stitch shirts &rarr; Finished pieces automatically add to Warehouse stock.</p>
+              </div>
+              <div class="flow-step">
+                <span class="flow-bullet">🏬</span>
+                <p><strong>Trading Path (Buy Pre-made):</strong> Buy finished clothing directly from wholesalers &rarr; Pieces add straight to Warehouse stock &rarr; Ready to sell.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Live Stock Balance on Home Dashboard -->
+        <div class="panel glass" style="margin-top: 25px;">
+          <div class="panel-header-action" style="flex-wrap: wrap; gap: 15px;">
+            <div>
+              <h3>📦 Live Stock Inventory</h3>
+              <p class="subtitle" style="margin-top: 4px; text-transform: none; letter-spacing: normal;">Check available stock levels across both manufactured designs and ready-made clothes.</p>
+            </div>
+            
+            <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+              <button *ngIf="currentUser?.role === 'SUPER_ADMIN' || currentUser?.role === 'ADMIN'" class="btn btn-danger btn-sm" (click)="onClearAllStock()">
+                ⚠️ Delete All Stock
+              </button>
+              <div class="search-box-container">
+                <span class="search-icon">🔍</span>
+                <input type="text" [(ngModel)]="stockSearchQuery" placeholder="Search by name, size, color..." class="stock-search-input" />
+              </div>
+            </div>
+          </div>
+          
+          <div class="table-responsive">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Product Type</th>
+                  <th>Category</th>
+                  <th>Clothing Design Name</th>
+                  <th>Design / Brand</th>
+                  <th>Size / Color</th>
+                  <th>In-Stock Pieces</th>
+                  <th>Availability Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let s of filteredStocks">
+                  <td>
+                    <span class="badge" [class.badge-success]="s.productType === 'MANUFACTURED'" [class.badge-info]="s.productType === 'TRADED'">
+                      {{ s.productType === 'MANUFACTURED' ? 'Made in Factory' : 'Bought Ready-made' }}
+                    </span>
+                  </td>
+                  <td>{{ s.category }}</td>
+                  <td><strong>{{ s.productName }}</strong></td>
+                  <td>{{ s.designBrand || '--' }}</td>
+                  <td>
+                    <span class="size-bubble">{{ s.size }}</span>
+                    <span class="color-bubble">{{ s.color }}</span>
+                  </td>
+                  <td>
+                    <strong style="font-size: 1.05rem; color: var(--text-primary);">{{ s.currentStock }}</strong> <small class="text-muted">pcs</small>
+                  </td>
+                  <td>
+                    <span class="badge badge-success" *ngIf="s.currentStock >= 20">Good Stock</span>
+                    <span class="badge badge-warning" *ngIf="s.currentStock > 0 && s.currentStock < 20">Low Stock</span>
+                    <span class="badge badge-danger" *ngIf="s.currentStock <= 0">Out of Stock</span>
+                  </td>
+                </tr>
+                <tr *ngIf="filteredStocks.length === 0">
+                  <td colspan="7" class="text-center text-muted pad-30">No clothes items match your search.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================= -->
+      <!-- 2. PRODUCT MASTER VIEW -->
+      <!-- ======================================================= -->
+      <section *ngIf="currentTab === 'products'" class="tab-pane">
+        <div class="two-column-layout">
+          <!-- Create Product Form -->
+          <div class="panel glass">
+            <h3>👕 Register New Clothes Design</h3>
+            <form (ngSubmit)="onSubmitProduct()">
+              <div class="form-group">
+                <label>Product Name</label>
+                <input type="text" name="name" [(ngModel)]="newProduct.name" placeholder="e.g. Premium Cotton Oxford" required />
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Category</label>
+                  <input type="text" name="category" [(ngModel)]="newProduct.category" placeholder="e.g. Shirt, Jeans, T-Shirt" required />
+                </div>
+                <div class="form-group">
+                  <label>Product Type</label>
+                  <select name="productType" [(ngModel)]="newProduct.productType" required>
+                    <option value="MANUFACTURED">Made in Factory (Own Design)</option>
+                    <option value="TRADED">Bought Ready-made (Trading)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>Design / Brand (Optional)</label>
+                <input type="text" name="designBrand" [(ngModel)]="newProduct.designBrand" placeholder="e.g. IndigoCo, ClassicFit" />
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Size</label>
+                  <input type="text" name="size" [(ngModel)]="newProduct.size" placeholder="e.g. S, M, L, 32, 34" required />
+                </div>
+                <div class="form-group">
+                  <label>Color</label>
+                  <input type="text" name="color" [(ngModel)]="newProduct.color" placeholder="e.g. Blue, White, Black" required />
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Selling Price (₹)</label>
+                  <input type="number" name="sellingPrice" [(ngModel)]="newProduct.sellingPrice" required min="1" />
+                </div>
+                <div class="form-group">
+                  <label>GST %</label>
+                  <input type="number" name="gstPercent" [(ngModel)]="newProduct.gstPercent" required min="0" />
+                </div>
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-block">Add to Catalog</button>
+            </form>
+          </div>
+
+          <!-- Products List -->
+          <div class="panel glass">
+            <h3>👕 Shirt & Clothes Catalog</h3>
+            <div class="table-responsive">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Type</th>
+                    <th>Name</th>
+                    <th>Category</th>
+                    <th>Size/Color</th>
+                    <th>Cost Basis</th>
+                    <th>Retail Price</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let p of products">
+                    <td>
+                      <span class="badge" [class.badge-success]="p.productType === 'MANUFACTURED'" [class.badge-info]="p.productType === 'TRADED'">
+                        {{ p.productType === 'MANUFACTURED' ? 'Made in Factory' : 'Bought Ready-made' }}
+                      </span>
+                    </td>
+                    <td><strong>{{ p.name }}</strong><br/><small class="text-muted">{{ p.designBrand }}</small></td>
+                    <td>{{ p.category }}</td>
+                    <td>{{ p.size }} / {{ p.color }}</td>
+                    <td>₹{{ p.costPrice | number:'1.2-2' }}</td>
+                    <td>₹{{ p.sellingPrice | number:'1.2-2' }} <small>({{ p.gstPercent }}% GST)</small></td>
+                    <td>
+                      <button class="btn btn-danger btn-sm" (click)="onDeleteProduct(p.id)">Delete</button>
+                    </td>
+                  </tr>
+                  <tr *ngIf="products.length === 0">
+                    <td colspan="7" class="text-center">No products registered.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================= -->
+      <!-- 3. MANUFACTURING VIEW -->
+      <!-- ======================================================= -->
+      <section *ngIf="currentTab === 'manufacturing'" class="tab-pane">
+        <!-- Part A: Fabric Raw Stock -->
+        <div class="two-column-layout">
+          <div style="display: flex; flex-direction: column; gap: 25px; width: 100%;">
+            <!-- Buy Raw Fabric Roll -->
+            <div class="panel glass">
+              <h3>🧵 Buy Raw Fabric Roll</h3>
+              <form (ngSubmit)="onSubmitFabric()">
+                <div class="form-group">
+                  <label>Fabric Name/Type</label>
+                  <input type="text" name="fabricName" [(ngModel)]="newFabric.name" placeholder="e.g. Linen Premium, Heavy Denim" required />
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Color</label>
+                    <input type="text" name="fabricColor" [(ngModel)]="newFabric.color" placeholder="e.g. Olive, Royal Blue" required />
+                  </div>
+                  <div class="form-group">
+                    <label>Supplier</label>
+                    <select name="fabricSupplier" [(ngModel)]="newFabric.supplierId">
+                      <option [value]="null">Select Supplier (Optional)</option>
+                      <option *ngFor="let s of suppliers" [value]="s.id">{{ s.name }}</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Cost per Meter (₹)</label>
+                    <input type="number" name="costPerMeter" [(ngModel)]="newFabric.costPerMeter" required />
+                  </div>
+                  <div class="form-group">
+                    <label>Total Meters Purchased</label>
+                    <input type="number" name="totalMeters" [(ngModel)]="newFabric.totalMeters" required />
+                  </div>
+                </div>
+                <button type="submit" class="btn btn-success btn-block">Confirm Fabric Purchase</button>
+              </form>
+            </div>
+
+            <!-- Quick Register Supplier -->
+            <div class="panel glass">
+              <h3>🏬 Quick-Register Supplier / Wholesaler</h3>
+              <form (ngSubmit)="onSubmitSupplier()">
+                <div class="form-group">
+                  <label>Supplier Name</label>
+                  <input type="text" name="mfgSupName" [(ngModel)]="newSupplier.name" placeholder="e.g. Modern Garment Imports" required />
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Contact Number</label>
+                    <input type="text" name="mfgSupContact" [(ngModel)]="newSupplier.contactNumber" placeholder="+91..." />
+                  </div>
+                  <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" name="mfgSupEmail" [(ngModel)]="newSupplier.email" placeholder="sales@modern.com" />
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>Address</label>
+                  <textarea name="mfgSupAddr" [(ngModel)]="newSupplier.address" placeholder="Supplier factory address"></textarea>
+                </div>
+                <button type="submit" class="btn btn-secondary btn-block">Quick Add Supplier</button>
+              </form>
+            </div>
+          </div>
+
+          <div class="panel glass">
+            <h3>📦 Fabric Warehouse Storage</h3>
+            <div class="table-responsive">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Fabric Name</th>
+                    <th>Color</th>
+                    <th>Cost/M</th>
+                    <th>Total M</th>
+                    <th>Remaining M</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let f of fabrics">
+                    <td><strong>{{ f.name }}</strong></td>
+                    <td>{{ f.color }}</td>
+                    <td>₹{{ f.costPerMeter | number:'1.2-2' }}</td>
+                    <td>{{ f.totalMeters }} m</td>
+                    <td>
+                      <span class="text-success" [class.text-danger]="(f.totalMeters - f.usedMeters) < 20">
+                        {{ f.totalMeters - f.usedMeters }} m remaining
+                      </span>
+                    </td>
+                    <td>
+                      <button class="btn btn-danger btn-sm" (click)="onDeleteFabric(f.id)">Delete</button>
+                    </td>
+                  </tr>
+                  <tr *ngIf="fabrics.length === 0">
+                    <td colspan="6" class="text-center">No fabric recorded.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <hr class="separator" />
+
+        <!-- Part B: Production Batches -->
+        <div class="two-column-layout">
+          <div class="panel glass">
+            <h3>🧵 Start Sewing Batch</h3>
+            <form (ngSubmit)="onSubmitBatch()">
+              <div class="form-group">
+                <label>Sewing Batch Reference ID</label>
+                <input type="text" name="batchCode" [(ngModel)]="newBatch.batchCode" placeholder="e.g. BATCH-2026-X" required />
+              </div>
+              <div class="form-group">
+                <label>Select Fabric Material</label>
+                <select name="batchFabric" [(ngModel)]="newBatch.fabricId" required>
+                  <option [value]="null">Select Fabric</option>
+                  <option *ngFor="let f of fabrics" [value]="f.id">
+                    {{ f.name }} ({{ f.color }}) - Available: {{ f.totalMeters - f.usedMeters }}m
+                  </option>
+                </select>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Planned Stitching Quantity (pcs)</label>
+                  <input type="number" name="stitchingQty" [(ngModel)]="newBatch.quantityToSew" required min="1" />
+                </div>
+                <div class="form-group">
+                  <label>Fabric per Shirt (meters)</label>
+                  <input type="number" name="metersPerShirt" [(ngModel)]="newBatch.fabricPerShirt" required step="0.01" />
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Wastage (Meters)</label>
+                  <input type="number" name="wastage" [(ngModel)]="newBatch.wastageMeters" step="0.1" />
+                </div>
+                <div class="form-group" style="display: flex; flex-direction: column; justify-content: center; padding-top: 15px;">
+                  <span style="font-size: 0.9rem; color: var(--text-secondary); font-style: italic;">
+                    Estimated Consumption: <strong>{{ (newBatch.quantityToSew * newBatch.fabricPerShirt) + (newBatch.wastageMeters || 0) | number:'1.1-2' }} m</strong>
+                  </span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Clothing Design to Sew (Optional)</label>
+                <input type="text" name="batchDesignName" [(ngModel)]="newBatch.designName" placeholder="e.g. Linen Premium Shirt, Cotton Polo" />
+              </div>
+              <button type="submit" class="btn btn-primary btn-block">Send to Factory Floor</button>
+            </form>
+          </div>
+
+          <div class="panel glass">
+            <h3>🧵 Factory Floor Status</h3>
+            <div class="table-responsive">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Batch Code</th>
+                    <th>Product</th>
+                    <th>Fabric M Used</th>
+                    <th>Cost Basis per Piece</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let b of batches">
+                    <td><strong>{{ b.batchCode }}</strong></td>
+                    <td>
+                      <span *ngIf="b.product">
+                        {{ b.product.name }} <small>({{ b.product.size }} / {{ b.product.color }})</small>
+                      </span>
+                      <span *ngIf="!b.product">
+                        {{ b.designName || '--' }}
+                      </span>
+                      <div>
+                        <small style="color: var(--text-secondary);">
+                          <span *ngIf="b.status === 'IN_PRODUCTION'">Target: {{ b.quantityToSew }} pcs</span>
+                          <span *ngIf="b.status === 'COMPLETED'">Produced: {{ b.quantityProduced }} pcs</span>
+                        </small>
+                      </div>
+                    </td>
+                    <td>{{ b.fabricMetersUsed }} m</td>
+                    <td>
+                      <span *ngIf="b.status === 'COMPLETED'">₹{{ b.costPerPiece | number:'1.2-2' }}</span>
+                      <span *ngIf="b.status !== 'COMPLETED'">--</span>
+                    </td>
+                    <td>
+                      <span class="badge" [class.badge-warning]="b.status === 'IN_PRODUCTION'" [class.badge-success]="b.status === 'COMPLETED'">
+                        {{ b.status === 'IN_PRODUCTION' ? 'STITCHING' : 'FINISHED' }}
+                      </span>
+                    </td>
+                    <td>
+                      <div class="action-buttons" style="display: flex; gap: 8px;">
+                        <button *ngIf="b.status === 'IN_PRODUCTION'" class="btn btn-success btn-sm" (click)="openCompletionModal(b)">
+                          Finish Sewing & Costing
+                        </button>
+                        <button class="btn btn-danger btn-sm" (click)="onDeleteBatch(b.id)">Delete</button>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr *ngIf="batches.length === 0">
+                    <td colspan="7" class="text-center">No batches launched.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- COMPLETION MODAL -->
+        <div *ngIf="showCompletionModal" class="modal-overlay">
+          <div class="modal-card glass">
+            <h3>🧵 Finish Sewing & Calculate Costs</h3>
+            <form (ngSubmit)="onSubmitCompletion()">
+              <div class="form-group">
+                <label>Tailoring/Stitching Wage Cost (Total ₹)</label>
+                <input type="number" name="tailoringCost" [(ngModel)]="completionBatch.tailoringCost" required />
+              </div>
+              <div class="form-group">
+                <label>Additional Overhead Cost (Buttons, Threads, washing, labels ₹)</label>
+                <input type="number" name="addCost" [(ngModel)]="completionBatch.additionalCost" required />
+              </div>
+              <div class="form-group">
+                <label>Actual Finished Quantity (Pieces Produced)</label>
+                <input type="number" name="qtyProduced" [(ngModel)]="completionBatch.quantityProduced" required />
+              </div>
+
+              <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" (click)="showCompletionModal = false">Cancel</button>
+                <button type="submit" class="btn btn-success">Calculate & Add to Stock</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================= -->
+      <!-- 4. TRADING MODULE VIEW -->
+      <!-- ======================================================= -->
+      <section *ngIf="currentTab === 'trading'" class="tab-pane">
+        <!-- Supplier registration & view -->
+        <div class="two-column-layout">
+          <div class="panel glass">
+            <h3>🏬 Register External Supplier / Wholesaler</h3>
+            <form (ngSubmit)="onSubmitSupplier()">
+              <div class="form-group">
+                <label>Supplier Name</label>
+                <input type="text" name="supName" [(ngModel)]="newSupplier.name" placeholder="e.g. Modern Garment Imports" required />
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Contact Number</label>
+                  <input type="text" name="supContact" [(ngModel)]="newSupplier.contactNumber" placeholder="+123..." />
+                </div>
+                <div class="form-group">
+                  <label>Email</label>
+                  <input type="email" name="supEmail" [(ngModel)]="newSupplier.email" placeholder="sales@modern.com" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Address</label>
+                <textarea name="supAddr" [(ngModel)]="newSupplier.address" placeholder="Supplier factory address"></textarea>
+              </div>
+              <button type="submit" class="btn btn-primary btn-block">Add Supplier</button>
+            </form>
+          </div>
+
+          <div class="panel glass">
+            <h3>👥 Supplier Directory</h3>
+            <div class="table-responsive">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Supplier Name</th>
+                    <th>Contact</th>
+                    <th>Email</th>
+                    <th>Address</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let s of suppliers">
+                    <td><strong>{{ s.name }}</strong></td>
+                    <td>{{ s.contactNumber }}</td>
+                    <td>{{ s.email }}</td>
+                    <td>{{ s.address }}</td>
+                    <td>
+                      <button class="btn btn-danger btn-sm" (click)="onDeleteSupplier(s.id)">Delete</button>
+                    </td>
+                  </tr>
+                  <tr *ngIf="suppliers.length === 0">
+                    <td colspan="5" class="text-center">No suppliers recorded.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <hr class="separator" />
+
+        <!-- Purchase invoice entry (direct stock ledger bypass) -->
+        <div class="two-column-layout">
+          <div class="panel glass">
+            <h3>🏬 Buy Ready-made Clothes</h3>
+            <form (ngSubmit)="onSubmitPurchase()">
+              <div class="form-group">
+                <label>Invoice Number</label>
+                <input type="text" name="purInvoice" [(ngModel)]="newPurchase.invoiceNo" placeholder="INV-TR-XXX" required />
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Supplier</label>
+                  <select name="purSupplier" [(ngModel)]="newPurchase.supplierId" required>
+                    <option [value]="null">Select Supplier</option>
+                    <option *ngFor="let s of suppliers" [value]="s.id">{{ s.name }}</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Garment to Purchase</label>
+                  <select name="purProduct" [(ngModel)]="newPurchase.productId" (change)="onPurchaseProductChange()" required>
+                    <option [value]="null">Select Product</option>
+                    <option *ngFor="let p of tradedProducts" [value]="p.id">
+                      {{ p.name }} - {{ p.size }} / {{ p.color }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Quantity Bought</label>
+                  <input type="number" name="purQty" [(ngModel)]="newPurchase.quantity" required min="1" />
+                </div>
+                <div class="form-group">
+                  <label>Purchase Price per Unit (₹)</label>
+                  <input type="number" name="purPrice" [(ngModel)]="newPurchase.purchasePrice" required min="1" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label>GST Rate Applied (%)</label>
+                <input type="number" name="purGst" [(ngModel)]="newPurchase.gstPercent" required min="0" />
+              </div>
+              <button type="submit" class="btn btn-success btn-block">Confirm Purchase & Stock-In</button>
+            </form>
+          </div>
+
+          <div class="panel glass">
+            <h3>📜 Ready-made Purchase Orders</h3>
+            <div class="table-responsive">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Invoice No</th>
+                    <th>Supplier</th>
+                    <th>Product</th>
+                    <th>Qty</th>
+                    <th>Cost Price</th>
+                    <th>Total (inc. GST)</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let pur of purchases">
+                    <td><strong>{{ pur.invoiceNo }}</strong></td>
+                    <td>{{ pur.supplier?.name }}</td>
+                    <td>{{ pur.product?.name }} <small>({{ pur.product?.size }}/{{ pur.product?.color }})</small></td>
+                    <td>{{ pur.quantity }} pcs</td>
+                    <td>₹{{ pur.purchasePrice | number:'1.2-2' }}</td>
+                    <td>₹{{ pur.totalCost | number:'1.2-2' }}</td>
+                    <td>
+                      <button class="btn btn-danger btn-sm" (click)="onDeletePurchase(pur.id)">Delete</button>
+                    </td>
+                  </tr>
+                  <tr *ngIf="purchases.length === 0">
+                    <td colspan="7" class="text-center">No purchases recorded.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================= -->
+      <!-- 5. UNIFIED INVENTORY VIEW -->
+      <!-- ======================================================= -->
+      <section *ngIf="currentTab === 'inventory'" class="tab-pane">
+        <div class="panel glass">
+          <div class="panel-header-action">
+            <h3>📦 Warehouse Stock Levels</h3>
+            <div style="display: flex; gap: 12px; align-items: center;">
+              <button *ngIf="currentUser?.role === 'SUPER_ADMIN' || currentUser?.role === 'ADMIN'" class="btn btn-danger btn-sm" (click)="onClearAllStock()">
+                ⚠️ Delete All Stock
+              </button>
+              <button class="btn btn-secondary btn-sm" (click)="fetchStockSummary()">🔄 Refresh Stock Levels</button>
+            </div>
+          </div>
+          
+          <div class="table-responsive">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Product Type</th>
+                  <th>Category</th>
+                  <th>Clothing Design Name</th>
+                  <th>Design / Brand</th>
+                  <th>Size / Color</th>
+                  <th>Cost Price</th>
+                  <th>Current Stock</th>
+                  <th>Stock Status</th>
+                  <th *ngIf="currentUser?.role === 'SUPER_ADMIN' || currentUser?.role === 'ADMIN'">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let s of stocks">
+                  <td>
+                    <span class="badge" [class.badge-success]="s.productType === 'MANUFACTURED'" [class.badge-info]="s.productType === 'TRADED'">
+                      {{ s.productType === 'MANUFACTURED' ? 'Made in Factory' : 'Bought Ready-made' }}
+                    </span>
+                  </td>
+                  <td>{{ s.category }}</td>
+                  <td><strong>{{ s.productName }}</strong></td>
+                  <td>{{ s.designBrand || '--' }}</td>
+                  <td><span class="size-bubble">{{ s.size }}</span> <span class="color-bubble">{{ s.color }}</span></td>
+                  <td>₹{{ s.costPrice | number:'1.2-2' }}</td>
+                  <td><strong>{{ s.currentStock }} pcs</strong></td>
+                  <td>
+                    <span class="badge badge-success" *ngIf="s.currentStock >= 20">Good Stock</span>
+                    <span class="badge badge-warning" *ngIf="s.currentStock > 0 && s.currentStock < 20">Low Stock</span>
+                    <span class="badge badge-danger" *ngIf="s.currentStock <= 0">Out of Stock</span>
+                  </td>
+                  <td *ngIf="currentUser?.role === 'SUPER_ADMIN' || currentUser?.role === 'ADMIN'">
+                    <button class="btn btn-danger btn-sm" (click)="onDeleteProduct(s.productId)">DELETE</button>
+                  </td>
+                </tr>
+                <tr *ngIf="stocks.length === 0">
+                  <td [attr.colspan]="(currentUser?.role === 'SUPER_ADMIN' || currentUser?.role === 'ADMIN') ? 9 : 8" class="text-center">No inventory records found.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================= -->
+      <!-- 6. SALES ORDER & CART VIEW -->
+      <!-- ======================================================= -->
+      <section *ngIf="currentTab === 'sales'" class="tab-pane">
+        <div class="two-column-layout sales-layout">
+          <!-- Cart Builder -->
+          <div class="panel glass">
+            <h3>🛍️ Create Customer Invoice</h3>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label>Customer Name</label>
+                <input type="text" [(ngModel)]="customerName" placeholder="Enter Client Name" required />
+              </div>
+              <div class="form-group">
+                <label>Customer Phone (Optional)</label>
+                <input type="text" [(ngModel)]="customerPhone" placeholder="Enter Contact" />
+              </div>
+            </div>
+
+            <hr class="separator" />
+
+            <div class="form-title">
+              <h4>Add Line Item</h4>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group" style="flex: 2;">
+                <label>Select Product</label>
+                <select [(ngModel)]="cartProductId" (change)="onCartProductChange()">
+                  <option [value]="null">Choose Product...</option>
+                  <option *ngFor="let p of products" [value]="p.id">
+                    [{{ p.productType === 'MANUFACTURED' ? 'Factory Made' : 'Ready-made' }}] {{ p.name }} ({{ p.size }}/{{ p.color }}) - Price: ₹{{ p.sellingPrice }}
+                  </option>
+                </select>
+              </div>
+              
+              <div class="form-group">
+                <label>Sale Type</label>
+                <select [(ngModel)]="cartItemType">
+                  <option value="PCS">PCS (Single Piece)</option>
+                  <option value="SET">SET (Pack of 4)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>Quantity</label>
+                <input type="number" [(ngModel)]="cartQuantity" min="1" />
+              </div>
+              
+              <div class="form-group">
+                <label>Selling Price (₹)</label>
+                <input type="number" [(ngModel)]="cartUnitPrice" min="1" />
+              </div>
+
+              <div class="form-group">
+                <label>Discount Value (₹)</label>
+                <input type="number" [(ngModel)]="cartDiscount" min="0" />
+              </div>
+            </div>
+
+            <button type="button" class="btn btn-secondary btn-block" (click)="addToCart()">Add to Cart</button>
+          </div>
+
+          <!-- Cart Review & Checkout -->
+          <div class="panel glass">
+            <h3>Sales Cart Summary</h3>
+            
+            <div class="cart-items-container">
+              <table class="table table-sm">
+                <thead>
+                  <tr>
+                    <th>Product</th>
+                    <th>Type</th>
+                    <th>Qty</th>
+                    <th>Price</th>
+                    <th>Disc.</th>
+                    <th>Total</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let item of salesCart; let i = index">
+                    <td><strong>{{ item.name }}</strong><br/><small>{{ item.size }}/{{ item.color }}</small></td>
+                    <td><span class="badge badge-secondary">{{ item.itemType }}</span></td>
+                    <td>{{ item.quantity }}</td>
+                    <td>₹{{ item.unitPrice }}</td>
+                    <td>₹{{ item.discount }}</td>
+                    <td><strong>₹{{ item.subTotal | number:'1.2-2' }}</strong></td>
+                    <td>
+                      <button class="btn btn-danger btn-sm" (click)="removeFromCart(i)">&times;</button>
+                    </td>
+                  </tr>
+                  <tr *ngIf="salesCart.length === 0">
+                    <td colspan="7" class="text-center text-muted pad-30">Your shopping cart is empty. Add items to checkout.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="cart-totals">
+              <div class="totals-line">
+                <span>Sub-Total:</span>
+                <span>₹{{ cartPreTaxTotal | number:'1.2-2' }}</span>
+              </div>
+              <div class="totals-line">
+                <span>Total GST:</span>
+                <span>₹{{ cartTaxTotal | number:'1.2-2' }}</span>
+              </div>
+              <hr />
+              <div class="totals-line total-bold">
+                <span>Final Payable:</span>
+                <span>₹{{ cartFinalTotal | number:'1.2-2' }}</span>
+              </div>
+            </div>
+
+            <button type="button" class="btn btn-primary btn-block checkout-btn" (click)="checkoutSalesOrder()" [disabled]="salesCart.length === 0 || !customerName">
+              📝 Confirm Sale & Deduct Stock
+            </button>
+          </div>
+        </div>
+
+        <hr class="separator" />
+
+        <!-- Invoices List -->
+        <div class="panel glass">
+          <h3>📜 Sales Invoice Records (Billing History)</h3>
+          <div class="table-responsive">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Invoice No</th>
+                  <th>Date</th>
+                  <th>Customer Name</th>
+                  <th>Net Value</th>
+                  <th>GST Value</th>
+                  <th>Final Amount</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let order of salesOrders">
+                  <td><strong>{{ order.invoiceNo }}</strong></td>
+                  <td>{{ order.salesDate | date:'medium' }}</td>
+                  <td>{{ order.customerName }} <br/><small>{{ order.customerPhone }}</small></td>
+                  <td>₹{{ order.totalAmount | number:'1.2-2' }}</td>
+                  <td>₹{{ order.totalGst | number:'1.2-2' }}</td>
+                  <td><strong>₹{{ order.finalAmount | number:'1.2-2' }}</strong></td>
+                  <td>
+                    <button class="btn btn-danger btn-sm" (click)="onDeleteSalesOrder(order.id)">Delete</button>
+                  </td>
+                </tr>
+                <tr *ngIf="salesOrders.length === 0">
+                  <td colspan="7" class="text-center">No sales recorded.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================= -->
+      <!-- 7. PROFIT REPORTS VIEW -->
+      <!-- ======================================================= -->
+      <section *ngIf="currentTab === 'reports'" class="tab-pane">
+        <div class="panel glass">
+          <h3>Comprehensive Itemized Profit Dashboard</h3>
+          <p class="subtitle">Calculates profit split between Manufacturing cost basis and Trading purchase basis.</p>
+          
+          <div class="table-responsive">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Invoice No</th>
+                  <th>Date</th>
+                  <th>Product Type</th>
+                  <th>Product Details</th>
+                  <th>Sale Qty</th>
+                  <th>Sale Type</th>
+                  <th>Revenue (inc. GST)</th>
+                  <th>Cost Basis / Unit</th>
+                  <th>Total Cost Basis</th>
+                  <th>Net Net Profit</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let rep of profitReports">
+                  <td><strong>{{ rep.invoiceNo }}</strong><br/><small>{{ rep.customerName }}</small></td>
+                  <td>{{ rep.salesDate | date:'short' }}</td>
+                  <td>
+                    <span class="badge" [class.badge-success]="rep.productType === 'MANUFACTURED'" [class.badge-info]="rep.productType === 'TRADED'">
+                      {{ rep.productType }}
+                    </span>
+                  </td>
+                  <td><strong>{{ rep.productName }}</strong> <small>({{ rep.size }}/{{ rep.color }})</small></td>
+                  <td>{{ rep.quantitySold }}</td>
+                  <td><span class="badge badge-secondary">{{ rep.itemType }}</span></td>
+                  <td>₹{{ rep.itemRevenue | number:'1.2-2' }}</td>
+                  <td>₹{{ rep.costPricePerUnit | number:'1.2-2' }}</td>
+                  <td>₹{{ rep.totalCostBasis | number:'1.2-2' }}</td>
+                  <td>
+                    <strong [class.text-success]="rep.netProfit >= 0" [class.text-danger]="rep.netProfit < 0">
+                      ₹{{ rep.netProfit | number:'1.2-2' }}
+                    </strong>
+                  </td>
+                </tr>
+                <tr *ngIf="profitReports.length === 0">
+                  <td colspan="10" class="text-center">No transaction records found.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================= -->
+      <!-- 8. ADMIN CONSOLE VIEW (SUPER ADMIN & ADMIN ONLY) -->
+      <!-- ======================================================= -->
+      <section *ngIf="currentTab === 'users'" class="tab-pane">
+        <div class="two-column-layout">
+          <!-- Onboard User Form -->
+          <div class="panel glass">
+            <h3>👥 Onboard New Team Member</h3>
+            <p class="subtitle" style="margin-bottom: 20px;">Directly register and approve a new team member with their access role.</p>
+            
+            <form (ngSubmit)="onSubmitOnboardUser()">
+              <div class="form-group">
+                <label>Username</label>
+                <input type="text" name="onboardUsername" [(ngModel)]="newOnboardUser.username" placeholder="e.g. swapnil_ca" required />
+              </div>
+              
+              <div class="form-group">
+                <label>Password</label>
+                <input type="password" name="onboardPassword" [(ngModel)]="newOnboardUser.password" placeholder="Enter temporary password" required />
+              </div>
+              
+              <div class="form-group">
+                <label>Access Role</label>
+                <select name="onboardRole" [(ngModel)]="newOnboardUser.role" required>
+                  <option value="EMPLOYEE">Employee (Staff)</option>
+                  <option value="CA">CA (Chartered Accountant)</option>
+                  <option value="ADMIN">Admin (Co-Manager)</option>
+                  <option value="SUPER_ADMIN">Super Admin (Owner)</option>
+                </select>
+              </div>
+              
+              <button type="submit" class="btn btn-primary btn-block">Onboard & Approve Member</button>
+            </form>
+          </div>
+
+          <!-- User Accounts List -->
+          <div class="panel glass">
+            <h3>User Administration Console</h3>
+            <p class="subtitle">Approve new signups or terminate staff accounts.</p>
+
+            <div class="table-responsive">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Username</th>
+                    <th>Role</th>
+                    <th>Approval Status</th>
+                    <th>Registered At</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let u of users">
+                    <td><strong>{{ u.username }}</strong></td>
+                    <td>
+                      <span class="badge" 
+                            [class.badge-primary]="u.role === 'SUPER_ADMIN'" 
+                            [class.badge-secondary]="u.role === 'ADMIN'"
+                            [class.badge-success]="u.role === 'EMPLOYEE'"
+                            [class.badge-info]="u.role === 'CA'"
+                            [class.badge-warning]="u.role === 'USER'">
+                        {{ u.role }}
+                      </span>
+                    </td>
+                    <td>
+                      <span class="badge" [class.badge-success]="u.isApproved" [class.badge-warning]="!u.isApproved">
+                        {{ u.isApproved ? 'Approved & Onboarded' : 'Pending Approval' }}
+                      </span>
+                    </td>
+                    <td>{{ u.createdAt | date:'medium' }}</td>
+                    <td>
+                      <div class="action-buttons">
+                        <button *ngIf="!u.isApproved" class="btn btn-success btn-sm" (click)="approveUser(u)">Approve & Onboard</button>
+                        <button class="btn btn-danger btn-sm" (click)="removeUser(u)">Remove User</button>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr *ngIf="users.length === 0">
+                    <td colspan="5" class="text-center">No other users registered.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>

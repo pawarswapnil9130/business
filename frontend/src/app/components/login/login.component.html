@@ -1,0 +1,85 @@
+<div class="auth-container">
+  <div class="auth-card">
+    <div class="auth-header">
+      <div class="logo">🏭 ERP</div>
+      <h2>Apparel ERP</h2>
+      <p class="subtitle">Hybrid Manufacturing & Trading Workspace</p>
+    </div>
+
+    <form (ngSubmit)="onSubmit()" #authForm="ngForm">
+      <div class="form-title">
+        <h3>{{ isLoginMode ? 'Sign In' : 'Create Account' }}</h3>
+      </div>
+
+      <div *ngIf="errorMessage" class="alert alert-danger">
+        {{ errorMessage }}
+      </div>
+
+      <div *ngIf="successMessage" class="alert alert-success">
+        {{ successMessage }}
+      </div>
+
+      <div class="form-group">
+        <label for="username">Username</label>
+        <div class="input-wrapper">
+          <span class="input-icon">👤</span>
+          <input 
+            type="text" 
+            id="username" 
+            name="username" 
+            [(ngModel)]="username" 
+            placeholder="Enter username" 
+            required 
+            [disabled]="loading"
+          />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <div class="input-wrapper">
+          <span class="input-icon">🔒</span>
+          <input 
+            type="password" 
+            id="password" 
+            name="password" 
+            [(ngModel)]="password" 
+            placeholder="Enter password" 
+            required 
+            [disabled]="loading"
+          />
+        </div>
+      </div>
+
+      <div class="form-group" *ngIf="!isLoginMode">
+        <label for="confirmPassword">Confirm Password</label>
+        <div class="input-wrapper">
+          <span class="input-icon">🔒</span>
+          <input 
+            type="password" 
+            id="confirmPassword" 
+            name="confirmPassword" 
+            [(ngModel)]="confirmPassword" 
+            placeholder="Confirm password" 
+            required 
+            [disabled]="loading"
+          />
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-block" [disabled]="loading">
+        <span *ngIf="loading" class="spinner"></span>
+        {{ loading ? 'Processing...' : (isLoginMode ? 'Sign In' : 'Sign Up') }}
+      </button>
+
+      <div class="auth-toggle">
+        <p>
+          {{ isLoginMode ? "Don't have an account?" : "Already have an account?" }}
+          <a href="javascript:void(0)" (click)="toggleMode()">
+            {{ isLoginMode ? 'Sign Up' : 'Sign In' }}
+          </a>
+        </p>
+      </div>
+    </form>
+  </div>
+</div>
