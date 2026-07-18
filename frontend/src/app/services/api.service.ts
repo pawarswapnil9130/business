@@ -7,8 +7,10 @@ import { map } from 'rxjs/operators';
   providedIn: 'root'
 })
 export class ApiService {
-private baseUrl = 'https://business-backend-q18v.onrender.com/api';  
+  private baseUrl = 'https://localhost:7000/api';
+
   private currentUserSubject = new BehaviorSubject<any>(null);
+
   public currentUser$ = this.currentUserSubject.asObservable();
 
   constructor(private http: HttpClient) {
@@ -30,11 +32,11 @@ private baseUrl = 'https://business-backend-q18v.onrender.com/api';
     let headers = new HttpHeaders({
       'Content-Type': 'application/json'
     });
-    
+
     if (this.currentUserValue && this.currentUserValue.token) {
       headers = headers.set('Authorization', `Bearer ${this.currentUserValue.token}`);
     }
-    
+
     return headers;
   }
 

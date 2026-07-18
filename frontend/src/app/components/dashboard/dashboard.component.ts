@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 @Component({
   selector: 'app-dashboard',
@@ -296,6 +298,57 @@ export class DashboardComponent implements OnInit {
         error: (err) => this.errorMessage = err.error?.message || 'Failed to delete sales invoice.'
       });
     }
+  }
+
+  downloadInvoice(order: any) {
+    const doc = new jsPDF();
+    
+    // Header
+    doc.setFontSize(22);
+    doc.setTextColor(40, 40, 40);
+    doc.text('Casa Enterprises', 105, 20, { align: 'center' });
+    
+    doc.setFontSize(10);
+    doc.setTextColor(100, 100, 100);
+    doc.text('Near bhekrainagar near pmpml road shop number 2', 105, 28, { align: 'center' });
+    doc.text('hadapsar pune 28', 105, 33, { align: 'center' });
+    
+    // Line separator
+    doc.setLineWidth(0.5);
+    doc.line(14, 40, 196, 40);
+
+    // Invoice Title
+    doc.setFontSize(16);
+    doc.setTextColor(0, 0, 0);
+    doc.text('TAX INVOICE', 105, 50, { align: 'center' });
+    
+    // Details
+    doc.setFontSize(11);
+    doc.text(`Invoice No: ${order.invoiceNo}`, 14, 65);
+    doc.text(`Date: ${new Date(order.salesDate).toLocaleDateString()}`, 14, 72);
+    doc.text(`Customer Name: ${order.customerName}`, 14, 79);
+    doc.text(`Customer Phone: ${order.customerPhone || 'N/A'}`, 14, 86);
+    
+    // Amounts section
+    autoTable(doc, {
+      startY: 100,
+      head: [['Description', 'Amount (Rs.)']],
+      body: [
+        ['Net Value', order.totalAmount.toFixed(2)],
+        ['GST (Tax)', order.totalGst.toFixed(2)],
+      ],
+      foot: [['Final Amount', order.finalAmount.toFixed(2)]],
+      theme: 'grid',
+      headStyles: { fillColor: [41, 128, 185] },
+      footStyles: { fillColor: [240, 240, 240], textColor: [0, 0, 0], fontStyle: 'bold' }
+    });
+
+    // Footer
+    const finalY = (doc as any).lastAutoTable.finalY || 150;
+    doc.setFontSize(10);
+    doc.text('Thank you for your business!', 105, finalY + 20, { align: 'center' });
+    
+    doc.save(`Invoice_${order.invoiceNo}.pdf`);
   }
 
   fetchProfitReports() {
