@@ -127,10 +127,16 @@ export class DashboardComponent implements OnInit {
       this.router.navigate(['/login']);
       return;
     }
+    if (this.currentUser?.role === 'EMPLOYEE') {
+      this.currentTab = 'sales';
+    }
     this.loadTab(this.currentTab);
   }
 
   loadTab(tab: string) {
+    if (this.currentUser?.role === 'EMPLOYEE' && tab !== 'inventory' && tab !== 'sales') {
+      tab = 'sales';
+    }
     this.currentTab = tab;
     this.clearMessages();
     
