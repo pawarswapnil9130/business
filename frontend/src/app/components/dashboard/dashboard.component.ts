@@ -12,6 +12,15 @@ import autoTable from 'jspdf-autotable';
 export class DashboardComponent implements OnInit {
   currentTab = 'dashboard'; // 'dashboard', 'products', 'manufacturing', 'trading', 'inventory', 'sales', 'reports', 'users'
   currentUser: any = null;
+  isMobileMenuOpen = false;
+
+  toggleMobileMenu() {
+    this.isMobileMenuOpen = !this.isMobileMenuOpen;
+  }
+
+  closeMobileMenu() {
+    this.isMobileMenuOpen = false;
+  }
 
   // Global messages
   errorMessage = '';
@@ -99,7 +108,7 @@ export class DashboardComponent implements OnInit {
     productId: null as number | null,
     quantity: 0,
     purchasePrice: 0,
-    gstPercent: 12.00
+    gstPercent: 5.00
   };
 
   // User Onboarding Form
@@ -134,6 +143,7 @@ export class DashboardComponent implements OnInit {
   }
 
   loadTab(tab: string) {
+    this.closeMobileMenu();
     if (this.currentUser?.role === 'EMPLOYEE' && tab !== 'inventory' && tab !== 'sales') {
       tab = 'sales';
     }

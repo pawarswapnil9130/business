@@ -1,9 +1,30 @@
 <div class="dashboard-wrapper">
-  <!-- Deep Navy Enterprise Sidebar (Zoho Books / QuickBooks Style) -->
-  <aside class="sidebar">
+  <!-- Mobile Header Bar (Sticky Top Bar on Mobile/Tablet) -->
+  <header class="mobile-topbar">
+    <button class="mobile-menu-btn" (click)="toggleMobileMenu()" aria-label="Toggle Menu">
+      <span *ngIf="!isMobileMenuOpen">☰</span>
+      <span *ngIf="isMobileMenuOpen">✕</span>
+    </button>
+    <div class="mobile-brand">
+      <span class="logo">📊 Casa ERP</span>
+    </div>
+    <div class="mobile-user-actions">
+      <span class="badge badge-primary">{{ currentUser?.role }}</span>
+      <button class="btn btn-danger btn-sm" (click)="signout()" title="Sign Out">🚪</button>
+    </div>
+  </header>
+
+  <!-- Backdrop overlay when mobile drawer is open -->
+  <div class="sidebar-backdrop" *ngIf="isMobileMenuOpen" (click)="closeMobileMenu()"></div>
+
+  <!-- Deep Navy Enterprise Sidebar (Permanent on Desktop, Slide-out Drawer on Mobile) -->
+  <aside class="sidebar" [class.mobile-open]="isMobileMenuOpen">
     <div class="sidebar-header">
-      <div class="logo">📊 Casa ERP</div>
-      <p>Accounting & Sales Desk</p>
+      <div class="sidebar-brand">
+        <div class="logo">📊 Casa ERP</div>
+        <p>Accounting & Sales Desk</p>
+      </div>
+      <button class="sidebar-close-btn" (click)="closeMobileMenu()" aria-label="Close Menu">✕</button>
     </div>
     
     <nav class="sidebar-nav">
