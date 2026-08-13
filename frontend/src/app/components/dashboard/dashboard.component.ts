@@ -35,13 +35,20 @@ export class DashboardComponent implements OnInit {
   stocks: any[] = [];
   salesOrders: any[] = [];
   profitReports: any[] = [];
+  expenses: any[] = [];
   users: any[] = [];
   stockSearchQuery = '';
+  expenseSearchQuery = '';
+
+  // Overview Interactive Monthly Drilldown
+  activeDrilldown: 'none' | 'sales' | 'profit' | 'manufacturing' | 'trading' = 'none';
 
   // Metrics
   metrics = {
     totalSales: 0,
     totalProfit: 0,
+    grossProfit: 0,
+    totalExpenses: 0,
     mfgSales: 0,
     mfgProfit: 0,
     tradingSales: 0,
@@ -49,6 +56,33 @@ export class DashboardComponent implements OnInit {
     lowStockProductsCount: 0,
     activeProductionBatchesCount: 0
   };
+
+  // Searchable Product Dropdown for POS Desk
+  itemSearchQuery = '';
+  isItemDropdownOpen = false;
+  selectedProduct: any = null;
+
+  // Operating Expenses
+  newExpense = {
+    title: '',
+    category: 'Rent',
+    amount: 0,
+    expenseDate: new Date().toISOString().substring(0, 10),
+    paymentMode: 'CASH',
+    notes: ''
+  };
+
+  expenseCategories = [
+    'Rent',
+    'Electricity / Utilities',
+    'Fuel & Transport',
+    'Salaries & Wages',
+    'Tea & Refreshments',
+    'Maintenance & Repairs',
+    'Packaging & Stationery',
+    'Marketing & Promotion',
+    'Miscellaneous'
+  ];
 
   // Forms Models
   // Product Form
@@ -158,6 +192,9 @@ export class DashboardComponent implements OnInit {
       case 'dashboard':
         this.fetchDashboardSummary();
         this.fetchStockSummary();
+        this.fetchProfitReports();
+        this.fetchExpenses();
+        this.fetchSalesOrders();
         break;
       case 'products':
         this.fetchProducts();
@@ -180,6 +217,9 @@ export class DashboardComponent implements OnInit {
         this.fetchProducts();
         this.fetchStockSummary(); // To check stock balances on checkout
         this.fetchSalesOrders();
+        break;
+      case 'expenses':
+        this.fetchExpenses();
         break;
       case 'reports':
         this.fetchProfitReports();
@@ -227,6 +267,206 @@ export class DashboardComponent implements OnInit {
       (s.color && s.color.toLowerCase().includes(query)) ||
       (s.productType && s.productType.toLowerCase().includes(query))
     );
+  }
+
+  // ==========================================
+  // SEARCHABLE PRODUCT DROPDOWN FOR POS
+  // ==========================================
+
+  get filteredProducts() {
+    if (!this.itemSearchQuery) {
+      return this.products;
+    }
+    const q = this.itemSearchQuery.toLowerCase().trim();
+    return this.products.filter(p => 
+      (p.name && p.name.toLowerCase().includes(q)) ||
+      (p.size && p.size.toLowerCase().includes(q)) ||
+      (p.color && p.color.toLowerCase().includes(q)) ||
+      (p.category && p.category.toLowerCase().includes(q)) ||
+      (p.productType && p.productType.toLowerCase().includes(q)) ||
+      (p.designBrand && p.designBrand.toLowerCase().includes(q))
+    );
+  }
+
+  selectProduct(p: any) {
+    this.cartProductId = p.id;
+    this.selectedProduct = p;
+    this.cartUnitPrice = p.sellingPrice || 0;
+    this.isItemDropdownOpen = false;
+    this.itemSearchQuery = '';
+  }
+
+  clearSelectedProduct() {
+    this.cartProductId = null;
+    this.selectedProduct = null;
+    this.cartUnitPrice = 0;
+    this.itemSearchQuery = '';
+  }
+
+  toggleItemDropdown() {
+    this.isItemDropdownOpen = !this.isItemDropdownOpen;
+  }
+
+  closeItemDropdown() {
+    setTimeout(() => {
+      this.isItemDropdownOpen = false;
+    }, 200);
+  }
+
+  // ==========================================
+  // OPERATING EXPENSES HELPERS & GETTERS
+  // ==========================================
+
+  get filteredExpenses() {
+    if (!this.expenseSearchQuery) {
+      return this.expenses;
+    }
+    const q = this.expenseSearchQuery.toLowerCase().trim();
+    return this.expenses.filter(e =>
+      (e.title && e.title.toLowerCase().includes(q)) ||
+      (e.category && e.category.toLowerCase().includes(q)) ||
+      (e.paymentMode && e.paymentMode.toLowerCase().includes(q)) ||
+      (e.notes && e.notes.toLowerCase().includes(q))
+    );
+  }
+
+  get totalExpensesAmount() {
+    return this.expenses.reduce((sum, e) => sum + (e.amount || 0), 0);
+  }
+
+  get thisMonthExpensesAmount() {
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+    return this.expenses.reduce((sum, e) => {
+      const d = new Date(e.expenseDate);
+      if (d.getMonth() === currentMonth && d.getFullYear() === currentYear) {
+        return sum + (e.amount || 0);
+      }
+      return sum;
+    }, 0);
+  }
+
+  get topExpenseCategory() {
+    if (this.expenses.length === 0) return 'None';
+    const categoryTotals: { [key: string]: number } = {};
+    for (const exp of this.expenses) {
+      const cat = exp.category || 'General';
+      categoryTotals[cat] = (categoryTotals[cat] || 0) + (exp.amount || 0);
+    }
+    let topCat = 'None';
+    let maxVal = 0;
+    for (const cat in categoryTotals) {
+      if (categoryTotals[cat] > maxVal) {
+        maxVal = categoryTotals[cat];
+        topCat = cat;
+      }
+    }
+    return topCat;
+  }
+
+  // ==========================================
+  // OVERVIEW MONTHLY DRILLDOWN AGGREGATION
+  // ==========================================
+
+  toggleDrilldown(type: 'sales' | 'profit' | 'manufacturing' | 'trading') {
+    if (this.activeDrilldown === type) {
+      this.activeDrilldown = 'none';
+    } else {
+      this.activeDrilldown = type;
+      if (this.profitReports.length === 0) {
+        this.fetchProfitReports();
+      }
+      if (this.expenses.length === 0) {
+        this.fetchExpenses();
+      }
+      if (this.salesOrders.length === 0) {
+        this.fetchSalesOrders();
+      }
+    }
+  }
+
+  get monthlySummaryList() {
+    const map = new Map<string, {
+      monthKey: string,
+      dateObj: Date,
+      totalSales: number,
+      orderCount: number,
+      mfgSales: number,
+      mfgCost: number,
+      mfgProfit: number,
+      mfgUnits: number,
+      tradingSales: number,
+      tradingCost: number,
+      tradingProfit: number,
+      tradingUnits: number,
+      grossProfit: number,
+      expenses: number,
+      netProfit: number
+    }>();
+
+    const getOrCreate = (d: any) => {
+      const date = d ? new Date(d) : new Date();
+      const monthKey = date.toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
+      if (!map.has(monthKey)) {
+        map.set(monthKey, {
+          monthKey,
+          dateObj: new Date(date.getFullYear(), date.getMonth(), 1),
+          totalSales: 0,
+          orderCount: 0,
+          mfgSales: 0,
+          mfgCost: 0,
+          mfgProfit: 0,
+          mfgUnits: 0,
+          tradingSales: 0,
+          tradingCost: 0,
+          tradingProfit: 0,
+          tradingUnits: 0,
+          grossProfit: 0,
+          expenses: 0,
+          netProfit: 0
+        });
+      }
+      return map.get(monthKey)!;
+    };
+
+    // Aggregate Profit Reports
+    for (const rep of this.profitReports) {
+      const entry = getOrCreate(rep.salesDate);
+      entry.totalSales += (rep.itemRevenue || 0);
+      entry.grossProfit += (rep.netProfit || 0);
+
+      if (rep.productType === 'MANUFACTURED') {
+        entry.mfgSales += (rep.itemRevenue || 0);
+        entry.mfgCost += (rep.totalCostBasis || 0);
+        entry.mfgProfit += (rep.netProfit || 0);
+        entry.mfgUnits += (rep.quantitySold || 0);
+      } else {
+        entry.tradingSales += (rep.itemRevenue || 0);
+        entry.tradingCost += (rep.totalCostBasis || 0);
+        entry.tradingProfit += (rep.netProfit || 0);
+        entry.tradingUnits += (rep.quantitySold || 0);
+      }
+    }
+
+    // Aggregate Sales Orders (for invoice counts)
+    for (const order of this.salesOrders) {
+      const entry = getOrCreate(order.salesDate);
+      entry.orderCount += 1;
+    }
+
+    // Aggregate Expenses
+    for (const exp of this.expenses) {
+      const entry = getOrCreate(exp.expenseDate);
+      entry.expenses += (exp.amount || 0);
+    }
+
+    // Calculate clear net profit per month
+    for (const entry of map.values()) {
+      entry.netProfit = entry.grossProfit - entry.expenses;
+    }
+
+    return Array.from(map.values()).sort((a, b) => b.dateObj.getTime() - a.dateObj.getTime());
   }
 
   // ==========================================
@@ -375,6 +615,13 @@ export class DashboardComponent implements OnInit {
     this.apiService.getProfitReport().subscribe({
       next: (data) => this.profitReports = data,
       error: (err) => this.errorMessage = 'Failed to load profit reports.'
+    });
+  }
+
+  fetchExpenses() {
+    this.apiService.getExpenses().subscribe({
+      next: (data) => this.expenses = data,
+      error: (err) => this.errorMessage = 'Failed to load operating expenses.'
     });
   }
 
@@ -671,7 +918,7 @@ export class DashboardComponent implements OnInit {
     }
 
     // Reset item selector
-    this.cartProductId = null;
+    this.clearSelectedProduct();
     this.cartQuantity = 1;
     this.cartUnitPrice = 0;
     this.cartDiscount = 0;
@@ -783,5 +1030,61 @@ export class DashboardComponent implements OnInit {
       },
       error: (err) => this.errorMessage = err.error?.message || 'Failed to onboard user.'
     });
+  }
+
+  // ==========================================
+  // OPERATING EXPENSES ACTIONS
+  // ==========================================
+
+  onSubmitExpense() {
+    this.clearMessages();
+    if (!this.newExpense.title.trim()) {
+      this.errorMessage = 'Please enter an expense title or description.';
+      return;
+    }
+    if (this.newExpense.amount <= 0) {
+      this.errorMessage = 'Please enter a valid expense amount greater than 0.';
+      return;
+    }
+
+    const payload = {
+      title: this.newExpense.title.trim(),
+      category: this.newExpense.category,
+      amount: Number(this.newExpense.amount),
+      expenseDate: this.newExpense.expenseDate ? new Date(this.newExpense.expenseDate).toISOString() : new Date().toISOString(),
+      paymentMode: this.newExpense.paymentMode,
+      notes: this.newExpense.notes ? this.newExpense.notes.trim() : null
+    };
+
+    this.apiService.createExpense(payload).subscribe({
+      next: () => {
+        this.successMessage = 'Expense voucher recorded successfully!';
+        this.newExpense = {
+          title: '',
+          category: 'Rent',
+          amount: 0,
+          expenseDate: new Date().toISOString().substring(0, 10),
+          paymentMode: 'CASH',
+          notes: ''
+        };
+        this.fetchExpenses();
+        this.fetchDashboardSummary();
+      },
+      error: (err) => this.errorMessage = err.error?.message || 'Failed to record expense.'
+    });
+  }
+
+  onDeleteExpense(id: number) {
+    if (confirm('Are you sure you want to delete this expense record?')) {
+      this.clearMessages();
+      this.apiService.deleteExpense(id).subscribe({
+        next: () => {
+          this.successMessage = 'Expense record deleted successfully.';
+          this.fetchExpenses();
+          this.fetchDashboardSummary();
+        },
+        error: (err) => this.errorMessage = err.error?.message || 'Failed to delete expense.'
+      });
+    }
   }
 }

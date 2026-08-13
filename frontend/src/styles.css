@@ -1545,3 +1545,177 @@ textarea {
     border-radius: var(--radius-sm);
   }
 }
+
+/* ==========================================
+   SEARCHABLE SELECT / AUTOCOMPLETE COMPONENT
+   ========================================== */
+.searchable-select-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.searchable-input-box {
+  display: flex;
+  align-items: center;
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 2px 10px;
+  transition: all 0.2s ease;
+}
+
+.searchable-input-box:focus-within {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+  background: #ffffff;
+}
+
+.searchable-search-icon {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin-right: 6px;
+}
+
+.searchable-input-box input {
+  flex: 1;
+  border: none !important;
+  background: transparent !important;
+  padding: 8px 4px !important;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.searchable-clear-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 50%;
+  transition: color 0.15s;
+}
+
+.searchable-clear-btn:hover {
+  color: var(--danger);
+}
+
+.searchable-dropdown-list {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  max-height: 280px;
+  overflow-y: auto;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.08);
+  z-index: 1050;
+}
+
+.searchable-option-item {
+  padding: 10px 14px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background-color 0.15s;
+}
+
+.searchable-option-item:hover,
+.searchable-option-item.selected {
+  background-color: var(--bg-hover);
+}
+
+.searchable-option-item:last-child {
+  border-bottom: none;
+}
+
+.searchable-empty {
+  padding: 16px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.selected-item-pill {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(37, 99, 235, 0.06);
+  border: 1px solid rgba(37, 99, 235, 0.25);
+  border-radius: var(--radius-md);
+  padding: 8px 12px;
+  margin-top: 6px;
+  font-size: 0.88rem;
+}
+
+/* ==========================================
+   CLICKABLE METRIC CARDS & DRILLDOWN PANELS
+   ========================================== */
+.metric-card.clickable {
+  cursor: pointer;
+  transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  user-select: none;
+}
+
+.metric-card.clickable:hover {
+  transform: translateY(-3px);
+  border-color: var(--primary);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+}
+
+.metric-card.clickable.active-drilldown {
+  border-color: var(--primary);
+  background: linear-gradient(135deg, var(--bg-card) 0%, rgba(37, 99, 235, 0.05) 100%);
+  box-shadow: 0 0 0 2px var(--primary), 0 10px 20px -3px rgba(37, 99, 235, 0.15);
+}
+
+.card-click-hint {
+  font-size: 0.72rem;
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 6px;
+  font-weight: 500;
+}
+
+.drilldown-panel {
+  margin-top: 20px;
+  animation: fadeIn 0.25s ease;
+  border: 1px solid rgba(37, 99, 235, 0.25);
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+}
+
+.drilldown-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.drilldown-header h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.expense-stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  text-align: center;
+}

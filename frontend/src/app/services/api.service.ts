@@ -202,6 +202,22 @@ export class ApiService {
   }
 
   // ==========================================
+  // OPERATING EXPENSES
+  // ==========================================
+
+  getExpenses(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/expenses`, { headers: this.getHeaders() });
+  }
+
+  createExpense(dto: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/expenses`, dto, { headers: this.getHeaders() });
+  }
+
+  deleteExpense(id: number): Observable<any> {
+    return this.http.delete<any>(`${this.baseUrl}/expenses/${id}`, { headers: this.getHeaders() });
+  }
+
+  // ==========================================
   // REPORTS & DASHBOARD
   // ==========================================
 

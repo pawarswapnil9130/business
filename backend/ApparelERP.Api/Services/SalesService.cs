@@ -159,7 +159,9 @@ namespace ApparelERP.Api.Services
             var reports = await GetProfitReportAsync();
 
             decimal totalSales = reports.Sum(r => r.ItemRevenue);
-            decimal totalProfit = reports.Sum(r => r.NetProfit);
+            decimal grossProfit = reports.Sum(r => r.NetProfit);
+            decimal totalExpenses = await _context.Expenses.SumAsync(e => (decimal?)e.Amount) ?? 0.00m;
+            decimal clearNetProfit = grossProfit - totalExpenses;
 
             decimal mfgSales = reports.Where(r => r.ProductType == "MANUFACTURED").Sum(r => r.ItemRevenue);
             decimal mfgProfit = reports.Where(r => r.ProductType == "MANUFACTURED").Sum(r => r.NetProfit);
@@ -173,7 +175,9 @@ namespace ApparelERP.Api.Services
             return new DashboardSummaryDto
             {
                 TotalSales = totalSales,
-                TotalProfit = totalProfit,
+                GrossProfit = grossProfit,
+                TotalExpenses = totalExpenses,
+                TotalProfit = clearNetProfit,
                 MfgSales = mfgSales,
                 MfgProfit = mfgProfit,
                 TradingSales = tradingSales,

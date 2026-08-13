@@ -117,6 +117,18 @@ CREATE TABLE IF NOT EXISTS stock_ledger (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+-- 9. Operating Expenses Table (Rent, Fuel, Electricity, Wages, Tea, Maintenance, etc.)
+CREATE TABLE IF NOT EXISTS expenses (
+    id SERIAL PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    category VARCHAR(100) NOT NULL,
+    amount NUMERIC(10, 2) NOT NULL CHECK (amount > 0),
+    expense_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    payment_mode VARCHAR(50) DEFAULT 'CASH',
+    notes TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
 -- ==========================================
 -- VIEWS FOR REPORTS & INVENTORY
 -- ==========================================

@@ -136,10 +136,34 @@ namespace ApparelERP.Api.Models.Dto
         public decimal NetProfit { get; set; }
     }
 
+    public class CreateExpenseDto
+    {
+        public string Title { get; set; } = string.Empty;
+        public string Category { get; set; } = "General";
+        public decimal Amount { get; set; }
+        public DateTime? ExpenseDate { get; set; }
+        public string PaymentMode { get; set; } = "CASH";
+        public string? Notes { get; set; }
+    }
+
+    public class ExpenseSummaryDto
+    {
+        public int Id { get; set; }
+        public string Title { get; set; } = string.Empty;
+        public string Category { get; set; } = "General";
+        public decimal Amount { get; set; }
+        public DateTime ExpenseDate { get; set; }
+        public string PaymentMode { get; set; } = "CASH";
+        public string? Notes { get; set; }
+        public DateTime CreatedAt { get; set; }
+    }
+
     public class DashboardSummaryDto
     {
         public decimal TotalSales { get; set; }
-        public decimal TotalProfit { get; set; }
+        public decimal TotalProfit { get; set; } // Clear Net Profit (Gross Profit - Operating Expenses)
+        public decimal GrossProfit { get; set; } // Profit before Operating Expenses
+        public decimal TotalExpenses { get; set; } // Total Operating Expenses
         public decimal MfgSales { get; set; }
         public decimal MfgProfit { get; set; }
         public decimal TradingSales { get; set; }

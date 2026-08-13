@@ -19,6 +19,7 @@ namespace ApparelERP.Api.Data
         public DbSet<SalesOrderItem> SalesOrderItems { get; set; }
         public DbSet<StockLedger> StockLedgerEntries { get; set; }
         public DbSet<User> Users { get; set; }
+        public DbSet<Expense> Expenses { get; set; }
         
         // Keyless views
         public DbSet<StockSummaryDto> StockSummaries { get; set; }

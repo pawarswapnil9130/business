@@ -40,6 +40,9 @@
       <a *ngIf="currentUser?.role !== 'EMPLOYEE'" href="javascript:void(0)" [class.active]="currentTab === 'trading'" (click)="loadTab('trading')">
         <span class="nav-icon">📥</span> Purchases & Vendors
       </a>
+      <a *ngIf="currentUser?.role !== 'EMPLOYEE'" href="javascript:void(0)" [class.active]="currentTab === 'expenses'" (click)="loadTab('expenses')">
+        <span class="nav-icon">💸</span> Expenses
+      </a>
       <a href="javascript:void(0)" [class.active]="currentTab === 'inventory'" (click)="loadTab('inventory')">
         <span class="nav-icon">📦</span> Stock & Inventory
       </a>
@@ -75,15 +78,17 @@
         <h2 *ngIf="currentTab === 'products'">📁 Items Master & Price Catalog</h2>
         <h2 *ngIf="currentTab === 'manufacturing'">⚙️ Production Batches & Cost Accounting</h2>
         <h2 *ngIf="currentTab === 'trading'">📥 Purchase Orders & Supplier Ledger</h2>
+        <h2 *ngIf="currentTab === 'expenses'">💸 Business Operating Expenses</h2>
         <h2 *ngIf="currentTab === 'inventory'">📦 Warehouse Stock & Valuation</h2>
         <h2 *ngIf="currentTab === 'sales'">🧾 POS Billing & Sales Invoicing Desk</h2>
         <h2 *ngIf="currentTab === 'reports'">📈 Itemized Profit & Loss Ledger</h2>
         <h2 *ngIf="currentTab === 'users'">🛡️ User Administration & Access Control</h2>
         <p class="header-subtitle">
-          <span *ngIf="currentTab === 'dashboard'">Real-time summary of sales revenue, net profit margins, stock warnings, and live warehouse inventory.</span>
+          <span *ngIf="currentTab === 'dashboard'">Real-time summary of sales revenue, clear net earnings, stock warnings, and interactive monthly drilldowns.</span>
           <span *ngIf="currentTab === 'products'">Register and manage item specifications, sizes, colors, pricing structures, and GST rates.</span>
           <span *ngIf="currentTab === 'manufacturing'">Log fabric purchases, track tailoring labor costs, overheads, and compute finished cost per unit.</span>
           <span *ngIf="currentTab === 'trading'">Manage external suppliers and record ready-made purchase vouchers into stock.</span>
+          <span *ngIf="currentTab === 'expenses'">Track shop rent, electricity bills, employee tea/snacks, transport fuel, and overhead expenses.</span>
           <span *ngIf="currentTab === 'inventory'">Real-time stock ledger with valuation, current on-hand pieces, and status thresholds.</span>
           <span *ngIf="currentTab === 'sales'">Point-of-sale checkout counter, custom discounts, tax computation, stock auto-deduction, and GST billing.</span>
           <span *ngIf="currentTab === 'reports'">Comprehensive profitability analysis factoring manufacturing cost basis and traded cost basis.</span>
@@ -118,40 +123,205 @@
       <!-- ======================================================= -->
       <section *ngIf="currentTab === 'dashboard'" class="tab-pane">
         <div class="metrics-grid">
-          <div class="metric-card">
+          <div class="metric-card clickable" [class.active-drilldown]="activeDrilldown === 'sales'" (click)="toggleDrilldown('sales')" title="Click to view month-by-month Sales breakdown">
             <div class="metric-icon">💰</div>
             <div class="metric-details">
               <h4>Total Gross Sales (Revenue)</h4>
               <p class="metric-value">₹{{ metrics.totalSales | number:'1.2-2' }}</p>
               <p class="metric-sub">Total invoice billing</p>
+              <span class="card-click-hint">
+                <span *ngIf="activeDrilldown === 'sales'">▲ Hide Monthly Sales</span>
+                <span *ngIf="activeDrilldown !== 'sales'">👇 View Monthly Breakdown</span>
+              </span>
             </div>
           </div>
 
-          <div class="metric-card">
+          <div class="metric-card clickable" [class.active-drilldown]="activeDrilldown === 'profit'" (click)="toggleDrilldown('profit')" title="Click to view month-by-month Net Profit & Expenses breakdown">
             <div class="metric-icon">📈</div>
             <div class="metric-details">
               <h4>Net Profit (Clear Earnings)</h4>
               <p class="metric-value text-success">₹{{ metrics.totalProfit | number:'1.2-2' }}</p>
-              <p class="metric-sub">Gross sales minus cost basis</p>
+              <p class="metric-sub" style="font-size: 0.75rem;">Gross: ₹{{ metrics.grossProfit | number:'1.0-0' }} &minus; Expenses: ₹{{ metrics.totalExpenses | number:'1.0-0' }}</p>
+              <span class="card-click-hint">
+                <span *ngIf="activeDrilldown === 'profit'">▲ Hide Monthly Profit</span>
+                <span *ngIf="activeDrilldown !== 'profit'">👇 View Monthly & Expenses Breakdown</span>
+              </span>
             </div>
           </div>
 
-          <div class="metric-card">
+          <div class="metric-card clickable" [class.active-drilldown]="activeDrilldown === 'manufacturing'" (click)="toggleDrilldown('manufacturing')" title="Click to view month-by-month Factory Margin breakdown">
             <div class="metric-icon">⚙️</div>
             <div class="metric-details">
               <h4>Factory In-House Margin</h4>
               <p class="metric-sub">Sales: ₹{{ metrics.mfgSales | number:'1.0-0' }}</p>
               <p class="metric-value">₹{{ metrics.mfgProfit | number:'1.2-2' }}</p>
+              <span class="card-click-hint">
+                <span *ngIf="activeDrilldown === 'manufacturing'">▲ Hide Monthly In-House</span>
+                <span *ngIf="activeDrilldown !== 'manufacturing'">👇 View Monthly Breakdown</span>
+              </span>
             </div>
           </div>
 
-          <div class="metric-card">
+          <div class="metric-card clickable" [class.active-drilldown]="activeDrilldown === 'trading'" (click)="toggleDrilldown('trading')" title="Click to view month-by-month Trading Margin breakdown">
             <div class="metric-icon">🏢</div>
             <div class="metric-details">
               <h4>Trading Ready-Made Margin</h4>
               <p class="metric-sub">Sales: ₹{{ metrics.tradingSales | number:'1.0-0' }}</p>
               <p class="metric-value">₹{{ metrics.tradingProfit | number:'1.2-2' }}</p>
+              <span class="card-click-hint">
+                <span *ngIf="activeDrilldown === 'trading'">▲ Hide Monthly Trading</span>
+                <span *ngIf="activeDrilldown !== 'trading'">👇 View Monthly Breakdown</span>
+              </span>
             </div>
+          </div>
+        </div>
+
+        <!-- MONTHLY DRILLDOWN SECTION -->
+        <div *ngIf="activeDrilldown !== 'none'" class="drilldown-panel">
+          <div class="drilldown-header">
+            <div>
+              <h3 *ngIf="activeDrilldown === 'sales'">💰 Monthly Gross Sales Breakdown</h3>
+              <h3 *ngIf="activeDrilldown === 'profit'">📈 Monthly Net Profit & Operating Expenses Breakdown</h3>
+              <h3 *ngIf="activeDrilldown === 'manufacturing'">⚙️ Monthly Factory In-House Manufacturing Margin</h3>
+              <h3 *ngIf="activeDrilldown === 'trading'">🏢 Monthly Trading Ready-Made Margin</h3>
+              <p class="subtitle" style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 2px;">
+                <span *ngIf="activeDrilldown === 'sales'">Month-over-month gross sales receipts across manufactured and traded items.</span>
+                <span *ngIf="activeDrilldown === 'profit'">Calculates clear net earnings per month by subtracting operating expenses (rent, fuel, wages, utilities) from gross sales margin.</span>
+                <span *ngIf="activeDrilldown === 'manufacturing'">Profitability analysis for in-house manufactured shirts compared against raw fabric and tailoring costs.</span>
+                <span *ngIf="activeDrilldown === 'trading'">Profitability analysis for externally purchased ready-made apparel.</span>
+              </p>
+            </div>
+            <button class="btn btn-secondary btn-sm" (click)="activeDrilldown = 'none'">✕ Close Breakdown</button>
+          </div>
+
+          <!-- Sales Drilldown Table -->
+          <div *ngIf="activeDrilldown === 'sales'" class="table-responsive">
+            <table class="table table-sm">
+              <thead>
+                <tr>
+                  <th>Month & Year</th>
+                  <th>Invoices / Orders</th>
+                  <th>Manufactured Revenue</th>
+                  <th>Traded Revenue</th>
+                  <th>Total Gross Sales (₹)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let m of monthlySummaryList">
+                  <td><strong>{{ m.monthKey }}</strong></td>
+                  <td>{{ m.orderCount }} order(s)</td>
+                  <td>₹{{ m.mfgSales | number:'1.2-2' }}</td>
+                  <td>₹{{ m.tradingSales | number:'1.2-2' }}</td>
+                  <td><strong class="text-primary">₹{{ m.totalSales | number:'1.2-2' }}</strong></td>
+                </tr>
+                <tr *ngIf="monthlySummaryList.length === 0">
+                  <td colspan="5" class="text-center text-muted pad-30">No sales transactions recorded yet.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Profit Drilldown Table -->
+          <div *ngIf="activeDrilldown === 'profit'" class="table-responsive">
+            <table class="table table-sm">
+              <thead>
+                <tr>
+                  <th>Month & Year</th>
+                  <th>Gross Sales Revenue</th>
+                  <th>Sales Gross Profit</th>
+                  <th>Operating Expenses (Rent/Fuel/etc.)</th>
+                  <th>Clear Net Profit (₹)</th>
+                  <th>Net Margin %</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let m of monthlySummaryList">
+                  <td><strong>{{ m.monthKey }}</strong></td>
+                  <td>₹{{ m.totalSales | number:'1.2-2' }}</td>
+                  <td>₹{{ m.grossProfit | number:'1.2-2' }}</td>
+                  <td class="text-danger">&minus; ₹{{ m.expenses | number:'1.2-2' }}</td>
+                  <td>
+                    <strong [class.text-success]="m.netProfit >= 0" [class.text-danger]="m.netProfit < 0">
+                      ₹{{ m.netProfit | number:'1.2-2' }}
+                    </strong>
+                  </td>
+                  <td>
+                    <span class="badge" [class.badge-success]="m.netProfit >= 0" [class.badge-danger]="m.netProfit < 0">
+                      {{ m.totalSales > 0 ? ((m.netProfit / m.totalSales) * 100 | number:'1.1-1') : 0 }}%
+                    </span>
+                  </td>
+                </tr>
+                <tr *ngIf="monthlySummaryList.length === 0">
+                  <td colspan="6" class="text-center text-muted pad-30">No profit or expense records found.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Manufacturing Drilldown Table -->
+          <div *ngIf="activeDrilldown === 'manufacturing'" class="table-responsive">
+            <table class="table table-sm">
+              <thead>
+                <tr>
+                  <th>Month & Year</th>
+                  <th>Mfg Units Sold</th>
+                  <th>Factory Revenue</th>
+                  <th>Total Cost Basis (Fabric + Tailoring)</th>
+                  <th>In-House Net Margin (₹)</th>
+                  <th>Margin %</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let m of monthlySummaryList">
+                  <td><strong>{{ m.monthKey }}</strong></td>
+                  <td>{{ m.mfgUnits }} pcs</td>
+                  <td>₹{{ m.mfgSales | number:'1.2-2' }}</td>
+                  <td>₹{{ m.mfgCost | number:'1.2-2' }}</td>
+                  <td><strong class="text-success">₹{{ m.mfgProfit | number:'1.2-2' }}</strong></td>
+                  <td>
+                    <span class="badge badge-primary">
+                      {{ m.mfgSales > 0 ? ((m.mfgProfit / m.mfgSales) * 100 | number:'1.1-1') : 0 }}%
+                    </span>
+                  </td>
+                </tr>
+                <tr *ngIf="monthlySummaryList.length === 0">
+                  <td colspan="6" class="text-center text-muted pad-30">No manufactured item sales recorded.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Trading Drilldown Table -->
+          <div *ngIf="activeDrilldown === 'trading'" class="table-responsive">
+            <table class="table table-sm">
+              <thead>
+                <tr>
+                  <th>Month & Year</th>
+                  <th>Traded Units Sold</th>
+                  <th>Trading Revenue</th>
+                  <th>Purchase Cost Basis</th>
+                  <th>Trading Net Margin (₹)</th>
+                  <th>Margin %</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let m of monthlySummaryList">
+                  <td><strong>{{ m.monthKey }}</strong></td>
+                  <td>{{ m.tradingUnits }} pcs</td>
+                  <td>₹{{ m.tradingSales | number:'1.2-2' }}</td>
+                  <td>₹{{ m.tradingCost | number:'1.2-2' }}</td>
+                  <td><strong class="text-success">₹{{ m.tradingProfit | number:'1.2-2' }}</strong></td>
+                  <td>
+                    <span class="badge badge-info">
+                      {{ m.tradingSales > 0 ? ((m.tradingProfit / m.tradingSales) * 100 | number:'1.1-1') : 0 }}%
+                    </span>
+                  </td>
+                </tr>
+                <tr *ngIf="monthlySummaryList.length === 0">
+                  <td colspan="6" class="text-center text-muted pad-30">No traded item sales recorded.</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
 
@@ -770,6 +940,169 @@
       </section>
 
       <!-- ======================================================= -->
+      <!-- 4B. OPERATING EXPENSES MODULE -->
+      <!-- ======================================================= -->
+      <section *ngIf="currentTab === 'expenses'" class="tab-pane">
+        <!-- Expenses Top Stats -->
+        <div class="metrics-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin-bottom: 20px;">
+          <div class="metric-card">
+            <div class="metric-icon">💸</div>
+            <div class="metric-details">
+              <h4>Total Operating Expenses</h4>
+              <p class="metric-value text-danger">₹{{ totalExpensesAmount | number:'1.2-2' }}</p>
+              <p class="metric-sub">Cumulative overhead costs</p>
+            </div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-icon">📅</div>
+            <div class="metric-details">
+              <h4>This Month's Overhead</h4>
+              <p class="metric-value">₹{{ thisMonthExpensesAmount | number:'1.2-2' }}</p>
+              <p class="metric-sub">Current billing cycle</p>
+            </div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-icon">🏷️</div>
+            <div class="metric-details">
+              <h4>Top Expense Category</h4>
+              <p class="metric-value" style="font-size: 1.15rem;">{{ topExpenseCategory }}</p>
+              <p class="metric-sub">Largest overhead category</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="two-column-layout">
+          <!-- Record Expense Form -->
+          <div class="panel">
+            <h3>📝 Record Operating Expense Voucher</h3>
+            <p class="subtitle" style="font-size: 0.8rem; color: var(--text-secondary); margin-top: -6px; margin-bottom: 16px;">
+              Log daily operational expenses (rent, fuel, electricity, staff refreshments) to automatically deduct from clear net earnings.
+            </p>
+
+            <form (ngSubmit)="onSubmitExpense()">
+              <div class="form-group">
+                <label>Expense Title / Description</label>
+                <input 
+                  type="text" 
+                  name="expTitle" 
+                  [(ngModel)]="newExpense.title" 
+                  placeholder="e.g. Shop Rent for August, Fuel for Delivery Van, Tea & Snacks" 
+                  required 
+                />
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Category</label>
+                  <select name="expCat" [(ngModel)]="newExpense.category" required>
+                    <option *ngFor="let cat of expenseCategories" [value]="cat">{{ cat }}</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label>Amount (₹)</label>
+                  <input 
+                    type="number" 
+                    name="expAmt" 
+                    [(ngModel)]="newExpense.amount" 
+                    min="1" 
+                    step="any" 
+                    placeholder="e.g. 15000" 
+                    required 
+                  />
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Expense Date</label>
+                  <input type="date" name="expDate" [(ngModel)]="newExpense.expenseDate" required />
+                </div>
+
+                <div class="form-group">
+                  <label>Payment Mode</label>
+                  <select name="expPayMode" [(ngModel)]="newExpense.paymentMode">
+                    <option value="CASH">Cash</option>
+                    <option value="UPI">UPI / Online</option>
+                    <option value="BANK_TRANSFER">Bank Transfer / NEFT</option>
+                    <option value="CARD">Card / Debit</option>
+                    <option value="CHEQUE">Cheque</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>Notes / Remarks (Optional)</label>
+                <textarea 
+                  name="expNotes" 
+                  [(ngModel)]="newExpense.notes" 
+                  placeholder="Vendor invoice details, payment reference number, payee name..."
+                ></textarea>
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-block">💾 Record Expense Voucher</button>
+            </form>
+          </div>
+
+          <!-- Expense Ledger -->
+          <div class="panel">
+            <div class="panel-header-action">
+              <div>
+                <h3>📜 Operating Expense Ledger</h3>
+                <p class="subtitle" style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 2px;">
+                  Itemized list of recorded overhead expenses.
+                </p>
+              </div>
+              <button class="btn btn-secondary btn-sm" (click)="fetchExpenses()">🔄 Refresh</button>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 12px;">
+              <input 
+                type="text" 
+                [(ngModel)]="expenseSearchQuery" 
+                placeholder="🔍 Search expenses by title, category, payment mode..." 
+              />
+            </div>
+
+            <div class="table-responsive">
+              <table class="table table-sm">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Title / Description</th>
+                    <th>Category</th>
+                    <th>Mode</th>
+                    <th>Amount (₹)</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let exp of filteredExpenses">
+                    <td>{{ exp.expenseDate | date:'mediumDate' }}</td>
+                    <td>
+                      <strong>{{ exp.title }}</strong>
+                      <div *ngIf="exp.notes"><small class="text-muted">{{ exp.notes }}</small></div>
+                    </td>
+                    <td><span class="badge badge-secondary">{{ exp.category }}</span></td>
+                    <td><span class="badge badge-info">{{ exp.paymentMode }}</span></td>
+                    <td><strong class="text-danger">₹{{ exp.amount | number:'1.2-2' }}</strong></td>
+                    <td>
+                      <button class="btn btn-danger btn-sm" (click)="onDeleteExpense(exp.id)">Delete</button>
+                    </td>
+                  </tr>
+                  <tr *ngIf="filteredExpenses.length === 0">
+                    <td colspan="6" class="text-center text-muted pad-30">No expenses recorded.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================= -->
       <!-- 5. UNIFIED INVENTORY VIEW (WAREHOUSE STOCK & VALUATION) -->
       <!-- ======================================================= -->
       <section *ngIf="currentTab === 'inventory'" class="tab-pane">
@@ -860,13 +1193,68 @@
             </div>
 
             <div class="form-group">
-              <label>Select Item Master</label>
-              <select [(ngModel)]="cartProductId" (change)="onCartProductChange()">
-                <option [value]="null">Choose Item from Catalog...</option>
-                <option *ngFor="let p of products" [value]="p.id">
-                  [{{ p.productType === 'MANUFACTURED' ? 'MFG' : 'TRADED' }}] {{ p.name }} ({{ p.size }}/{{ p.color }}) - Price: ₹{{ p.sellingPrice }}
-                </option>
-              </select>
+              <label>Select Item Master (Searchable)</label>
+              
+              <!-- Searchable Select Input Component -->
+              <div class="searchable-select-wrap">
+                <div class="searchable-input-box" (click)="toggleItemDropdown()">
+                  <span class="searchable-search-icon">🔍</span>
+                  <input 
+                    type="text" 
+                    [(ngModel)]="itemSearchQuery" 
+                    (focus)="isItemDropdownOpen = true"
+                    [placeholder]="selectedProduct ? ('Selected: ' + selectedProduct.name + ' (' + selectedProduct.size + '/' + selectedProduct.color + ')') : 'Type to search item name, size, color, brand...'"
+                  />
+                  <button 
+                    *ngIf="selectedProduct || itemSearchQuery" 
+                    type="button" 
+                    class="searchable-clear-btn" 
+                    (click)="clearSelectedProduct(); $event.stopPropagation();" 
+                    title="Clear item selection"
+                  >✕</button>
+                </div>
+
+                <!-- Dropdown popup list -->
+                <div *ngIf="isItemDropdownOpen" class="searchable-dropdown-list">
+                  <div 
+                    *ngFor="let p of filteredProducts" 
+                    class="searchable-option-item"
+                    [class.selected]="cartProductId === p.id"
+                    (click)="selectProduct(p)"
+                  >
+                    <div>
+                      <span class="badge" [class.badge-primary]="p.productType === 'MANUFACTURED'" [class.badge-info]="p.productType === 'TRADED'" style="font-size: 0.7rem; margin-right: 6px;">
+                        {{ p.productType === 'MANUFACTURED' ? 'MFG' : 'TRADED' }}
+                      </span>
+                      <strong>{{ p.name }}</strong>
+                      <small class="text-muted" style="margin-left: 6px;">({{ p.size }} / {{ p.color }})</small>
+                      <span *ngIf="p.designBrand" class="text-muted" style="font-size: 0.75rem; margin-left: 6px;">- {{ p.designBrand }}</span>
+                    </div>
+                    <div style="font-weight: 600; color: var(--primary); font-size: 0.88rem;">
+                      ₹{{ p.sellingPrice }}
+                    </div>
+                  </div>
+
+                  <div *ngIf="filteredProducts.length === 0" class="searchable-empty">
+                    No matching items found for "{{ itemSearchQuery }}"
+                  </div>
+                </div>
+              </div>
+
+              <!-- Selected Product Chip summary -->
+              <div *ngIf="selectedProduct" class="selected-item-pill">
+                <div>
+                  <span class="badge" [class.badge-primary]="selectedProduct.productType === 'MANUFACTURED'" [class.badge-info]="selectedProduct.productType === 'TRADED'">
+                    {{ selectedProduct.productType === 'MANUFACTURED' ? 'MFG' : 'TRADED' }}
+                  </span>
+                  <strong style="margin-left: 6px;">{{ selectedProduct.name }}</strong>
+                  <span class="text-muted" style="margin-left: 6px;">Size: {{ selectedProduct.size }} | Color: {{ selectedProduct.color }}</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-weight: 600; color: var(--primary);">₹{{ selectedProduct.sellingPrice }}</span>
+                  <button type="button" class="btn btn-sm btn-secondary" style="padding: 2px 6px; font-size: 0.75rem;" (click)="clearSelectedProduct()">Change</button>
+                </div>
+              </div>
             </div>
 
             <div class="form-row">
