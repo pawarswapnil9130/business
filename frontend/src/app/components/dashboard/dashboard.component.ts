@@ -87,9 +87,13 @@ export class DashboardComponent implements OnInit {
   // Complete Production Batch Form
   completionBatch = {
     batchId: 0,
+    batchCode: '',
+    designName: '',
+    stitchingRatePerShirt: 0,
+    quantityProduced: 0,
     tailoringCost: 0,
     additionalCost: 0,
-    quantityProduced: 0
+    fabricCost: 0
   };
   showCompletionModal = false;
 
@@ -472,18 +476,57 @@ export class DashboardComponent implements OnInit {
   }
 
   openCompletionModal(batch: any) {
+    const qty = batch.quantityToSew || batch.quantityProduced || 0;
+    const fabricCostPerMeter = batch.fabric?.costPerMeter || 0;
+    const fabricCost = (batch.fabricMetersUsed || 0) * fabricCostPerMeter;
+
     this.completionBatch = {
       batchId: batch.id,
+      batchCode: batch.batchCode || '',
+      designName: batch.product?.name || batch.designName || `Batch ${batch.batchCode}`,
+      stitchingRatePerShirt: 0,
+      quantityProduced: qty,
       tailoringCost: 0,
       additionalCost: 0,
-      quantityProduced: 0
+      fabricCost: fabricCost
     };
     this.showCompletionModal = true;
   }
 
+  onStitchingRateOrQtyChange() {
+    const rate = this.completionBatch.stitchingRatePerShirt || 0;
+    const qty = this.completionBatch.quantityProduced || 0;
+    this.completionBatch.tailoringCost = +(rate * qty).toFixed(2);
+  }
+
+  onTailoringCostChange() {
+    const total = this.completionBatch.tailoringCost || 0;
+    const qty = this.completionBatch.quantityProduced || 0;
+    if (qty > 0) {
+      this.completionBatch.stitchingRatePerShirt = +(total / qty).toFixed(2);
+    }
+  }
+
+  get completionTotalCost() {
+    return (this.completionBatch.fabricCost || 0) + (this.completionBatch.tailoringCost || 0) + (this.completionBatch.additionalCost || 0);
+  }
+
+  get completionCostPerPiece() {
+    const qty = this.completionBatch.quantityProduced || 0;
+    if (qty <= 0) return 0;
+    return this.completionTotalCost / qty;
+  }
+
   onSubmitCompletion() {
     this.clearMessages();
-    this.apiService.completeBatch(this.completionBatch).subscribe({
+    const payload = {
+      batchId: this.completionBatch.batchId,
+      tailoringCost: this.completionBatch.tailoringCost,
+      additionalCost: this.completionBatch.additionalCost,
+      quantityProduced: this.completionBatch.quantityProduced
+    };
+
+    this.apiService.completeBatch(payload).subscribe({
       next: () => {
         this.successMessage = 'Production run completed and shirts added to stock ledger!';
         this.showCompletionModal = false;

@@ -567,20 +567,50 @@
 
         <!-- COMPLETION MODAL -->
         <div *ngIf="showCompletionModal" class="modal-overlay">
-          <div class="modal-card">
+          <div class="modal-card" style="max-width: 520px;">
             <h3>⚙️ Complete Production & Cost Allocation</h3>
+            <p class="subtitle" style="font-size: 0.8rem; color: var(--text-secondary); margin-top: -8px; margin-bottom: 14px;">
+              {{ completionBatch.designName }} ({{ completionBatch.batchCode }})
+            </p>
+            
             <form (ngSubmit)="onSubmitCompletion()">
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Total Finished Shirts (Pieces)</label>
+                  <input type="number" name="qtyProduced" [(ngModel)]="completionBatch.quantityProduced" (input)="onStitchingRateOrQtyChange()" min="1" required />
+                </div>
+                <div class="form-group">
+                  <label>Stitching Rate / Shirt (₹)</label>
+                  <input type="number" name="stitchingRate" [(ngModel)]="completionBatch.stitchingRatePerShirt" (input)="onStitchingRateOrQtyChange()" min="0" step="any" placeholder="e.g. 60" required />
+                </div>
+              </div>
+
               <div class="form-group">
                 <label>Direct Stitching / Labor Charges (Total ₹)</label>
-                <input type="number" name="tailoringCost" [(ngModel)]="completionBatch.tailoringCost" required />
+                <input type="number" name="tailoringCost" [(ngModel)]="completionBatch.tailoringCost" (input)="onTailoringCostChange()" min="0" step="any" required />
+                <small class="text-muted" style="font-size: 0.75rem; display: block; margin-top: 3px;">
+                  Auto-calculated: {{ completionBatch.quantityProduced || 0 }} shirts × ₹{{ completionBatch.stitchingRatePerShirt || 0 }} = ₹{{ completionBatch.tailoringCost | number:'1.2-2' }}
+                </small>
               </div>
+
               <div class="form-group">
                 <label>Overhead Charges (Buttons, Threads, Trims, Wash ₹)</label>
-                <input type="number" name="addCost" [(ngModel)]="completionBatch.additionalCost" required />
+                <input type="number" name="addCost" [(ngModel)]="completionBatch.additionalCost" min="0" step="any" required />
               </div>
-              <div class="form-group">
-                <label>Actual Finished Units Received (Pieces)</label>
-                <input type="number" name="qtyProduced" [(ngModel)]="completionBatch.quantityProduced" required />
+
+              <div style="background: var(--bg-hover); padding: 12px 14px; border-radius: var(--radius-md); margin-top: 10px; border: 1px solid var(--border-subtle); font-size: 0.85rem;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                  <span style="color: var(--text-secondary);">Fabric Cost Basis:</span>
+                  <span>₹{{ completionBatch.fabricCost | number:'1.2-2' }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                  <span style="color: var(--text-secondary);">Stitching Labor + Overheads:</span>
+                  <span>₹{{ ((completionBatch.tailoringCost || 0) + (completionBatch.additionalCost || 0)) | number:'1.2-2' }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-weight: 600; border-top: 1px dashed var(--border-color); padding-top: 6px; margin-top: 4px; color: var(--primary);">
+                  <span>Estimated Total Unit Cost / Shirt:</span>
+                  <span>₹{{ completionCostPerPiece | number:'1.2-2' }} / pc</span>
+                </div>
               </div>
 
               <div class="modal-actions">
