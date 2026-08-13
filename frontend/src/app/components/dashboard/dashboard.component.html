@@ -829,29 +829,19 @@
               <h4>Add Billing Line Item</h4>
             </div>
 
-            <div class="form-row">
-              <div class="form-group" style="flex: 2;">
-                <label>Select Item Master</label>
-                <select [(ngModel)]="cartProductId" (change)="onCartProductChange()">
-                  <option [value]="null">Choose Item from Catalog...</option>
-                  <option *ngFor="let p of products" [value]="p.id">
-                    [{{ p.productType === 'MANUFACTURED' ? 'MFG' : 'TRADED' }}] {{ p.name }} ({{ p.size }}/{{ p.color }}) - Price: ₹{{ p.sellingPrice }}
-                  </option>
-                </select>
-              </div>
-              
-              <div class="form-group">
-                <label>Packaging Type</label>
-                <select [(ngModel)]="cartItemType">
-                  <option value="PCS">PCS (Single Piece)</option>
-                  <option value="SET">SET (Pack of 4)</option>
-                </select>
-              </div>
+            <div class="form-group">
+              <label>Select Item Master</label>
+              <select [(ngModel)]="cartProductId" (change)="onCartProductChange()">
+                <option [value]="null">Choose Item from Catalog...</option>
+                <option *ngFor="let p of products" [value]="p.id">
+                  [{{ p.productType === 'MANUFACTURED' ? 'MFG' : 'TRADED' }}] {{ p.name }} ({{ p.size }}/{{ p.color }}) - Price: ₹{{ p.sellingPrice }}
+                </option>
+              </select>
             </div>
 
             <div class="form-row">
               <div class="form-group">
-                <label>Billing Quantity</label>
+                <label>Billing Quantity (Pcs)</label>
                 <input type="number" [(ngModel)]="cartQuantity" min="1" />
               </div>
               
@@ -878,8 +868,7 @@
                 <thead>
                   <tr>
                     <th>Item</th>
-                    <th>Type</th>
-                    <th>Qty</th>
+                    <th>Qty (Pcs)</th>
                     <th>Rate</th>
                     <th>Disc.</th>
                     <th>Total</th>
@@ -889,7 +878,6 @@
                 <tbody>
                   <tr *ngFor="let item of salesCart; let i = index">
                     <td><strong>{{ item.name }}</strong><br/><small class="text-muted">{{ item.size }}/{{ item.color }}</small></td>
-                    <td><span class="badge badge-secondary">{{ item.itemType }}</span></td>
                     <td>{{ item.quantity }}</td>
                     <td>₹{{ item.unitPrice }}</td>
                     <td>₹{{ item.discount }}</td>
@@ -899,7 +887,7 @@
                     </td>
                   </tr>
                   <tr *ngIf="salesCart.length === 0">
-                    <td colspan="7" class="text-center text-muted pad-30">Invoice cart is empty. Add items to checkout.</td>
+                    <td colspan="6" class="text-center text-muted pad-30">Invoice cart is empty. Add items to checkout.</td>
                   </tr>
                 </tbody>
               </table>

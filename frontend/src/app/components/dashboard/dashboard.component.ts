@@ -605,7 +605,7 @@ export class DashboardComponent implements OnInit {
     if (!prod) return;
 
     // Check duplicate
-    const duplicate = this.salesCart.find(c => c.productId === this.cartProductId && c.itemType === this.cartItemType);
+    const duplicate = this.salesCart.find(c => c.productId === this.cartProductId);
     if (duplicate) {
       duplicate.quantity += this.cartQuantity;
       duplicate.discount += this.cartDiscount;
@@ -616,7 +616,7 @@ export class DashboardComponent implements OnInit {
         name: prod.name,
         size: prod.size,
         color: prod.color,
-        itemType: this.cartItemType,
+        itemType: 'PCS',
         quantity: this.cartQuantity,
         unitPrice: this.cartUnitPrice,
         discount: this.cartDiscount,
