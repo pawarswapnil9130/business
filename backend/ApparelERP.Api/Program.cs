@@ -25,7 +25,7 @@ try
     Console.WriteLine($"[IPv4 DNS Helper] Original connection string: {connectionString}");
     var connBuilder = new Npgsql.NpgsqlConnectionStringBuilder(connectionString);
     Console.WriteLine($"[IPv4 DNS Helper] Parsed Host: {connBuilder.Host}");
-    if (!string.IsNullOrEmpty(connBuilder.Host) && !System.Net.IPAddress.TryParse(connBuilder.Host, out _))
+    if (!string.IsNullOrEmpty(connBuilder.Host) && !connBuilder.Host.Contains("neon.tech") && !System.Net.IPAddress.TryParse(connBuilder.Host, out _))
     {
         Console.WriteLine($"[IPv4 DNS Helper] Resolving DNS for {connBuilder.Host}...");
         var ipAddresses = System.Net.Dns.GetHostAddresses(connBuilder.Host);
