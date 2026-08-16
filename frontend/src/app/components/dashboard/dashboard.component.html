@@ -56,6 +56,10 @@
       <a *ngIf="currentUser?.role === 'SUPER_ADMIN' || currentUser?.role === 'ADMIN'" href="javascript:void(0)" [class.active]="currentTab === 'users'" (click)="loadTab('users')">
         <span class="nav-icon">🛡️</span> Users & Permissions
       </a>
+      <!-- Store Profile & Bank Details Settings Tab -->
+      <a *ngIf="currentUser?.role !== 'EMPLOYEE'" href="javascript:void(0)" [class.active]="currentTab === 'settings'" (click)="loadTab('settings')">
+        <span class="nav-icon">⚙️</span> Store & Bank Settings
+      </a>
     </nav>
 
     <div class="sidebar-footer">
@@ -83,6 +87,7 @@
         <h2 *ngIf="currentTab === 'sales'">🧾 POS Billing & Sales Invoicing Desk</h2>
         <h2 *ngIf="currentTab === 'reports'">📈 Itemized Profit & Loss Ledger</h2>
         <h2 *ngIf="currentTab === 'users'">🛡️ User Administration & Access Control</h2>
+        <h2 *ngIf="currentTab === 'settings'">⚙️ Store Profile & Bank Settings</h2>
         <p class="header-subtitle">
           <span *ngIf="currentTab === 'dashboard'">Real-time summary of sales revenue, clear net earnings, stock warnings, and interactive monthly drilldowns.</span>
           <span *ngIf="currentTab === 'products'">Register and manage item specifications, sizes, colors, pricing structures, and GST rates.</span>
@@ -93,6 +98,7 @@
           <span *ngIf="currentTab === 'sales'">Point-of-sale checkout counter, custom discounts, tax computation, stock auto-deduction, and GST billing.</span>
           <span *ngIf="currentTab === 'reports'">Comprehensive profitability analysis factoring manufacturing cost basis and traded cost basis.</span>
           <span *ngIf="currentTab === 'users'">Provision new staff accounts (Salesperson, Accountant, CA, Admin) and manage authorization statuses.</span>
+          <span *ngIf="currentTab === 'settings'">Configure store address, contact details, bank accounts, UPI IDs, and print terms for PDF tax invoices.</span>
         </p>
       </div>
       <div class="header-right">
@@ -1517,6 +1523,141 @@
             </div>
           </div>
         </div>
+      </section>
+
+      <!-- STORE PROFILE & BANK SETTINGS TAB -->
+      <section *ngIf="currentTab === 'settings'" class="tab-pane">
+        <div class="tab-header-actions" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+          <div>
+            <h3 style="margin: 0; font-size: 1.15rem; font-weight: 700; color: var(--text-primary);">🏢 Store & Invoice Configuration</h3>
+            <p style="margin: 4px 0 0 0; font-size: 0.85rem; color: var(--text-secondary);">Manage your business name, address, GST details, bank information, and printed terms on PDF invoices.</p>
+          </div>
+          <div style="display: flex; gap: 10px;">
+            <button type="button" class="btn btn-secondary" (click)="previewInvoice()">
+              📄 Preview Invoice PDF
+            </button>
+            <button type="button" class="btn btn-outline" (click)="resetCompanyProfile()">
+              🔄 Reset Defaults
+            </button>
+            <button type="button" class="btn btn-primary" (click)="saveCompanyProfile()">
+              💾 Save All Settings
+            </button>
+          </div>
+        </div>
+
+        <form (ngSubmit)="saveCompanyProfile()">
+          <div class="grid-2" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 20px; margin-bottom: 20px;">
+            
+            <!-- Card 1: Business Profile -->
+            <div class="card">
+              <div class="card-header" style="border-bottom: 1px solid var(--border-color); padding: 14px 18px; background: var(--bg-card-header);">
+                <h4 style="margin: 0; font-size: 0.95rem; font-weight: 700; color: var(--text-primary);">🏢 Business & Contact Details</h4>
+              </div>
+              <div class="card-body" style="padding: 18px; display: flex; flex-direction: column; gap: 14px;">
+                <div class="form-group">
+                  <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px; display: block;">Company / Store Name *</label>
+                  <input type="text" [(ngModel)]="companyProfile.name" name="storeName" required placeholder="e.g. CASA ENTERPRISES" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-input); border-radius: 6px; font-size: 0.9rem;" />
+                </div>
+                <div class="form-group">
+                  <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px; display: block;">Tagline / Business Subtitle</label>
+                  <input type="text" [(ngModel)]="companyProfile.tagline" name="storeTagline" placeholder="e.g. Apparel Manufacturing & Wholesale Trading" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-input); border-radius: 6px; font-size: 0.9rem;" />
+                </div>
+                <div class="form-group">
+                  <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px; display: block;">Store / Factory Address *</label>
+                  <textarea [(ngModel)]="companyProfile.address" name="storeAddress" rows="2" required placeholder="Full address with pin code" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-input); border-radius: 6px; font-size: 0.9rem; font-family: inherit;"></textarea>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                  <div class="form-group">
+                    <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px; display: block;">Phone Number</label>
+                    <input type="text" [(ngModel)]="companyProfile.phone" name="storePhone" placeholder="+91 98765 43210" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-input); border-radius: 6px; font-size: 0.9rem;" />
+                  </div>
+                  <div class="form-group">
+                    <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px; display: block;">Email Address</label>
+                    <input type="email" [(ngModel)]="companyProfile.email" name="storeEmail" placeholder="contact@casaenterprises.com" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-input); border-radius: 6px; font-size: 0.9rem;" />
+                  </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                  <div class="form-group">
+                    <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px; display: block;">GSTIN Number</label>
+                    <input type="text" [(ngModel)]="companyProfile.gstin" name="storeGstin" placeholder="27AABCC1234D1Z5" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-input); border-radius: 6px; font-size: 0.9rem;" />
+                  </div>
+                  <div class="form-group">
+                    <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px; display: block;">State & Code</label>
+                    <input type="text" [(ngModel)]="companyProfile.state" name="storeState" placeholder="Maharashtra (Code 27)" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-input); border-radius: 6px; font-size: 0.9rem;" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 2: Bank & Payment Details -->
+            <div class="card">
+              <div class="card-header" style="border-bottom: 1px solid var(--border-color); padding: 14px 18px; background: var(--bg-card-header);">
+                <h4 style="margin: 0; font-size: 0.95rem; font-weight: 700; color: var(--text-primary);">🏦 Bank Account & Payment Details</h4>
+              </div>
+              <div class="card-body" style="padding: 18px; display: flex; flex-direction: column; gap: 14px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                  <div class="form-group">
+                    <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px; display: block;">Bank Name *</label>
+                    <input type="text" [(ngModel)]="companyProfile.bankName" name="bankName" required placeholder="e.g. HDFC Bank" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-input); border-radius: 6px; font-size: 0.9rem;" />
+                  </div>
+                  <div class="form-group">
+                    <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px; display: block;">Account Holder Name *</label>
+                    <input type="text" [(ngModel)]="companyProfile.accountName" name="accountName" required placeholder="e.g. Casa Enterprises" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-input); border-radius: 6px; font-size: 0.9rem;" />
+                  </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 12px;">
+                  <div class="form-group">
+                    <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px; display: block;">Bank Account Number *</label>
+                    <input type="text" [(ngModel)]="companyProfile.accountNumber" name="accountNumber" required placeholder="50200012345678" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-input); border-radius: 6px; font-size: 0.9rem;" />
+                  </div>
+                  <div class="form-group">
+                    <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px; display: block;">IFSC Code *</label>
+                    <input type="text" [(ngModel)]="companyProfile.ifscCode" name="ifscCode" required placeholder="HDFC0001234" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-input); border-radius: 6px; font-size: 0.9rem;" />
+                  </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                  <div class="form-group">
+                    <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px; display: block;">UPI ID (for QR & VPA)</label>
+                    <input type="text" [(ngModel)]="companyProfile.upiId" name="upiId" placeholder="casaenterprises@upi" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-input); border-radius: 6px; font-size: 0.9rem;" />
+                  </div>
+                  <div class="form-group">
+                    <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px; display: block;">GPay / PhonePe Number</label>
+                    <input type="text" [(ngModel)]="companyProfile.gpayPhone" name="gpayPhone" placeholder="+91 9876543210" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-input); border-radius: 6px; font-size: 0.9rem;" />
+                  </div>
+                </div>
+
+                <div style="background: var(--bg-primary); border: 1px dashed var(--border-color); border-radius: 6px; padding: 10px 14px; margin-top: 4px;">
+                  <p style="margin: 0; font-size: 0.8rem; color: var(--text-secondary);">
+                    💡 <strong>Tip:</strong> These bank & UPI details will be printed on the bottom-left of every generated PDF Tax Invoice for customer payment reference.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Card 3: Terms & Conditions -->
+          <div class="card" style="margin-bottom: 20px;">
+            <div class="card-header" style="border-bottom: 1px solid var(--border-color); padding: 14px 18px; background: var(--bg-card-header);">
+              <h4 style="margin: 0; font-size: 0.95rem; font-weight: 700; color: var(--text-primary);">📜 Invoice Terms & Conditions (One clause per line)</h4>
+            </div>
+            <div class="card-body" style="padding: 18px;">
+              <div class="form-group">
+                <textarea [(ngModel)]="companyProfile.termsText" name="termsText" rows="4" placeholder="Enter terms line-by-line..." style="width: 100%; padding: 10px 14px; border: 1px solid var(--border-input); border-radius: 6px; font-size: 0.88rem; font-family: inherit; line-height: 1.5;"></textarea>
+                <small style="color: var(--text-muted); display: block; margin-top: 4px;">Each new line will be rendered as an individual numbered clause on the downloaded invoice PDF.</small>
+              </div>
+            </div>
+          </div>
+
+          <div style="display: flex; justify-content: flex-end; gap: 12px; margin-bottom: 30px;">
+            <button type="button" class="btn btn-secondary" (click)="previewInvoice()">
+              📄 Preview Sample Invoice PDF
+            </button>
+            <button type="submit" class="btn btn-primary" style="padding: 10px 24px; font-weight: 700;">
+              💾 Save Store & Bank Settings
+            </button>
+          </div>
+        </form>
       </section>
 
     </div>

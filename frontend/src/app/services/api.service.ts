@@ -193,6 +193,10 @@ export class ApiService {
     return this.http.get<any[]>(`${this.baseUrl}/sales`, { headers: this.getHeaders() });
   }
 
+  getSalesOrderById(id: number): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/sales/${id}`, { headers: this.getHeaders() });
+  }
+
   createSalesOrder(dto: any): Observable<any> {
     return this.http.post<any>(`${this.baseUrl}/sales`, dto, { headers: this.getHeaders() });
   }

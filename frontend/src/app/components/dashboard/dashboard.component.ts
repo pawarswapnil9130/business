@@ -84,6 +84,120 @@ export class DashboardComponent implements OnInit {
     'Miscellaneous'
   ];
 
+  // ==========================================
+  // STORE & BANK PROFILE CONFIGURATION
+  // (Editable from the UI Settings Tab)
+  // ==========================================
+  companyProfile = {
+    name: 'CASA ENTERPRISES',
+    tagline: 'Apparel Manufacturing & Wholesale Trading',
+    address: 'Near Bhekrainagar, Near PMPML Road, Shop No. 2, Hadapsar, Pune - 411028',
+    phone: '+91 98765 43210',
+    email: 'contact@casaenterprises.com',
+    gstin: '27AABCC1234D1Z5',
+    state: 'Maharashtra (Code 27)',
+    // Bank & UPI Details
+    bankName: 'HDFC Bank',
+    accountName: 'Casa Enterprises',
+    accountNumber: '50200012345678',
+    ifscCode: 'HDFC0001234',
+    upiId: 'casaenterprises@upi',
+    gpayPhone: '+91 9876543210',
+    // Terms & Conditions on Invoice
+    termsText: '1. Goods once sold will not be exchanged or returned without original bill.\n2. Please check sizes and items at the time of delivery.\n3. All disputes are subject to Pune jurisdiction only.',
+    terms: [
+      '1. Goods once sold will not be exchanged or returned without original bill.',
+      '2. Please check sizes and items at the time of delivery.',
+      '3. All disputes are subject to Pune jurisdiction only.'
+    ]
+  };
+
+  loadCompanyProfile() {
+    const saved = localStorage.getItem('apparel_company_profile');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        this.companyProfile = { ...this.companyProfile, ...parsed };
+        if (this.companyProfile.termsText) {
+          this.companyProfile.terms = this.companyProfile.termsText.split('\n').filter(t => t.trim().length > 0);
+        }
+      } catch (e) {
+        console.error('Failed to parse saved company profile:', e);
+      }
+    }
+  }
+
+  saveCompanyProfile() {
+    if (this.companyProfile.termsText) {
+      this.companyProfile.terms = this.companyProfile.termsText.split('\n').filter(t => t.trim().length > 0);
+    }
+    localStorage.setItem('apparel_company_profile', JSON.stringify(this.companyProfile));
+    this.successMessage = 'Store profile & bank details saved successfully! All future invoice downloads will use these details.';
+    setTimeout(() => this.successMessage = '', 5000);
+  }
+
+  resetCompanyProfile() {
+    this.companyProfile = {
+      name: 'CASA ENTERPRISES',
+      tagline: 'Apparel Manufacturing & Wholesale Trading',
+      address: 'Near Bhekrainagar, Near PMPML Road, Shop No. 2, Hadapsar, Pune - 411028',
+      phone: '+91 98765 43210',
+      email: 'contact@casaenterprises.com',
+      gstin: '27AABCC1234D1Z5',
+      state: 'Maharashtra (Code 27)',
+      bankName: 'HDFC Bank',
+      accountName: 'Casa Enterprises',
+      accountNumber: '50200012345678',
+      ifscCode: 'HDFC0001234',
+      upiId: 'casaenterprises@upi',
+      gpayPhone: '+91 9876543210',
+      termsText: '1. Goods once sold will not be exchanged or returned without original bill.\n2. Please check sizes and items at the time of delivery.\n3. All disputes are subject to Pune jurisdiction only.',
+      terms: [
+        '1. Goods once sold will not be exchanged or returned without original bill.',
+        '2. Please check sizes and items at the time of delivery.',
+        '3. All disputes are subject to Pune jurisdiction only.'
+      ]
+    };
+    localStorage.removeItem('apparel_company_profile');
+    this.successMessage = 'Store profile reset to original defaults.';
+    setTimeout(() => this.successMessage = '', 4000);
+  }
+
+  previewInvoice() {
+    // Generate a sample preview invoice with current profile
+    const sampleOrder = {
+      id: 9999,
+      invoiceNo: 'PREVIEW-INV-001',
+      customerName: 'Sample Customer (Preview)',
+      customerPhone: '+91 98989 00000',
+      salesDate: new Date().toISOString(),
+      totalAmount: 1800.00,
+      totalGst: 216.00,
+      finalAmount: 2016.00,
+      items: [
+        {
+          productId: 1,
+          productName: 'Premium Cotton Formal Shirt',
+          itemType: 'PCS',
+          quantity: 2,
+          unitPrice: 900.00,
+          discount: 0,
+          gstPercent: 12.00,
+          subTotal: 2016.00,
+          product: {
+            name: 'Premium Cotton Formal Shirt',
+            category: 'Formal Shirts',
+            size: 'L (40)',
+            color: 'Sky Blue',
+            designBrand: 'Casa Classic',
+            gstPercent: 12.00
+          }
+        }
+      ]
+    };
+    this.generateInvoicePdf(sampleOrder);
+  }
+
   // Forms Models
   // Product Form
   newProduct = {
@@ -169,6 +283,7 @@ export class DashboardComponent implements OnInit {
   constructor(private apiService: ApiService, private router: Router) {}
 
   ngOnInit() {
+    this.loadCompanyProfile();
     this.currentUser = this.apiService.currentUserValue;
     if (!this.currentUser) {
       this.router.navigate(['/login']);
@@ -223,6 +338,9 @@ export class DashboardComponent implements OnInit {
         break;
       case 'reports':
         this.fetchProfitReports();
+        break;
+      case 'settings':
+        this.loadCompanyProfile();
         break;
       case 'users':
         if (this.apiService.isAdmin()) {
@@ -561,53 +679,377 @@ export class DashboardComponent implements OnInit {
   }
 
   downloadInvoice(order: any) {
-    const doc = new jsPDF();
-    
-    // Header
-    doc.setFontSize(22);
-    doc.setTextColor(40, 40, 40);
-    doc.text('Casa Enterprises', 105, 20, { align: 'center' });
-    
-    doc.setFontSize(10);
-    doc.setTextColor(100, 100, 100);
-    doc.text('Near bhekrainagar near pmpml road shop number 2', 105, 28, { align: 'center' });
-    doc.text('hadapsar pune 28', 105, 33, { align: 'center' });
-    
-    // Line separator
-    doc.setLineWidth(0.5);
-    doc.line(14, 40, 196, 40);
+    if (!order) return;
 
-    // Invoice Title
+    // If items array is empty or missing, fetch full order by ID
+    if (!order.items || order.items.length === 0) {
+      if (order.id) {
+        this.apiService.getSalesOrderById(order.id).subscribe({
+          next: (fullOrder) => this.generateInvoicePdf(fullOrder),
+          error: () => this.generateInvoicePdf(order)
+        });
+        return;
+      }
+    }
+
+    this.generateInvoicePdf(order);
+  }
+
+  convertNumberToWords(amount: number): string {
+    const units = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+    const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+
+    function numToWords(num: number): string {
+      if (num === 0) return '';
+      if (num < 20) return units[num] + ' ';
+      if (num < 100) return tens[Math.floor(num / 10)] + (num % 10 !== 0 ? ' ' + units[num % 10] : '') + ' ';
+      if (num < 1000) return units[Math.floor(num / 100)] + ' Hundred ' + numToWords(num % 100);
+      if (num < 100000) return numToWords(Math.floor(num / 1000)) + 'Thousand ' + numToWords(num % 1000);
+      if (num < 10000000) return numToWords(Math.floor(num / 100000)) + 'Lakh ' + numToWords(num % 100000);
+      return numToWords(Math.floor(num / 10000000)) + 'Crore ' + numToWords(num % 10000000);
+    }
+
+    const rounded = Math.round(amount);
+    if (rounded === 0) return 'Zero Rupees Only';
+    return 'INR ' + numToWords(rounded).trim() + ' Only';
+  }
+
+  generateInvoicePdf(order: any) {
+    const doc = new jsPDF('p', 'mm', 'a4');
+    const pageWidth = doc.internal.pageSize.getWidth(); // 210mm
+    const pageHeight = doc.internal.pageSize.getHeight(); // 297mm
+    const margin = 14;
+    const contentWidth = pageWidth - (margin * 2); // 182mm
+    const rightMarginX = pageWidth - margin; // 196mm
+    const profile = this.companyProfile;
+
+    // --- 1. TOP ACCENT BAR ---
+    doc.setFillColor(37, 99, 235); // #2563eb Primary Blue Accent
+    doc.rect(0, 0, pageWidth, 4, 'F');
+
+    // --- 2. HEADER SECTION (Clean Corporate Split Header) ---
+    // Left: Monogram / Logo Mark
+    doc.setFillColor(15, 23, 42); // #0f172a Dark Slate
+    doc.roundedRect(margin, 12, 12, 12, 2, 2, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.setTextColor(255, 255, 255);
+    doc.text('CE', margin + 6, 20, { align: 'center' });
+
+    // Company Name & Subtitle
+    doc.setFont('helvetica', 'bold');
     doc.setFontSize(16);
-    doc.setTextColor(0, 0, 0);
-    doc.text('TAX INVOICE', 105, 50, { align: 'center' });
-    
-    // Details
-    doc.setFontSize(11);
-    doc.text(`Invoice No: ${order.invoiceNo}`, 14, 65);
-    doc.text(`Date: ${new Date(order.salesDate).toLocaleDateString()}`, 14, 72);
-    doc.text(`Customer Name: ${order.customerName}`, 14, 79);
-    doc.text(`Customer Phone: ${order.customerPhone || 'N/A'}`, 14, 86);
-    
-    // Amounts section
+    doc.setTextColor(15, 23, 42);
+    doc.text(profile.name, margin + 16, 18);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(100, 116, 139);
+    doc.text(profile.tagline, margin + 16, 23);
+    doc.text(profile.address, margin, 31);
+    doc.text(`Phone: ${profile.phone}  |  GSTIN: ${profile.gstin}  |  State: ${profile.state}`, margin, 35.5);
+
+    // Right: TAX INVOICE Header & Badge
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(18);
+    doc.setTextColor(15, 23, 42);
+    doc.text('TAX INVOICE', rightMarginX, 19, { align: 'right' });
+
+    // Paid Status Badge
+    doc.setFillColor(220, 252, 231); // #dcfce7
+    doc.roundedRect(rightMarginX - 22, 22.5, 22, 5.5, 1.5, 1.5, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(7.5);
+    doc.setTextColor(22, 101, 52); // #166534
+    doc.text('PAID', rightMarginX - 11, 26.5, { align: 'center' });
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7.5);
+    doc.setTextColor(100, 116, 139);
+    doc.text('ORIGINAL FOR RECIPIENT', rightMarginX, 35.5, { align: 'right' });
+
+    // Thin separator line
+    doc.setDrawColor(226, 232, 240);
+    doc.setLineWidth(0.5);
+    doc.line(margin, 40, rightMarginX, 40);
+
+    // --- 3. INVOICE META & BILL TO SECTION (Clean 2-Column Cards) ---
+    const metaY = 44;
+    const colW = (contentWidth - 6) / 2; // 88mm
+    const cardH = 30;
+
+    // Card 1: Billed To (Customer)
+    doc.setFillColor(248, 250, 252); // #f8fafc
+    doc.setDrawColor(226, 232, 240);
+    doc.roundedRect(margin, metaY, colW, cardH, 2, 2, 'FD');
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(7.5);
+    doc.setTextColor(100, 116, 139);
+    doc.text('BILLED TO / CUSTOMER DETAILS', margin + 4, metaY + 6);
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.setTextColor(15, 23, 42);
+    doc.text(order.customerName || 'Valued Customer', margin + 4, metaY + 13);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(71, 85, 105);
+    doc.text(`Phone: ${order.customerPhone || 'N/A'}`, margin + 4, metaY + 19);
+    doc.text(`Place of Supply: Maharashtra (Code 27)`, margin + 4, metaY + 24);
+
+    // Card 2: Invoice Metadata
+    const rightColX = margin + colW + 6;
+    doc.setFillColor(248, 250, 252);
+    doc.roundedRect(rightColX, metaY, colW, cardH, 2, 2, 'FD');
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(7.5);
+    doc.setTextColor(100, 116, 139);
+    doc.text('INVOICE INFORMATION', rightColX + 4, metaY + 6);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(100, 116, 139);
+    doc.text('Invoice No:', rightColX + 4, metaY + 13);
+    doc.text('Invoice Date:', rightColX + 4, metaY + 18.5);
+    doc.text('Payment Mode:', rightColX + 4, metaY + 24);
+
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(15, 23, 42);
+    doc.text(`${order.invoiceNo}`, rightColX + 28, metaY + 13);
+
+    const dateStr = order.salesDate ? new Date(order.salesDate).toLocaleString('en-IN', {
+      day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+    }) : 'N/A';
+    doc.setFont('helvetica', 'normal');
+    doc.text(`${dateStr}`, rightColX + 28, metaY + 18.5);
+    doc.text('Cash / UPI (Immediate)', rightColX + 28, metaY + 24);
+
+    // --- 4. ITEM DETAILS TABLE ---
+    const items = order.items && order.items.length > 0 ? order.items : [];
+    let tableBody: any[] = [];
+    let totalQty = 0;
+    let totalDiscount = 0;
+
+    if (items.length > 0) {
+      tableBody = items.map((item: any, idx: number) => {
+        const prod = item.product || this.products.find(p => p.id === item.productId) || {};
+        const prodName = prod.name || item.productName || `Item #${item.productId || idx + 1}`;
+        
+        const tags: string[] = [];
+        if (prod.category) tags.push(prod.category);
+        if (prod.size) tags.push(`Size: ${prod.size}`);
+        if (prod.color) tags.push(`Color: ${prod.color}`);
+        if (prod.designBrand) tags.push(`Brand: ${prod.designBrand}`);
+
+        const itemDesc = tags.length > 0 ? `${prodName}\n${tags.join('  •  ')}` : prodName;
+
+        const qty = item.quantity || 1;
+        totalQty += qty;
+        const discount = item.discount || 0;
+        totalDiscount += discount;
+
+        const unitRate = item.unitPrice || 0;
+        const subtotalExclTax = (qty * unitRate) - discount;
+        const gstPercent = item.gstPercent ?? prod.gstPercent ?? 12.00;
+        const gstAmount = subtotalExclTax * (gstPercent / 100.0);
+        const lineTotal = item.subTotal || (subtotalExclTax + gstAmount);
+
+        return [
+          (idx + 1).toString().padStart(2, '0'),
+          itemDesc,
+          item.itemType || 'PCS',
+          qty.toString(),
+          `Rs. ${unitRate.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+          discount > 0 ? `Rs. ${discount.toFixed(2)}` : '-',
+          `${gstPercent}%`,
+          `Rs. ${subtotalExclTax.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+          `Rs. ${lineTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+        ];
+      });
+    } else {
+      tableBody = [
+        [
+          '01',
+          'Garments / Apparel Items (Consolidated Bill)',
+          'PCS',
+          '1',
+          `Rs. ${(order.totalAmount || 0).toFixed(2)}`,
+          '-',
+          `${((order.totalGst / (order.totalAmount || 1)) * 100).toFixed(0)}%`,
+          `Rs. ${(order.totalAmount || 0).toFixed(2)}`,
+          `Rs. ${(order.finalAmount || 0).toFixed(2)}`
+        ]
+      ];
+      totalQty = 1;
+    }
+
     autoTable(doc, {
-      startY: 100,
-      head: [['Description', 'Amount (Rs.)']],
-      body: [
-        ['Net Value', order.totalAmount.toFixed(2)],
-        ['GST (Tax)', order.totalGst.toFixed(2)],
-      ],
-      foot: [['Final Amount', order.finalAmount.toFixed(2)]],
-      theme: 'grid',
-      headStyles: { fillColor: [41, 128, 185] },
-      footStyles: { fillColor: [240, 240, 240], textColor: [0, 0, 0], fontStyle: 'bold' }
+      startY: metaY + cardH + 5,
+      margin: { left: margin, right: margin },
+      head: [['#', 'ITEMS & DESCRIPTION', 'TYPE', 'QTY', 'RATE', 'DISCOUNT', 'GST', 'TAXABLE', 'TOTAL (Rs.)']],
+      body: tableBody,
+      theme: 'plain',
+      headStyles: {
+        fillColor: [241, 245, 249], // #f1f5f9 Clean subtle header
+        textColor: [15, 23, 42],
+        fontStyle: 'bold',
+        fontSize: 8,
+        halign: 'center',
+        cellPadding: { top: 3.5, bottom: 3.5, left: 2, right: 2 },
+        lineWidth: { bottom: 0.5 },
+        lineColor: [203, 213, 225]
+      },
+      styles: {
+        fontSize: 8,
+        cellPadding: { top: 3, bottom: 3, left: 2, right: 2 },
+        textColor: [30, 41, 59],
+        valign: 'middle',
+        lineWidth: { bottom: 0.2 },
+        lineColor: [241, 245, 249]
+      },
+      columnStyles: {
+        0: { halign: 'center', cellWidth: 8, textColor: [100, 116, 139] },
+        1: { halign: 'left', cellWidth: 'auto', fontStyle: 'bold' },
+        2: { halign: 'center', cellWidth: 13 },
+        3: { halign: 'center', cellWidth: 11, fontStyle: 'bold' },
+        4: { halign: 'right', cellWidth: 22 },
+        5: { halign: 'right', cellWidth: 18, textColor: [100, 116, 139] },
+        6: { halign: 'center', cellWidth: 13 },
+        7: { halign: 'right', cellWidth: 23 },
+        8: { halign: 'right', cellWidth: 25, fontStyle: 'bold', textColor: [15, 23, 42] }
+      },
+      alternateRowStyles: {
+        fillColor: [255, 255, 255]
+      }
     });
 
-    // Footer
-    const finalY = (doc as any).lastAutoTable.finalY || 150;
-    doc.setFontSize(10);
-    doc.text('Thank you for your business!', 105, finalY + 20, { align: 'center' });
-    
+    const tableEndY = (doc as any).lastAutoTable.finalY || 140;
+
+    // --- 5. SUMMARY & TOTALS SECTION ---
+    const summaryStartY = tableEndY + 6;
+    const summaryCardW = 90; // Expanded width to fit large currency figures smoothly
+    const summaryCardX = rightMarginX - summaryCardW;
+    const leftBlockW = summaryCardX - margin - 6;
+
+    // Left Block: Amount in Words + Bank / Payment details + Terms
+    // Amount in Words Card
+    doc.setFillColor(248, 250, 252);
+    doc.setDrawColor(226, 232, 240);
+    doc.roundedRect(margin, summaryStartY, leftBlockW, 14, 2, 2, 'FD');
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(7);
+    doc.setTextColor(100, 116, 139);
+    doc.text('TOTAL AMOUNT IN WORDS', margin + 4, summaryStartY + 4.5);
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.setTextColor(15, 23, 42);
+    const words = this.convertNumberToWords(order.finalAmount || 0);
+    doc.text(words, margin + 4, summaryStartY + 9.5, { maxWidth: leftBlockW - 8 });
+
+    // Bank & Payment Information Box
+    const bankY = summaryStartY + 17;
+    doc.setFillColor(248, 250, 252);
+    doc.roundedRect(margin, bankY, leftBlockW, 20, 2, 2, 'FD');
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(7.5);
+    doc.setTextColor(37, 99, 235); // Blue
+    doc.text('BANK & PAYMENT DETAILS', margin + 4, bankY + 5);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7.5);
+    doc.setTextColor(71, 85, 105);
+    doc.text(`Bank Name: ${profile.bankName}  |  A/C Name: ${profile.accountName}`, margin + 4, bankY + 9.5);
+    doc.text(`A/C No: ${profile.accountNumber}  |  IFSC: ${profile.ifscCode}`, margin + 4, bankY + 13.5);
+    doc.text(`UPI ID: ${profile.upiId}  |  GPay / PhonePe: ${profile.gpayPhone}`, margin + 4, bankY + 17.5);
+
+    // Terms & Conditions
+    const termsY = bankY + 23;
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(7.5);
+    doc.setTextColor(15, 23, 42);
+    doc.text('Terms & Conditions:', margin, termsY);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7);
+    doc.setTextColor(100, 116, 139);
+    let termOffset = 4;
+    for (const term of profile.terms) {
+      doc.text(term, margin, termsY + termOffset);
+      termOffset += 3.5;
+    }
+
+    // Right Block: Financial Breakdown Table
+    autoTable(doc, {
+      startY: summaryStartY,
+      margin: { left: summaryCardX, right: margin },
+      body: [
+        ['Total Quantity:', `${totalQty} Units`],
+        ['Taxable Net Subtotal:', `Rs. ${(order.totalAmount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`],
+        ['Total Discount:', totalDiscount > 0 ? `- Rs. ${totalDiscount.toFixed(2)}` : 'Rs. 0.00'],
+        ['CGST (Tax):', `+ Rs. ${((order.totalGst || 0) / 2).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`],
+        ['SGST (Tax):', `+ Rs. ${((order.totalGst || 0) / 2).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`],
+        ['TOTAL PAYABLE:', `Rs. ${(order.finalAmount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`]
+      ],
+      theme: 'plain',
+      styles: {
+        fontSize: 8,
+        cellPadding: { top: 1.8, bottom: 1.8, left: 3, right: 3 },
+        textColor: [30, 41, 59]
+      },
+      columnStyles: {
+        0: { halign: 'left', fontStyle: 'normal', textColor: [100, 116, 139], cellWidth: 42 },
+        1: { halign: 'right', fontStyle: 'bold', textColor: [15, 23, 42], cellWidth: 48 }
+      },
+      didParseCell: (data) => {
+        if (data.row.index === 5) {
+          // Highlight Grand Total row with high-end Dark Slate
+          data.cell.styles.fillColor = [15, 23, 42]; // #0f172a Dark Navy
+          data.cell.styles.textColor = [255, 255, 255];
+          data.cell.styles.fontSize = 9.5;
+          data.cell.styles.fontStyle = 'bold';
+          data.cell.styles.cellPadding = { top: 3.2, bottom: 3.2, left: 3, right: 3 };
+        }
+      }
+    });
+
+    const summaryEndY = (doc as any).lastAutoTable.finalY || (summaryStartY + 45);
+    const bottomBlockY = Math.max(summaryEndY, termsY + termOffset + 2);
+
+    // --- 6. SIGNATURE & STAMP BLOCK ---
+    const sigY = bottomBlockY + 8;
+    if (sigY + 22 < pageHeight - 12) {
+      doc.setDrawColor(203, 213, 225);
+      doc.setLineWidth(0.4);
+      doc.line(rightMarginX - 55, sigY + 14, rightMarginX, sigY + 14);
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(8);
+      doc.setTextColor(15, 23, 42);
+      doc.text(`For ${profile.name}`, rightMarginX - 27.5, sigY + 5, { align: 'center' });
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(7.5);
+      doc.setTextColor(100, 116, 139);
+      doc.text('Authorized Signatory', rightMarginX - 27.5, sigY + 19, { align: 'center' });
+    }
+
+    // --- 7. CLEAN FOOTER BAR ---
+    const footerY = pageHeight - 8;
+    doc.setDrawColor(241, 245, 249);
+    doc.setLineWidth(0.5);
+    doc.line(margin, footerY - 4, rightMarginX, footerY - 4);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7);
+    doc.setTextColor(148, 163, 184);
+    doc.text(`Thank you for choosing ${profile.name}! | Computer Generated Tax Invoice`, pageWidth / 2, footerY, { align: 'center' });
+
     doc.save(`Invoice_${order.invoiceNo}.pdf`);
   }
 
