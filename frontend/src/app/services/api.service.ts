@@ -7,7 +7,24 @@ import { map } from 'rxjs/operators';
   providedIn: 'root'
 })
 export class ApiService {
-  private baseUrl = 'https://business-backend-q18v.onrender.com/api';
+  private getBaseUrl(): string {
+    if (typeof window !== 'undefined' && window.location) {
+      const hostname = window.location.hostname;
+      const port = window.location.port;
+      if (hostname === 'localhost' || hostname === '127.0.0.1') {
+        if (port === '4200') {
+          return 'http://localhost:5000/api';
+        }
+        return `${window.location.origin}/api`;
+      }
+      if (window.location.protocol === 'file:') {
+        return 'http://localhost:5000/api';
+      }
+    }
+    return 'https://business-backend-q18v.onrender.com/api';
+  }
+
+  private baseUrl = this.getBaseUrl();
 
   private currentUserSubject = new BehaviorSubject<any>(null);
 

@@ -24,3 +24,9 @@ Thumbs.db
 # Environment
 .env
 appsettings.Development.json
+
+# SQLite Database Files
+*.db
+*.sqlite
+*.db-wal
+*.db-shm
