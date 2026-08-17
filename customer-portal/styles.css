@@ -1,45 +1,55 @@
 /* =======================================================
-   CASA ENTERPRISES — E-COMMERCE WHOLESALE PORTAL
-   Myntra / Flipkart / Zepto Inspired Design System
+   CASA ENTERPRISES — FLIPKART WHOLESALE B2B THEME
+   Authentic Flipkart E-Commerce Design System & Architecture
    ======================================================= */
 
 :root {
-  --primary: #2563eb;
-  --primary-hover: #1d4ed8;
-  --primary-light: #eff6ff;
-  --primary-dark: #1e40af;
+  /* Flipkart Brand Palette */
+  --fk-blue: #2874f0;
+  --fk-blue-dark: #1255cc;
+  --fk-blue-light: #f0f5ff;
+  --fk-yellow: #ff9f00;
+  --fk-yellow-hover: #f39700;
+  --fk-orange: #fb641b;
+  --fk-orange-hover: #e85511;
+  --fk-plus-gold: #ffe500;
+  --fk-green: #388e3c;
+  --fk-green-bg: #eaf7ec;
+  --fk-danger: #ff6161;
 
-  --accent-gold: #f59e0b;
-  --accent-gold-light: #fef3c7;
-  --accent-green: #10b981;
-  --accent-green-light: #ecfdf5;
-
-  --bg-page: #f8fafc;
+  /* Surface & Canvas */
+  --bg-page: #f1f3f6;
   --bg-card: #ffffff;
-  --bg-subtle: #f1f5f9;
-  --bg-dark: #0f172a;
+  --bg-subtle: #f9fafb;
+  --bg-dark: #172337;
 
-  --text-main: #0f172a;
-  --text-secondary: #475569;
-  --text-muted: #94a3b8;
+  /* Typography */
+  --text-main: #212121;
+  --text-secondary: #878787;
+  --text-muted: #878787;
   --text-white: #ffffff;
 
-  --border-light: #e2e8f0;
-  --border-focus: #3b82f6;
+  /* Borders & Dividers */
+  --border-light: #f0f0f0;
+  --border-subtle: #e0e0e0;
+  --border-focus: #2874f0;
 
-  --radius-xs: 4px;
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 18px;
+  /* Radii */
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
   --radius-pill: 9999px;
 
-  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.06);
-  --shadow-md: 0 8px 20px rgba(0, 0, 0, 0.08);
-  --shadow-lg: 0 14px 30px rgba(0, 0, 0, 0.12);
-  --shadow-drawer: -6px 0 30px rgba(0, 0, 0, 0.2);
+  /* Shadows (Flipkart Soft Shadows) */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.08);
+  --shadow-sm: 0 1px 4px 0 rgba(0,0,0,.1);
+  --shadow-card: 0 2px 4px 0 rgba(0,0,0,.08);
+  --shadow-card-hover: 0 3px 16px 0 rgba(0,0,0,.12);
+  --shadow-dropdown: 0 4px 16px 0 rgba(0,0,0,.2);
+  --shadow-drawer: -4px 0 24px rgba(0, 0, 0, 0.25);
 
-  --font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
+  --font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 * {
@@ -53,10 +63,10 @@ body {
   font-family: var(--font-family);
   background-color: var(--bg-page);
   color: var(--text-main);
-  line-height: 1.5;
+  line-height: 1.4;
   font-size: 14px;
   overflow-x: hidden;
-  padding-bottom: 70px; /* Space for mobile app bottom dock */
+  padding-bottom: 70px;
 }
 
 @media (min-width: 900px) {
@@ -66,13 +76,15 @@ body {
 }
 
 /* =======================================================
-   1. TOP FLASH ANNOUNCEMENT STRIP (ZEPTO STYLE)
+   1. TOP FLASH ANNOUNCEMENT STRIP
    ======================================================= */
 .top-flash-strip {
-  background: linear-gradient(90deg, #1e3a8a, #2563eb);
-  color: var(--text-white);
-  padding: 7px 16px;
+  background: #172337;
+  color: #ffffff;
+  padding: 6px 16px;
   font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.2px;
 }
 
 .strip-container {
@@ -84,9 +96,10 @@ body {
   gap: 12px;
 }
 
-.flash-icon { font-size: 14px; }
+.flash-icon { font-size: 13px; color: var(--fk-plus-gold); }
 .flash-text { flex: 1; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.flash-contact { font-weight: 700; white-space: nowrap; }
+.flash-text strong { color: var(--fk-plus-gold); }
+.flash-contact { font-weight: 700; white-space: nowrap; color: #ffffff; }
 
 @media (max-width: 768px) {
   .flash-contact { display: none; }
@@ -94,49 +107,49 @@ body {
 }
 
 /* =======================================================
-   2. MAIN HEADER (FLIPKART & MYNTRA STYLE)
+   2. FLIPKART SIGNATURE MAIN HEADER
    ======================================================= */
 .main-header {
   position: sticky;
   top: 0;
   z-index: 1000;
-  background: #ffffff;
-  border-bottom: 1px solid var(--border-light);
-  box-shadow: var(--shadow-xs);
+  background: var(--fk-blue);
+  color: #ffffff;
+  box-shadow: 0 2px 4px 0 rgba(0,0,0,.15);
 }
 
 .header-container {
   max-width: 1320px;
   margin: 0 auto;
-  padding: 10px 20px;
+  padding: 12px 20px;
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 24px;
 }
 
-/* Brand */
+/* Brand Logo (Flipkart Style with Plus Subtext) */
 .brand-container {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   cursor: pointer;
   text-decoration: none;
   flex-shrink: 0;
 }
 
 .logo-box {
-  width: 44px;
-  height: 44px;
-  background: linear-gradient(135deg, #2563eb, #1e40af);
-  border-radius: var(--radius-sm);
+  width: 38px;
+  height: 38px;
+  background: #ffffff;
+  border-radius: var(--radius-xs);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #ffffff;
-  font-weight: 800;
-  font-size: 13px;
-  letter-spacing: 1px;
-  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
+  color: var(--fk-blue);
+  font-weight: 900;
+  font-size: 14px;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
 }
 
 .brand-meta {
@@ -145,60 +158,62 @@ body {
 }
 
 .brand-title {
-  font-size: 17px;
-  font-weight: 800;
+  font-size: 20px;
+  font-weight: 900;
+  font-style: italic;
   letter-spacing: 0.5px;
-  color: #1e3a8a;
-  line-height: 1.1;
+  color: #ffffff;
+  line-height: 1;
 }
 
 .brand-sub {
   font-size: 11px;
-  color: var(--text-muted);
+  color: #f0f0f0;
+  font-style: italic;
   font-weight: 600;
+  margin-top: 2px;
 }
 
-/* Warehouse Indicator (Zepto Style) */
+.brand-sub strong {
+  color: var(--fk-plus-gold);
+}
+
+/* Quick Warehouse Location Indicator */
 .warehouse-indicator {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: var(--bg-subtle);
+  background: rgba(255, 255, 255, 0.15);
   padding: 6px 12px;
-  border-radius: var(--radius-pill);
-  border: 1px solid var(--border-light);
+  border-radius: var(--radius-xs);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   flex-shrink: 0;
 }
 
-.loc-icon { font-size: 16px; color: #ef4444; }
+.loc-icon { font-size: 14px; color: var(--fk-plus-gold); }
 .loc-details { display: flex; flex-direction: column; }
-.loc-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; }
-.loc-city { font-size: 12px; color: var(--text-main); }
+.loc-label { font-size: 9px; color: rgba(255, 255, 255, 0.8); text-transform: uppercase; font-weight: 700; }
+.loc-city { font-size: 12px; color: #ffffff; font-weight: 700; }
 
 @media (max-width: 1024px) {
   .warehouse-indicator { display: none; }
 }
 
-/* Search Bar (Myntra Style) */
+/* Flipkart Search Bar */
 .header-search-bar {
   flex: 1;
   display: flex;
   align-items: center;
-  background: var(--bg-subtle);
-  border: 1.5px solid transparent;
-  border-radius: var(--radius-md);
-  padding: 8px 14px;
+  background: #ffffff;
+  border-radius: 2px;
+  padding: 0 14px;
+  height: 38px;
   gap: 10px;
+  box-shadow: 0 2px 4px 0 rgba(0,0,0,.23);
   transition: all 0.2s ease;
 }
 
-.header-search-bar:focus-within {
-  background: #ffffff;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
-}
-
-.search-lens { font-size: 15px; color: var(--text-muted); }
+.search-lens { font-size: 14px; color: var(--fk-blue); }
 
 .header-search-bar input {
   width: 100%;
@@ -206,67 +221,76 @@ body {
   background: transparent;
   outline: none;
   font-family: inherit;
-  font-size: 14px;
+  font-size: 13.5px;
   color: var(--text-main);
+}
+
+.header-search-bar input::placeholder {
+  color: #878787;
+  font-size: 13px;
 }
 
 .clear-search-btn {
   background: none;
   border: none;
-  color: var(--text-muted);
-  font-size: 13px;
+  color: #878787;
+  font-size: 14px;
   cursor: pointer;
+  padding: 4px;
 }
 
 /* Header Actions */
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
   flex-shrink: 0;
 }
 
 .unauth-header-group {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 14px;
+}
+
+/* Flipkart White Login Button */
+.btn-nav-login {
+  background: #ffffff;
+  color: var(--fk-blue);
+  border: 1px solid #dbdbdb;
+  padding: 7px 28px;
+  border-radius: 2px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  box-shadow: 0 1px 2px 0 rgba(0,0,0,.2);
+  transition: all 0.15s ease;
+}
+
+.btn-nav-login:hover {
+  background: #fdfdfd;
+  box-shadow: 0 2px 6px rgba(0,0,0,.25);
 }
 
 .btn-nav-apply {
   background: transparent;
-  border: 1.5px solid var(--border-light);
-  color: var(--text-main);
-  padding: 8px 16px;
-  border-radius: var(--radius-sm);
+  border: none;
+  color: #ffffff;
   font-weight: 700;
-  font-size: 13px;
+  font-size: 14px;
   cursor: pointer;
-  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: opacity 0.15s;
 }
 
 .btn-nav-apply:hover {
-  background: var(--bg-subtle);
-  border-color: #cbd5e1;
+  opacity: 0.9;
+  text-decoration: underline;
 }
 
-.btn-nav-login {
-  background: var(--primary);
-  border: 1.5px solid var(--primary);
-  color: #ffffff;
-  padding: 8px 18px;
-  border-radius: var(--radius-sm);
-  font-weight: 700;
-  font-size: 13px;
-  cursor: pointer;
-  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
-  transition: all 0.2s;
-}
-
-.btn-nav-login:hover {
-  background: var(--primary-hover);
-}
-
-/* Authenticated Account Menu */
+/* Authenticated Account Pill */
 .auth-header-group {
   display: flex;
   align-items: center;
@@ -282,103 +306,78 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: var(--bg-subtle);
-  border: 1px solid var(--border-light);
-  padding: 5px 12px;
-  border-radius: var(--radius-pill);
-  transition: background 0.2s;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 6px 10px;
+  border-radius: 2px;
+  transition: background 0.15s;
 }
 
 .user-avatar-pill:hover {
-  background: #e2e8f0;
+  background: rgba(255, 255, 255, 0.12);
 }
 
 .avatar-icon { font-size: 16px; }
-
-.avatar-text {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.2;
-}
-
-.avatar-text strong {
-  font-size: 12px;
-  color: var(--text-main);
-  max-width: 110px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
+.avatar-text { display: flex; flex-direction: column; text-align: left; }
+.avatar-text strong { font-size: 13px; color: #ffffff; }
 
 .tier-tag-pill {
   font-size: 9px;
-  font-weight: 800;
-  color: var(--primary);
-  text-transform: uppercase;
+  background: var(--fk-plus-gold);
+  color: #000000;
+  font-weight: 900;
+  padding: 1px 5px;
+  border-radius: 2px;
+  letter-spacing: 0.4px;
+  display: inline-block;
+  margin-top: 1px;
 }
 
-.dropdown-chevron {
-  font-size: 9px;
-  color: var(--text-muted);
-}
+.dropdown-chevron { font-size: 10px; color: #ffffff; transition: transform 0.2s; }
 
-/* Account Dropdown Menu */
+/* Flipkart Dropdown Menu */
 .account-dropdown-menu {
   position: absolute;
-  top: calc(100% + 8px);
+  top: 100%;
   right: 0;
-  width: 240px;
+  width: 250px;
   background: #ffffff;
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-lg);
-  padding: 10px 0;
+  border-radius: 2px;
+  box-shadow: var(--shadow-dropdown);
+  padding: 8px 0;
+  margin-top: 8px;
   display: none;
-  z-index: 1100;
+  z-index: 1200;
+  border: 1px solid var(--border-subtle);
 }
 
-.account-dropdown-menu.open {
-  display: block;
-  animation: dropdownFade 0.15s ease-out;
-}
-
-@keyframes dropdownFade {
-  from { opacity: 0; transform: translateY(-6px); }
-  to { opacity: 1; transform: translateY(0); }
-}
+.account-dropdown-menu.show { display: block; animation: slideDown 0.18s ease; }
 
 .dropdown-header {
-  padding: 10px 16px 12px;
+  padding: 12px 16px;
   border-bottom: 1px solid var(--border-light);
+  background: var(--bg-subtle);
 }
 
-.dropdown-header strong {
-  display: block;
-  font-size: 13px;
-  color: var(--text-main);
-}
-
-.dropdown-header p {
-  font-size: 11px;
-  color: var(--text-muted);
-  margin-top: 2px;
-}
+.dropdown-header strong { font-size: 14px; color: var(--text-main); display: block; }
+.dropdown-header p { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
 
 .tier-status-box {
-  margin-top: 8px;
-  background: var(--primary-light);
-  padding: 4px 8px;
-  border-radius: var(--radius-xs);
+  margin-top: 6px;
   font-size: 11px;
-  display: flex;
-  justify-content: space-between;
+  background: var(--fk-blue-light);
+  padding: 4px 8px;
+  border-radius: 2px;
+  color: var(--fk-blue);
+  font-weight: 700;
 }
 
 .account-dropdown-menu a {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 9px 16px;
+  padding: 10px 16px;
   color: var(--text-main);
   text-decoration: none;
   font-size: 13px;
@@ -388,52 +387,55 @@ body {
 
 .account-dropdown-menu a:hover {
   background: var(--bg-subtle);
+  color: var(--fk-blue);
 }
 
 .account-dropdown-menu hr {
   border: none;
   border-top: 1px solid var(--border-light);
-  margin: 6px 0;
+  margin: 4px 0;
 }
 
-.account-dropdown-menu .logout-link {
-  color: #ef4444;
+.account-dropdown-menu a.logout-link {
+  color: var(--fk-danger);
 }
 
+/* Orders Button */
 .nav-icon-btn {
   background: transparent;
   border: none;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 14px;
   display: flex;
-  flex-direction: column;
   align-items: center;
+  gap: 6px;
   cursor: pointer;
-  color: var(--text-secondary);
-  font-family: inherit;
-  font-size: 11px;
-  font-weight: 600;
-  gap: 2px;
+  padding: 6px 10px;
+  border-radius: 2px;
+  transition: background 0.15s;
 }
 
-.nav-icon-btn .icon { font-size: 18px; }
+.nav-icon-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
 
-/* Zepto Style Floating Cart Trigger */
+/* Flipkart Cart Button in Header */
 .header-cart-btn {
+  background: transparent;
+  border: none;
+  color: #ffffff;
   display: flex;
   align-items: center;
   gap: 10px;
-  background: #10b981;
-  border: none;
-  color: #ffffff;
-  padding: 7px 14px;
-  border-radius: var(--radius-md);
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-  transition: all 0.2s;
+  padding: 6px 12px;
+  border-radius: 2px;
+  transition: background 0.15s;
 }
 
 .header-cart-btn:hover {
-  background: #059669;
-  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.12);
 }
 
 .cart-icon-badge-wrap {
@@ -442,46 +444,49 @@ body {
   align-items: center;
 }
 
-.cart-icon { font-size: 20px; }
+.cart-icon { font-size: 18px; }
 
 .cart-badge-count {
   position: absolute;
-  top: -6px;
-  right: -8px;
-  background: #ef4444;
+  top: -8px;
+  right: -10px;
+  background: var(--fk-orange);
   color: #ffffff;
   font-size: 10px;
-  font-weight: 800;
+  font-weight: 900;
   padding: 1px 5px;
   border-radius: var(--radius-pill);
-  border: 2px solid #ffffff;
+  border: 1px solid #ffffff;
 }
 
 .cart-total-preview {
   display: flex;
   flex-direction: column;
   text-align: left;
-  line-height: 1.2;
+  line-height: 1.1;
 }
 
-.cart-preview-label { font-size: 10px; opacity: 0.9; font-weight: 600; }
-.cart-preview-amount { font-size: 13px; font-weight: 800; }
+.cart-preview-label { font-size: 13px; font-weight: 700; color: #ffffff; }
+.cart-preview-amount { font-size: 11px; color: var(--fk-plus-gold); font-weight: 800; }
 
 /* =======================================================
-   3. CATEGORY ICONS STRIP (ZEPTO / FLIPKART STYLE)
+   3. FLIPKART CATEGORY ICONS BAR (White Card Strip)
    ======================================================= */
 .category-strip {
   background: #ffffff;
-  border-bottom: 1px solid var(--border-light);
-  padding: 14px 0 10px;
+  border-bottom: 1px solid var(--border-subtle);
+  box-shadow: 0 1px 1px 0 rgba(0,0,0,.1);
+  margin-bottom: 12px;
 }
 
 .category-container {
   max-width: 1320px;
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 12px 20px;
   display: flex;
-  gap: 24px;
+  justify-content: space-around;
+  align-items: center;
+  gap: 12px;
   overflow-x: auto;
   scrollbar-width: none;
 }
@@ -494,111 +499,119 @@ body {
   align-items: center;
   gap: 6px;
   cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 4px;
+  transition: all 0.15s ease;
   flex-shrink: 0;
-  text-align: center;
-  transition: transform 0.15s;
+  user-select: none;
 }
 
-.category-card:hover {
-  transform: translateY(-2px);
+.category-card:hover .cat-title {
+  color: var(--fk-blue);
+  font-weight: 800;
 }
 
-.cat-icon-circle {
-  width: 52px;
-  height: 52px;
-  border-radius: var(--radius-pill);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: var(--shadow-sm);
-  transition: transform 0.15s, box-shadow 0.15s;
-}
-
-.category-card.active .cat-icon-circle {
-  transform: scale(1.08);
-  box-shadow: 0 0 0 3px #2563eb;
-}
-
-.cat-emoji { font-size: 24px; }
-
-.cat-title {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--text-secondary);
+.category-card.active {
+  border-bottom: 2.5px solid var(--fk-blue);
+  border-radius: 0;
 }
 
 .category-card.active .cat-title {
-  color: var(--primary);
+  color: var(--fk-blue);
+  font-weight: 800;
+}
+
+.cat-icon-circle {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  transition: transform 0.2s ease;
+}
+
+.category-card:hover .cat-icon-circle {
+  transform: scale(1.08);
+}
+
+.cat-emoji { font-size: 22px; }
+
+.cat-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-main);
+  white-space: nowrap;
 }
 
 /* =======================================================
-   4. PROMOTIONAL HERO BANNER (MYNTRA STYLE)
+   4. HERO PROMOTIONAL BANNER (Big Wholesale Days Style)
    ======================================================= */
 .banner-carousel-section {
-  padding: 20px;
-}
-
-.carousel-container {
   max-width: 1320px;
-  margin: 0 auto;
+  margin: 0 auto 16px;
+  padding: 0 16px;
 }
 
 .promo-slide {
-  border-radius: var(--radius-lg);
-  padding: 36px 40px;
+  border-radius: 4px;
+  padding: 32px 40px;
+  color: #ffffff;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  color: #ffffff;
   position: relative;
   overflow: hidden;
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-sm);
+  background: linear-gradient(100deg, #172337 0%, #2874f0 100%) !important;
 }
 
 .slide-content {
-  max-width: 650px;
+  max-width: 680px;
   z-index: 2;
 }
 
 .slide-badge {
   display: inline-block;
-  background: rgba(255, 255, 255, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  padding: 4px 12px;
-  border-radius: var(--radius-pill);
+  background: var(--fk-yellow);
+  color: #000000;
   font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.5px;
+  font-weight: 900;
+  padding: 3px 10px;
+  border-radius: 2px;
+  letter-spacing: 0.6px;
   margin-bottom: 12px;
+  text-transform: uppercase;
 }
 
 .slide-title {
-  font-size: 2rem;
-  font-weight: 800;
+  font-size: 28px;
+  font-weight: 900;
   line-height: 1.2;
   margin-bottom: 10px;
-  letter-spacing: -0.5px;
+  color: #ffffff;
 }
 
 .slide-desc {
   font-size: 14px;
-  color: #cbd5e1;
-  margin-bottom: 18px;
+  color: #e0e7ff;
   line-height: 1.5;
+  margin-bottom: 18px;
 }
 
 .slide-pills {
   display: flex;
-  gap: 8px;
   flex-wrap: wrap;
-  margin-bottom: 24px;
+  gap: 8px;
+  margin-bottom: 22px;
 }
 
 .slide-pills .pill {
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  padding: 4px 10px;
-  border-radius: var(--radius-xs);
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
   font-size: 12px;
   font-weight: 600;
 }
@@ -610,81 +623,92 @@ body {
 }
 
 .btn-slide-primary {
+  background: var(--fk-orange);
+  color: #ffffff;
+  border: none;
+  font-weight: 800;
+  font-size: 14px;
+  padding: 12px 28px;
+  border-radius: 2px;
+  cursor: pointer;
+  box-shadow: 0 2px 4px 0 rgba(0,0,0,.2);
+  transition: all 0.15s;
+}
+
+.btn-slide-primary:hover {
+  background: var(--fk-orange-hover);
+  box-shadow: 0 4px 8px rgba(0,0,0,.3);
+}
+
+.btn-slide-outline {
   background: #ffffff;
-  color: #1e3a8a;
+  color: var(--fk-blue);
   border: none;
   font-weight: 800;
   font-size: 14px;
   padding: 12px 24px;
-  border-radius: var(--radius-sm);
+  border-radius: 2px;
   cursor: pointer;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+  transition: all 0.15s;
 }
 
-.btn-slide-outline {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1.5px solid #ffffff;
-  color: #ffffff;
-  font-weight: 700;
-  font-size: 14px;
-  padding: 12px 24px;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
+.btn-slide-outline:hover {
+  background: #fdfdfd;
 }
 
 .slide-visual {
-  display: none;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-@media (min-width: 900px) {
-  .slide-visual {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .visual-card {
-    width: 140px;
-    height: 140px;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: var(--radius-lg);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-  }
-
-  .visual-emoji { font-size: 54px; }
-  .visual-badge { font-size: 11px; font-weight: 800; background: #fbbf24; color: #0f172a; padding: 2px 8px; border-radius: var(--radius-pill); }
+.visual-card {
+  width: 140px;
+  height: 140px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(8px);
 }
 
-@media (max-width: 768px) {
-  .promo-slide { padding: 24px 20px; }
-  .slide-title { font-size: 1.45rem; }
+.visual-emoji { font-size: 56px; }
+.visual-badge {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--fk-plus-gold);
+  margin-top: 4px;
+}
+
+@media (max-width: 850px) {
+  .slide-visual { display: none; }
+  .slide-title { font-size: 22px; }
 }
 
 /* =======================================================
-   5. B2B WHOLESALE NOTICE & WELCOME BARS
+   5. B2B WHOLESALE NOTICES & BANNERS
    ======================================================= */
 .b2b-notice-bar {
   max-width: 1320px;
-  margin: 0 auto 20px;
-  padding: 0 20px;
+  margin: 0 auto 16px;
+  padding: 0 16px;
 }
 
 .notice-inner {
-  background: #eff6ff;
-  border: 1.5px solid #bfdbfe;
-  border-radius: var(--radius-md);
-  padding: 12px 18px;
+  background: #ffffff;
+  border-left: 4px solid var(--fk-yellow);
+  padding: 14px 20px;
+  border-radius: 2px;
+  box-shadow: var(--shadow-sm);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
+  gap: 16px;
 }
 
 .notice-left {
@@ -693,118 +717,130 @@ body {
   gap: 12px;
 }
 
-.notice-shield { font-size: 24px; color: #2563eb; }
-.notice-left strong { color: #1e40af; font-size: 13px; display: block; }
-.notice-left p { color: #3b82f6; font-size: 12px; }
+.notice-shield { font-size: 22px; }
+.notice-left strong { font-size: 14px; color: var(--text-main); display: block; }
+.notice-left p { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
 
-.notice-right { display: flex; gap: 8px; }
+.notice-right {
+  display: flex;
+  gap: 10px;
+  flex-shrink: 0;
+}
 
 .btn-white-login {
-  background: #ffffff;
-  border: 1px solid #93c5fd;
-  color: #1e40af;
+  background: var(--fk-blue);
+  color: #ffffff;
+  border: none;
   font-weight: 700;
-  padding: 6px 12px;
-  border-radius: var(--radius-xs);
+  padding: 8px 18px;
+  border-radius: 2px;
+  font-size: 13px;
   cursor: pointer;
 }
 
 .btn-transparent-apply {
-  background: #2563eb;
-  border: none;
-  color: #ffffff;
+  background: transparent;
+  border: 1px solid #d1d5db;
+  color: var(--text-main);
   font-weight: 700;
-  padding: 6px 12px;
-  border-radius: var(--radius-xs);
+  padding: 8px 16px;
+  border-radius: 2px;
+  font-size: 13px;
   cursor: pointer;
 }
 
 /* Authenticated Welcome Bar */
 .b2b-welcome-bar {
   max-width: 1320px;
-  margin: 0 auto 20px;
-  padding: 0 20px;
+  margin: 0 auto 16px;
+  padding: 0 16px;
 }
 
 .welcome-inner {
-  background: linear-gradient(135deg, #1e293b, #0f172a);
-  border-radius: var(--radius-md);
-  padding: 14px 20px;
+  background: #ffffff;
+  border-left: 4px solid var(--fk-green);
+  padding: 12px 20px;
+  border-radius: 2px;
+  box-shadow: var(--shadow-sm);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  color: #ffffff;
-  flex-wrap: wrap;
-  gap: 14px;
-  box-shadow: var(--shadow-sm);
+  gap: 16px;
 }
 
-.welcome-left {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+.welcome-left { display: flex; align-items: center; gap: 12px; }
+.store-badge-icon { font-size: 24px; }
+.welcome-left span { font-size: 13px; color: var(--text-main); }
+.welcome-left p { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+
+.badge-gold {
+  background: var(--fk-green-bg);
+  color: var(--fk-green);
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 2px;
+  font-size: 11px;
 }
 
-.store-badge-icon { font-size: 26px; }
-.welcome-left span { font-size: 13px; color: #cbd5e1; }
-.welcome-left strong { color: #ffffff; }
-.welcome-left p { font-size: 12px; color: #94a3b8; margin-top: 2px; }
-
-.welcome-right { display: flex; gap: 10px; }
+.welcome-right { display: flex; gap: 10px; flex-shrink: 0; }
 
 .btn-gold-action {
-  background: #f59e0b;
-  color: #0f172a;
+  background: var(--fk-orange);
+  color: #ffffff;
   border: none;
-  font-weight: 800;
-  padding: 8px 16px;
-  border-radius: var(--radius-xs);
+  font-weight: 700;
+  font-size: 13px;
+  padding: 8px 18px;
+  border-radius: 2px;
   cursor: pointer;
 }
 
 .btn-outline-white {
   background: transparent;
-  border: 1px solid #64748b;
-  color: #ffffff;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-main);
   font-weight: 700;
+  font-size: 13px;
   padding: 8px 16px;
-  border-radius: var(--radius-xs);
+  border-radius: 2px;
   cursor: pointer;
 }
 
+@media (max-width: 768px) {
+  .notice-inner, .welcome-inner { flex-direction: column; align-items: flex-start; }
+}
+
 /* =======================================================
-   6. MAIN PRODUCT SHOPPING GRID (MYNTRA & ZEPTO STYLE)
+   6. FLIPKART PRODUCT SHOPPING GRID & CARDS
    ======================================================= */
 .main-catalog-section {
-  padding: 10px 20px 40px;
-}
-
-.catalog-container {
   max-width: 1320px;
-  margin: 0 auto;
+  margin: 0 auto 30px;
+  padding: 0 16px;
 }
 
-/* Top bar */
 .catalog-top-bar {
+  background: #ffffff;
+  padding: 14px 20px;
+  border-radius: 2px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow-sm);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
   flex-wrap: wrap;
-  gap: 14px;
-  border-bottom: 1px solid var(--border-light);
-  padding-bottom: 14px;
+  gap: 12px;
 }
 
 .catalog-title {
-  font-size: 1.35rem;
+  font-size: 18px;
   font-weight: 800;
   color: var(--text-main);
 }
 
 .item-count-text {
   font-size: 12px;
-  color: var(--text-muted);
+  color: var(--text-secondary);
 }
 
 .filter-chips {
@@ -815,134 +851,149 @@ body {
 
 .chip {
   background: #ffffff;
-  border: 1px solid var(--border-light);
-  padding: 6px 14px;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-main);
+  padding: 5px 14px;
   border-radius: var(--radius-pill);
   font-size: 12px;
-  font-weight: 700;
-  color: var(--text-secondary);
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.15s;
 }
 
-.chip.active, .chip:hover {
-  background: var(--primary);
-  border-color: var(--primary);
-  color: #ffffff;
+.chip:hover {
+  background: var(--bg-subtle);
+  border-color: var(--fk-blue);
+  color: var(--fk-blue);
 }
 
-/* E-Commerce Products Grid */
+.chip.active {
+  background: var(--fk-blue);
+  color: #ffffff;
+  border-color: var(--fk-blue);
+  font-weight: 700;
+}
+
+/* Product Grid */
 .ecom-products-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 20px;
+  gap: 12px;
 }
 
-/* Myntra / Zepto Card Layout */
+@media (max-width: 580px) {
+  .ecom-products-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+}
+
+/* The Authentic Flipkart Product Card */
 .ecom-card {
   background: #ffffff;
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-md);
+  border: 1px solid #f0f0f0;
+  border-radius: 2px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
   position: relative;
 }
 
 .ecom-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-md);
-  border-color: #cbd5e1;
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-2px);
+  z-index: 3;
 }
 
 .card-media-wrapper {
   position: relative;
   width: 100%;
-  height: 240px;
-  background: #f8fafc;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  padding-top: 100%; /* 1:1 Aspect Ratio */
+  background: #ffffff;
   overflow: hidden;
+  border-bottom: 1px solid #f0f0f0;
 }
 
 .ecom-card-img {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center;
-  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.3s ease;
 }
 
 .ecom-card:hover .ecom-card-img {
-  transform: scale(1.06);
+  transform: scale(1.04);
 }
 
 .card-no-img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #f8fafc;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
 }
 
-.card-no-img .card-icon {
-  font-size: 3.5rem;
-  transition: transform 0.2s;
-}
+.card-icon { font-size: 38px; }
+.no-img-brand { font-size: 11px; font-weight: 800; color: #94a3b8; letter-spacing: 0.5px; }
 
-.ecom-card:hover .card-no-img .card-icon {
-  transform: scale(1.08);
-}
-
-.no-img-brand {
-  font-size: 11px;
-  font-weight: 800;
-  color: var(--text-muted);
-  letter-spacing: 1px;
-  text-transform: uppercase;
-}
-
-/* Badges on Image */
+/* Badges on Product Image */
 .badge-top-left {
   position: absolute;
-  top: 10px;
-  left: 10px;
+  top: 8px;
+  left: 8px;
+  z-index: 5;
+}
+
+.discount-pill {
+  background: var(--fk-green);
+  color: #ffffff;
+  font-size: 10.5px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 2px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
 }
 
 .badge-top-right {
   position: absolute;
-  top: 10px;
-  right: 10px;
-}
-
-.discount-pill {
-  background: #ef4444;
-  color: #ffffff;
-  font-size: 10px;
-  font-weight: 800;
-  padding: 3px 7px;
-  border-radius: var(--radius-xs);
-  letter-spacing: 0.3px;
+  top: 8px;
+  right: 8px;
+  z-index: 5;
 }
 
 .stock-pill {
-  padding: 3px 8px;
-  border-radius: var(--radius-pill);
   font-size: 10px;
   font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 2px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12);
 }
 
-.stock-in { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
-.stock-out { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+.stock-in {
+  background: #ffffff;
+  color: var(--fk-green);
+  border: 1px solid #a7f3d0;
+}
 
-/* Card Content */
+.stock-out {
+  background: #ffffff;
+  color: var(--fk-danger);
+  border: 1px solid #fecaca;
+}
+
+/* Card Content Details */
 .card-content {
-  padding: 14px 16px;
+  padding: 12px 14px;
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -952,201 +1003,205 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2px;
+  margin-bottom: 4px;
 }
 
 .card-brand-tag {
   font-size: 11px;
-  font-weight: 800;
-  color: var(--primary);
+  font-weight: 700;
+  color: var(--text-secondary);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.4px;
 }
 
 .card-cat-tag {
-  font-size: 11px;
-  color: var(--text-muted);
-  font-weight: 600;
+  font-size: 10px;
+  color: var(--text-secondary);
 }
 
 .card-item-title {
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--text-main);
+  line-height: 1.35;
+  margin-bottom: 6px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  height: 38px;
+}
+
+/* Set Size Specification Tag */
+.set-size-pill {
+  background: var(--bg-page);
+  border: 1px solid var(--border-subtle);
+  border-radius: 2px;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--fk-blue);
   margin-bottom: 8px;
-  line-height: 1.3;
+  display: inline-block;
 }
 
 .card-specs-row {
   display: flex;
   gap: 6px;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
   flex-wrap: wrap;
 }
 
 .spec-chip {
-  background: var(--bg-subtle);
-  border: 1px solid var(--border-light);
-  padding: 2px 7px;
-  border-radius: var(--radius-xs);
   font-size: 11px;
   color: var(--text-secondary);
+  background: #f8fafc;
+  padding: 2px 6px;
+  border-radius: 2px;
+  border: 1px solid var(--border-light);
 }
 
-/* Price Box */
+.spec-chip strong { color: var(--text-main); }
+
+/* Price Section */
 .card-price-container {
   margin-top: auto;
-  padding-top: 10px;
-  border-top: 1px solid var(--bg-subtle);
-}
-
-.price-locked-view {
-  background: #f8fafc;
-  border: 1px dashed #cbd5e1;
-  border-radius: var(--radius-sm);
-  padding: 8px 10px;
-  text-align: center;
-  margin-bottom: 10px;
-}
-
-.price-locked-view span {
-  font-size: 11px;
-  font-weight: 700;
-  color: #d97706;
+  border-top: 1px dashed var(--border-subtle);
+  padding-top: 8px;
 }
 
 .price-unlocked-view {
   display: flex;
-  align-items: baseline;
-  flex-wrap: wrap;
-  gap: 6px;
+  flex-direction: column;
+  gap: 2px;
   margin-bottom: 10px;
 }
 
 .wholesale-rate-big {
-  font-size: 1.25rem;
+  font-size: 18px;
   font-weight: 800;
   color: var(--text-main);
 }
 
 .set-price-tag {
-  font-size: 11px;
-  color: #2563eb;
-  font-weight: 700;
-  background: #eff6ff;
-  padding: 2px 6px;
-  border-radius: 4px;
-  border: 1px solid #bfdbfe;
-}
-
-.set-size-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  background: #ecfdf5;
-  color: #047857;
-  border: 1px solid #a7f3d0;
-  font-size: 11px;
-  font-weight: 700;
-  padding: 3px 8px;
-  border-radius: var(--radius-xs);
-  margin-bottom: 8px;
-}
-
-.mrp-strike {
   font-size: 12px;
-  color: var(--text-muted);
-  text-decoration: line-through;
+  font-weight: 700;
+  color: var(--fk-blue);
 }
 
 .gst-note {
   font-size: 10px;
-  color: #10b981;
-  font-weight: 700;
+  color: var(--text-secondary);
 }
 
-/* Zepto Style Interactive Add & Stepper Control */
+.price-locked-view {
+  background: #fffbeb;
+  border: 1px dashed #fcd34d;
+  color: #b45309;
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 8px;
+  text-align: center;
+  border-radius: 2px;
+  margin-bottom: 10px;
+}
+
+/* Action Buttons (Flipkart Yellow Add Button) */
 .card-action-wrap {
-  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .btn-zepto-add {
   width: 100%;
-  background: var(--primary-light);
-  border: 1.5px solid var(--primary);
-  color: var(--primary);
+  background: var(--fk-yellow);
+  color: #ffffff;
+  border: none;
   font-weight: 800;
-  font-size: 13px;
-  padding: 8px 0;
-  border-radius: var(--radius-sm);
+  font-size: 13.5px;
+  padding: 9px;
+  border-radius: 2px;
   cursor: pointer;
-  transition: all 0.15s;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 6px;
+  box-shadow: 0 1px 2px 0 rgba(0,0,0,.2);
+  transition: background 0.15s;
 }
 
 .btn-zepto-add:hover {
-  background: var(--primary);
-  color: #ffffff;
+  background: var(--fk-yellow-hover);
 }
 
+/* Active Stepper on Product Card */
 .zepto-stepper-active {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: var(--primary);
-  border-radius: var(--radius-sm);
-  padding: 4px 6px;
+  background: #ffffff;
+  border: 1.5px solid var(--fk-blue);
+  border-radius: 2px;
+  overflow: hidden;
+  height: 36px;
 }
 
 .zepto-step-btn {
-  background: none;
-  border: none;
+  width: 36px;
+  height: 100%;
+  background: var(--fk-blue);
   color: #ffffff;
+  border: none;
   font-size: 16px;
-  font-weight: 800;
-  width: 28px;
-  height: 28px;
+  font-weight: 900;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: background 0.15s;
+}
+
+.zepto-step-btn:hover {
+  background: var(--fk-blue-dark);
 }
 
 .zepto-step-val {
-  color: #ffffff;
+  font-size: 12px;
   font-weight: 800;
-  font-size: 14px;
+  color: var(--fk-blue);
+  padding: 0 8px;
+  white-space: nowrap;
 }
 
-/* Quick Multiplier Chips (+10, +20, +50) */
+/* Quick Multiplier Bar (+1 Set, +2 Sets, +5 Sets, +10 Sets) */
 .quick-multiplier-bar {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
   gap: 4px;
-  margin-top: 6px;
 }
 
 .multiplier-btn {
-  flex: 1;
-  background: var(--bg-subtle);
-  border: 1px solid var(--border-light);
+  background: #ffffff;
+  border: 1px solid var(--border-subtle);
+  color: var(--fk-blue);
   font-size: 10px;
   font-weight: 700;
-  color: var(--text-secondary);
-  padding: 3px 0;
-  border-radius: var(--radius-xs);
+  padding: 4px 2px;
+  border-radius: 2px;
   cursor: pointer;
+  transition: all 0.15s;
+  text-align: center;
 }
 
-.multiplier-btn:hover {
-  background: #e2e8f0;
-  color: var(--text-main);
+.multiplier-btn:hover:not([disabled]) {
+  background: var(--fk-blue);
+  color: #ffffff;
+  border-color: var(--fk-blue);
 }
 
 /* =======================================================
-   7. SLIDE-OUT CART DRAWER (ZEPTO STYLE)
+   7. FLIPKART CART & CHECKOUT DRAWER
    ======================================================= */
 .cart-drawer-overlay {
   position: fixed;
@@ -1155,62 +1210,78 @@ body {
   width: 100vw;
   height: 100vh;
   background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(2px);
   z-index: 2000;
-  display: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.25s ease;
 }
 
 .cart-drawer-overlay.open {
-  display: block;
+  opacity: 1;
+  visibility: visible;
 }
 
-.cart-slide-drawer {
+.cart-drawer-card {
   position: fixed;
   top: 0;
-  right: -420px;
-  width: 100%;
-  max-width: 400px;
+  right: 0;
+  width: 440px;
+  max-width: 100vw;
   height: 100vh;
-  background: #ffffff;
-  z-index: 2100;
+  background: var(--bg-page);
+  z-index: 2001;
   box-shadow: var(--shadow-drawer);
   display: flex;
   flex-direction: column;
-  transition: right 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: translateX(100%);
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.cart-slide-drawer.open {
-  right: 0;
+.cart-drawer-overlay.open .cart-drawer-card {
+  transform: translateX(0);
 }
 
 .drawer-header {
+  background: var(--fk-blue);
+  color: #ffffff;
   padding: 16px 20px;
-  border-bottom: 1px solid var(--border-light);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: var(--bg-subtle);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
 }
 
-.drawer-header-title {
+.drawer-title-wrap {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
-.drawer-icon { font-size: 22px; }
-.drawer-header-title h3 { font-size: 15px; font-weight: 800; }
-.drawer-sub { font-size: 11px; color: var(--text-muted); }
+.drawer-title-wrap h3 {
+  font-size: 16px;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.drawer-item-count-pill {
+  background: var(--fk-orange);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 1px 7px;
+  border-radius: var(--radius-pill);
+}
 
 .drawer-close-btn {
-  background: none;
+  background: transparent;
   border: none;
+  color: #ffffff;
   font-size: 18px;
   cursor: pointer;
-  color: var(--text-secondary);
+  padding: 4px;
 }
 
-.drawer-body {
+.drawer-body-scroll {
   flex: 1;
   overflow-y: auto;
   padding: 16px;
@@ -1219,226 +1290,334 @@ body {
   gap: 12px;
 }
 
-/* Drawer Cart Item Card */
-.drawer-item-card {
+/* Empty Cart State */
+.empty-cart-view {
+  text-align: center;
+  padding: 60px 20px;
   display: flex;
+  flex-direction: column;
+  align-items: center;
   gap: 12px;
-  padding: 12px;
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-sm);
-  background: #ffffff;
 }
 
-.drawer-item-icon {
-  width: 50px;
-  height: 50px;
+.empty-cart-ico { font-size: 54px; color: #cbd5e1; }
+.empty-cart-view h4 { font-size: 18px; font-weight: 800; color: var(--text-main); }
+.empty-cart-view p { font-size: 13px; color: var(--text-secondary); max-width: 260px; }
+
+/* Cart Item Card */
+.cart-item-card {
+  background: #ffffff;
+  border: 1px solid var(--border-subtle);
+  border-radius: 2px;
+  padding: 12px;
+  display: flex;
+  gap: 12px;
+}
+
+.cart-item-thumb {
+  width: 64px;
+  height: 64px;
+  border-radius: 2px;
+  object-fit: cover;
+  border: 1px solid #f0f0f0;
+  flex-shrink: 0;
+}
+
+.cart-item-no-thumb {
+  width: 64px;
+  height: 64px;
   background: var(--bg-subtle);
-  border-radius: var(--radius-xs);
+  border: 1px solid #f0f0f0;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 24px;
+  border-radius: 2px;
   flex-shrink: 0;
 }
 
-.drawer-item-details {
+.cart-item-info {
   flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
-.drawer-item-details strong {
-  display: block;
-  font-size: 13px;
+.cart-item-title {
+  font-size: 13.5px;
+  font-weight: 700;
   color: var(--text-main);
+  line-height: 1.3;
 }
 
-.drawer-item-meta {
+.cart-item-brand {
   font-size: 11px;
-  color: var(--text-muted);
-  margin: 2px 0 6px;
+  color: var(--text-secondary);
 }
 
-.drawer-item-pricing {
+.cart-item-ratio {
+  font-size: 11px;
+  color: var(--fk-blue);
+  font-weight: 700;
+  margin-top: 2px;
+}
+
+.cart-item-bottom-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-top: 8px;
 }
 
-.drawer-item-price {
-  font-size: 13px;
+.cart-item-subtotal {
+  font-size: 15px;
   font-weight: 800;
   color: var(--text-main);
 }
 
-/* Drawer Footer */
-.drawer-footer {
-  padding: 16px 20px;
-  border-top: 1px solid var(--border-light);
-  background: var(--bg-subtle);
-}
-
-.bill-breakdown-card {
-  background: #ffffff;
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-sm);
-  padding: 12px 14px;
-  margin-bottom: 12px;
-}
-
-.bill-row {
-  display: flex;
-  justify-content: space-between;
-  font-size: 12px;
-  color: var(--text-secondary);
-  margin-bottom: 4px;
-}
-
-.bill-divider {
-  border: none;
-  border-top: 1px dashed var(--border-light);
-  margin: 6px 0;
-}
-
-.bill-grand-total {
-  font-size: 14px;
-  font-weight: 800;
-  color: var(--text-main);
-  margin-bottom: 0;
-}
-
-.bill-grand-total strong {
-  color: var(--primary);
-  font-size: 16px;
-}
-
-.dispatch-notes-input {
-  margin-bottom: 12px;
-}
-
-.dispatch-notes-input label {
+.cart-item-subtotal small {
   font-size: 11px;
-  font-weight: 700;
+  font-weight: normal;
   color: var(--text-secondary);
-  display: block;
-  margin-bottom: 4px;
 }
 
-.dispatch-notes-input input {
-  width: 100%;
-  padding: 8px 12px;
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-xs);
-  font-size: 12px;
-  outline: none;
+.cart-stepper {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--border-subtle);
+  border-radius: 2px;
+  overflow: hidden;
+  height: 28px;
 }
 
-.btn-checkout-primary {
-  width: 100%;
-  background: #10b981;
+.cart-stepper button {
+  width: 28px;
+  height: 100%;
+  background: var(--bg-subtle);
   border: none;
-  color: #ffffff;
-  padding: 14px 18px;
-  border-radius: var(--radius-sm);
   font-weight: 800;
   font-size: 14px;
   cursor: pointer;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
-  transition: background 0.15s;
 }
 
-.btn-checkout-primary:hover {
-  background: #059669;
+.cart-stepper span {
+  padding: 0 8px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+/* Flipkart Price Details Card */
+.price-details-card {
+  background: #ffffff;
+  border: 1px solid var(--border-subtle);
+  border-radius: 2px;
+  padding: 14px 16px;
+}
+
+.price-details-card h4 {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--border-light);
+  padding-bottom: 8px;
+  margin-bottom: 12px;
+}
+
+.price-line {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13.5px;
+  margin-bottom: 8px;
+  color: var(--text-main);
+}
+
+.price-line.total-line {
+  border-top: 1px dashed var(--border-subtle);
+  padding-top: 10px;
+  margin-top: 10px;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.savings-highlight {
+  background: var(--fk-green-bg);
+  border: 1px dashed #a7f3d0;
+  color: var(--fk-green);
+  font-weight: 800;
+  font-size: 12.5px;
+  padding: 8px 12px;
+  border-radius: 2px;
+  text-align: center;
+  margin-top: 8px;
+}
+
+/* Drawer Footer & Checkout */
+.drawer-footer {
+  background: #ffffff;
+  padding: 16px 20px;
+  border-top: 1px solid var(--border-subtle);
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.06);
+}
+
+/* Big Orange Flipkart PLACE ORDER Button */
+.btn-flipkart-checkout {
+  width: 100%;
+  background: var(--fk-orange);
+  color: #ffffff;
+  border: none;
+  font-weight: 800;
+  font-size: 16px;
+  height: 48px;
+  border-radius: 2px;
+  cursor: pointer;
+  box-shadow: 0 1px 2px 0 rgba(0,0,0,.2);
+  transition: background 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-flipkart-checkout:hover {
+  background: var(--fk-orange-hover);
 }
 
 /* =======================================================
-   8. MODALS & POPUPS
+   8. FLIPKART SPLIT MODALS (LOGIN & REGISTER)
    ======================================================= */
-.modal-backdrop {
+.modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
   background: rgba(0, 0, 0, 0.65);
-  backdrop-filter: blur(3px);
   z-index: 3000;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 16px;
+  animation: fadeIn 0.2s ease;
 }
 
-.modal-dialog {
-  background: #ffffff;
-  border-radius: var(--radius-lg);
-  width: 100%;
-  max-width: 440px;
+.fk-split-modal {
+  display: flex;
+  width: 780px;
+  max-width: 96vw;
   max-height: 90vh;
-  overflow-y: auto;
-  padding: 30px;
+  background: #ffffff;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: var(--shadow-dropdown);
   position: relative;
-  box-shadow: var(--shadow-lg);
-  animation: modalEnter 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.modal-dialog-lg { max-width: 600px; }
-.modal-dialog-xl { max-width: 860px; }
+.fk-modal-left {
+  width: 38%;
+  background: var(--fk-blue);
+  color: #ffffff;
+  padding: 36px 30px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
 
-@keyframes modalEnter {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
+.fk-modal-left h3 {
+  font-size: 26px;
+  font-weight: 900;
+  line-height: 1.2;
+  margin-bottom: 12px;
+  color: #ffffff;
+}
+
+.fk-modal-left p {
+  font-size: 14px;
+  color: #dbeafe;
+  line-height: 1.5;
+}
+
+.fk-graphic {
+  font-size: 80px;
+  text-align: center;
+  margin-top: 30px;
+}
+
+.fk-modal-right {
+  width: 62%;
+  padding: 36px 32px;
+  overflow-y: auto;
+  position: relative;
 }
 
 .modal-close-btn {
   position: absolute;
-  top: 16px;
-  right: 16px;
-  background: var(--bg-subtle);
+  top: 14px;
+  right: 14px;
+  background: none;
   border: none;
-  width: 32px;
-  height: 32px;
-  border-radius: var(--radius-pill);
-  font-size: 14px;
+  font-size: 20px;
+  color: var(--text-secondary);
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
-.modal-hero-icon {
-  width: 52px;
-  height: 52px;
-  background: var(--primary-light);
-  color: var(--primary);
-  border-radius: var(--radius-pill);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
-  margin: 0 auto 12px;
+.fk-form-group {
+  margin-bottom: 18px;
 }
 
-.modal-title {
-  font-size: 1.25rem;
-  font-weight: 800;
-  color: var(--text-main);
-  text-align: center;
-}
-
-.modal-subtitle {
+.fk-form-group label {
+  display: block;
   font-size: 12px;
-  color: var(--text-muted);
-  text-align: center;
-  margin-top: 4px;
-  margin-bottom: 20px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
 }
 
-.modern-form {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+.fk-form-group input, .fk-form-group select, .fk-form-group textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 2px;
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.fk-form-group input:focus, .fk-form-group select:focus, .fk-form-group textarea:focus {
+  border-color: var(--fk-blue);
+  box-shadow: 0 0 0 2px rgba(40, 116, 240, 0.15);
+}
+
+.btn-fk-orange {
+  width: 100%;
+  background: var(--fk-orange);
+  color: #ffffff;
+  border: none;
+  font-weight: 800;
+  font-size: 15px;
+  height: 44px;
+  border-radius: 2px;
+  cursor: pointer;
+  box-shadow: 0 1px 2px 0 rgba(0,0,0,.2);
+  transition: background 0.15s;
+}
+
+.btn-fk-orange:hover {
+  background: var(--fk-orange-hover);
+}
+
+.btn-fk-blue {
+  width: 100%;
+  background: var(--fk-blue);
+  color: #ffffff;
+  border: none;
+  font-weight: 800;
+  font-size: 15px;
+  height: 44px;
+  border-radius: 2px;
+  cursor: pointer;
 }
 
 .form-grid-2 {
@@ -1447,121 +1626,20 @@ body {
   gap: 12px;
 }
 
-.input-field-group {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.input-field-group label {
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--text-secondary);
-}
-
-.input-field-group input, .input-field-group textarea {
-  padding: 10px 12px;
-  border: 1.5px solid var(--border-light);
-  border-radius: var(--radius-sm);
-  font-size: 13px;
-  font-family: inherit;
-  outline: none;
-  transition: border-color 0.15s;
-}
-
-.input-field-group input:focus, .input-field-group textarea:focus {
-  border-color: var(--primary);
-}
-
-.otp-box-input {
-  text-align: center;
-  font-size: 1.6rem !important;
-  font-weight: 800;
-  letter-spacing: 8px;
-  font-family: monospace;
-}
-
-.demo-otp-banner {
-  background: #fef3c7;
-  border: 1px dashed #f59e0b;
-  border-radius: var(--radius-xs);
-  padding: 8px 12px;
-  font-size: 12px;
-  color: #b45309;
-  text-align: center;
-}
-
-.form-alert-error {
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  color: #dc2626;
-  padding: 8px 12px;
-  border-radius: var(--radius-xs);
-  font-size: 12px;
-}
-
-.form-alert-success {
-  background: #ecfdf5;
-  border: 1px solid #a7f3d0;
-  color: #059669;
-  padding: 8px 12px;
-  border-radius: var(--radius-xs);
-  font-size: 12px;
-}
-
-.btn-modern-primary {
-  background: var(--primary);
-  color: #ffffff;
-  border: none;
-  font-weight: 700;
-  font-size: 14px;
-  padding: 12px;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-}
-
-.btn-modern-success {
-  background: #10b981;
-  color: #ffffff;
-  border: none;
-  font-weight: 700;
-  font-size: 14px;
-  padding: 12px;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-}
-
-.btn-modern-ghost {
-  background: transparent;
-  color: var(--text-secondary);
-  border: 1px solid var(--border-light);
-  font-weight: 700;
-  font-size: 13px;
-  padding: 10px;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-}
-
-.modal-bottom-cta {
-  font-size: 12px;
-  color: var(--text-muted);
-  text-align: center;
-  margin-top: 16px;
-}
-
-.modal-bottom-cta a {
-  color: var(--primary);
-  font-weight: 700;
-  text-decoration: underline;
+@media (max-width: 720px) {
+  .fk-modal-left { display: none; }
+  .fk-modal-right { width: 100%; padding: 24px 20px; }
+  .form-grid-2 { grid-template-columns: 1fr; }
 }
 
 /* =======================================================
-   9. TRUST GRID & FOOTER
+   9. TRUST FEATURES & FOOTER (Flipkart Navy Footer)
    ======================================================= */
 .trust-features-section {
-  padding: 40px 20px;
+  padding: 30px 20px;
   background: #ffffff;
-  border-top: 1px solid var(--border-light);
+  border-top: 1px solid var(--border-subtle);
+  margin-top: 30px;
 }
 
 .trust-container {
@@ -1569,24 +1647,25 @@ body {
   margin: 0 auto;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 20px;
+  gap: 16px;
 }
 
 .trust-box {
   padding: 16px;
-  border-radius: var(--radius-sm);
-  background: var(--bg-subtle);
+  border-radius: 2px;
+  background: var(--bg-page);
+  border: 1px solid var(--border-subtle);
   text-align: center;
 }
 
-.t-icon { font-size: 28px; display: block; margin-bottom: 8px; }
-.trust-box strong { display: block; font-size: 13px; color: var(--text-main); margin-bottom: 4px; }
-.trust-box p { font-size: 11px; color: var(--text-muted); line-height: 1.4; }
+.t-icon { font-size: 26px; display: block; margin-bottom: 6px; }
+.trust-box strong { display: block; font-size: 13px; color: var(--text-main); margin-bottom: 2px; }
+.trust-box p { font-size: 11.5px; color: var(--text-secondary); line-height: 1.4; }
 
 .ecom-footer {
-  background: #0f172a;
+  background: var(--bg-dark);
   color: #ffffff;
-  padding: 50px 20px 20px;
+  padding: 40px 20px 20px;
 }
 
 .footer-inner {
@@ -1595,44 +1674,44 @@ body {
   display: grid;
   grid-template-columns: 2fr 1fr 1fr;
   gap: 40px;
-  margin-bottom: 30px;
+  margin-bottom: 24px;
 }
 
-.f-brand { font-size: 18px; font-weight: 800; color: #ffffff; margin-bottom: 8px; }
-.f-desc { font-size: 12px; color: #94a3b8; line-height: 1.6; margin-bottom: 12px; }
-.f-support { font-size: 12px; color: #38bdf8; font-weight: 700; }
+.f-brand { font-size: 18px; font-weight: 900; font-style: italic; color: #ffffff; margin-bottom: 6px; }
+.f-desc { font-size: 12px; color: #878787; line-height: 1.6; margin-bottom: 10px; }
+.f-support { font-size: 12px; color: var(--fk-plus-gold); font-weight: 700; }
 
-.f-col h4 { font-size: 14px; font-weight: 700; color: #ffffff; margin-bottom: 14px; }
+.f-col h4 { font-size: 13px; font-weight: 800; color: #878787; text-transform: uppercase; margin-bottom: 12px; }
 .f-col ul { list-style: none; display: flex; flex-direction: column; gap: 8px; }
-.f-col a { color: #94a3b8; text-decoration: none; font-size: 12px; transition: color 0.15s; }
-.f-col a:hover { color: #ffffff; }
+.f-col a { color: #ffffff; text-decoration: none; font-size: 12px; }
+.f-col a:hover { text-decoration: underline; }
 
 .footer-bottom {
   max-width: 1320px;
   margin: 0 auto;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
-  padding-top: 20px;
+  padding-top: 16px;
   text-align: center;
   font-size: 11px;
-  color: #64748b;
+  color: #878787;
 }
 
 /* =======================================================
-   10. MOBILE APP BOTTOM DOCK (ZEPTO / MYNTRA APP STYLE)
+   10. MOBILE APP BOTTOM BAR
    ======================================================= */
 .mobile-app-bottom-nav {
   position: fixed;
   bottom: 0;
   left: 0;
   width: 100%;
-  height: 60px;
+  height: 56px;
   background: #ffffff;
-  border-top: 1px solid var(--border-light);
+  border-top: 1px solid var(--border-subtle);
   display: flex;
   justify-content: space-around;
   align-items: center;
   z-index: 1500;
-  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.08);
 }
 
 @media (min-width: 900px) {
@@ -1646,47 +1725,45 @@ body {
   flex-direction: column;
   align-items: center;
   gap: 2px;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   cursor: pointer;
   padding: 6px 12px;
 }
 
 .app-nav-item.active {
-  color: var(--primary);
+  color: var(--fk-blue);
 }
 
 .app-nav-item .nav-ico { font-size: 18px; }
 .app-nav-item .nav-txt { font-size: 10px; font-weight: 700; }
 
-.nav-cart-badge-wrap {
-  position: relative;
-}
+.nav-cart-badge-wrap { position: relative; }
 
 .nav-cart-counter {
   position: absolute;
   top: -4px;
   right: -8px;
-  background: #ef4444;
+  background: var(--fk-orange);
   color: #ffffff;
   font-size: 9px;
-  font-weight: 800;
+  font-weight: 900;
   padding: 1px 4px;
   border-radius: var(--radius-pill);
 }
 
-/* Floating Toast */
+/* Toast */
 .toast-notification {
   position: fixed;
   bottom: 80px;
   left: 50%;
   transform: translateX(-50%) translateY(30px);
-  background: #0f172a;
+  background: #212121;
   color: #ffffff;
   padding: 10px 20px;
-  border-radius: var(--radius-pill);
+  border-radius: 2px;
   font-size: 13px;
   font-weight: 700;
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--shadow-dropdown);
   z-index: 4000;
   opacity: 0;
   pointer-events: none;
@@ -1701,29 +1778,508 @@ body {
 /* Spinner */
 .loading-state {
   text-align: center;
-  padding: 50px 20px;
+  padding: 60px 20px;
   grid-column: 1 / -1;
-  color: var(--text-muted);
+  color: var(--text-secondary);
 }
 
 .pulsing-spinner {
   width: 36px;
   height: 36px;
-  border: 3px solid var(--border-light);
-  border-top-color: var(--primary);
+  border: 3px solid #e0e0e0;
+  border-top-color: var(--fk-blue);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
   margin: 0 auto 12px;
 }
 
 @keyframes spin { to { transform: rotate(360deg); } }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideDown { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
 
 .w-100 { width: 100%; }
 .mt-2 { margin-top: 8px; }
 .mt-4 { margin-top: 16px; }
 .text-center { text-align: center; }
 
-@media (max-width: 768px) {
-  .footer-inner { grid-template-columns: 1fr; gap: 24px; }
-  .form-grid-2 { grid-template-columns: 1fr; }
+/* =======================================================
+   11. FLIPKART DRAWER & MODAL COMPATIBILITY EXTENSIONS
+   ======================================================= */
+.cart-slide-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 440px;
+  max-width: 100vw;
+  height: 100vh;
+  background: var(--bg-page);
+  z-index: 2001;
+  box-shadow: var(--shadow-drawer);
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
 }
+
+.cart-slide-drawer.open {
+  transform: translateX(0);
+}
+
+.drawer-header-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.drawer-header-title h3 {
+  font-size: 16px;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.drawer-sub {
+  font-size: 11px;
+  color: var(--fk-plus-gold);
+  font-weight: 700;
+}
+
+.drawer-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.drawer-item-card {
+  background: #ffffff;
+  border: 1px solid var(--border-subtle);
+  border-radius: 2px;
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.drawer-item-icon {
+  width: 48px;
+  height: 48px;
+  background: var(--fk-blue-light);
+  border-radius: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.drawer-item-details {
+  flex: 1;
+}
+
+.drawer-item-details strong {
+  font-size: 14px;
+  color: var(--text-main);
+  display: block;
+}
+
+.drawer-item-meta {
+  font-size: 12px;
+  color: var(--fk-green);
+  font-weight: 700;
+  margin-top: 2px;
+}
+
+.drawer-item-pricing {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.drawer-item-pricing strong {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text-main);
+  display: block;
+}
+
+.drawer-item-stepper {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.drawer-item-stepper button {
+  width: 26px;
+  height: 26px;
+  border: 1px solid var(--border-subtle);
+  background: #ffffff;
+  border-radius: 2px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.drawer-item-stepper button:hover {
+  background: var(--fk-blue);
+  color: #ffffff;
+}
+
+/* Bill Breakdown Card (Flipkart Price Details Box) */
+.bill-breakdown-card {
+  background: #ffffff;
+  border: 1px solid var(--border-subtle);
+  border-radius: 2px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+}
+
+.bill-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  margin-bottom: 8px;
+  color: var(--text-main);
+}
+
+.bill-divider {
+  border: none;
+  border-top: 1px dashed var(--border-subtle);
+  margin: 10px 0;
+}
+
+.bill-grand-total {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-main);
+  margin-bottom: 0;
+}
+
+.bill-grand-total strong {
+  color: var(--fk-blue);
+  font-size: 18px;
+}
+
+.dispatch-notes-input {
+  margin-bottom: 12px;
+}
+
+.dispatch-notes-input label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+.dispatch-notes-input input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 2px;
+  font-size: 12.5px;
+  outline: none;
+}
+
+.dispatch-notes-input input:focus {
+  border-color: var(--fk-blue);
+}
+
+/* Primary Flipkart Checkout Button */
+.btn-checkout-primary {
+  width: 100%;
+  background: var(--fk-orange);
+  color: #ffffff;
+  border: none;
+  font-weight: 800;
+  font-size: 15px;
+  height: 48px;
+  border-radius: 2px;
+  cursor: pointer;
+  box-shadow: 0 1px 2px 0 rgba(0,0,0,.2);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+  transition: background 0.15s;
+}
+
+.btn-checkout-primary:hover:not([disabled]) {
+  background: var(--fk-orange-hover);
+}
+
+.btn-checkout-primary[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: #cbd5e1;
+}
+
+.btn-checkout-text {
+  letter-spacing: 0.5px;
+}
+
+.btn-checkout-price {
+  background: rgba(0, 0, 0, 0.2);
+  padding: 4px 10px;
+  border-radius: 2px;
+  font-size: 14px;
+}
+
+/* Modal Dialogs */
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.65);
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: fadeIn 0.2s ease;
+}
+
+.modal-dialog {
+  background: #ffffff;
+  border-radius: 4px;
+  width: 480px;
+  max-width: 96vw;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-dropdown);
+  position: relative;
+  padding: 32px 28px;
+}
+
+.modal-dialog-lg {
+  width: 680px;
+}
+
+.modal-hero-icon {
+  width: 54px;
+  height: 54px;
+  background: var(--fk-blue-light);
+  color: var(--fk-blue);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  margin-bottom: 16px;
+}
+
+.modal-title {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text-main);
+  margin-bottom: 6px;
+}
+
+.modal-subtitle {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 22px;
+  line-height: 1.4;
+}
+
+.input-field-group {
+  margin-bottom: 16px;
+}
+
+.input-field-group label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+
+.input-field-group input, .input-field-group select, .input-field-group textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 2px;
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.input-field-group input:focus, .input-field-group select:focus, .input-field-group textarea:focus {
+  border-color: var(--fk-blue);
+  box-shadow: 0 0 0 2px rgba(40, 116, 240, 0.15);
+}
+
+.btn-modern-primary {
+  background: var(--fk-orange);
+  color: #ffffff;
+  border: none;
+  font-weight: 800;
+  font-size: 15px;
+  height: 44px;
+  border-radius: 2px;
+  cursor: pointer;
+  box-shadow: 0 1px 2px 0 rgba(0,0,0,.2);
+  transition: background 0.15s;
+}
+
+.btn-modern-primary:hover {
+  background: var(--fk-orange-hover);
+}
+
+.btn-modern-success {
+  background: var(--fk-green);
+  color: #ffffff;
+  border: none;
+  font-weight: 800;
+  font-size: 15px;
+  height: 44px;
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+.btn-modern-ghost {
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  font-weight: 700;
+  font-size: 13px;
+  height: 38px;
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+.form-alert-error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+  padding: 10px 14px;
+  border-radius: 2px;
+  font-size: 12.5px;
+  margin-bottom: 16px;
+  font-weight: 600;
+}
+
+.form-alert-success {
+  background: var(--fk-green-bg);
+  border: 1px solid #a7f3d0;
+  color: var(--fk-green);
+  padding: 10px 14px;
+  border-radius: 2px;
+  font-size: 12.5px;
+  margin-bottom: 16px;
+  font-weight: 700;
+}
+
+.otp-box-input {
+  letter-spacing: 12px;
+  font-size: 22px !important;
+  font-weight: 900;
+  text-align: center;
+}
+
+.demo-otp-banner {
+  background: var(--fk-blue-light);
+  border: 1px dashed var(--fk-blue);
+  color: var(--fk-blue);
+  padding: 8px 12px;
+  border-radius: 2px;
+  font-size: 12px;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.modal-bottom-cta {
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  text-align: center;
+  margin-top: 20px;
+}
+
+.modal-bottom-cta a {
+  color: var(--fk-blue);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.modal-bottom-cta a:hover {
+  text-decoration: underline;
+}
+
+/* Orders Ledger Modal (Flipkart Orders Screen) */
+.orders-modal-dialog {
+  width: 900px;
+  max-width: 96vw;
+  max-height: 90vh;
+}
+
+.orders-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border-subtle);
+  border-radius: 2px;
+  margin-top: 16px;
+}
+
+.ledger-orders-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 13px;
+}
+
+.ledger-orders-table th {
+  background: var(--bg-subtle);
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border-subtle);
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.ledger-orders-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border-light);
+  vertical-align: middle;
+}
+
+.order-status-badge {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 2px;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.order-status-badge.confirmed {
+  background: var(--fk-green-bg);
+  color: var(--fk-green);
+  border: 1px solid #a7f3d0;
+}
+
+.order-status-badge.pending {
+  background: #fffbeb;
+  color: #b45309;
+  border: 1px solid #fde68a;
+}
+
+.btn-pdf-invoice {
+  background: var(--fk-blue);
+  color: #ffffff;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 2px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-pdf-invoice:hover {
+  background: var(--fk-blue-dark);
+}
+
