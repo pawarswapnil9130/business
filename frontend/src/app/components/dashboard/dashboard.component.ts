@@ -37,6 +37,10 @@ export class DashboardComponent implements OnInit {
   profitReports: any[] = [];
   expenses: any[] = [];
   users: any[] = [];
+  wholesaleCustomers: any[] = [];
+  wholesaleOrders: any[] = [];
+  customerSearchQuery = '';
+  orderStatusFilter = 'ALL';
   stockSearchQuery = '';
   expenseSearchQuery = '';
 
@@ -202,14 +206,61 @@ export class DashboardComponent implements OnInit {
   // Product Form
   newProduct = {
     name: '',
-    category: '',
+    category: 'Shirts',
     productType: 'MANUFACTURED',
     designBrand: '',
-    size: '',
+    size: '38, 40, 42, 44',
     color: '',
     sellingPrice: 0,
-    gstPercent: 12.00
+    distributorPrice: 0,
+    setSize: 4, // 3 pcs or 4 pcs per set
+    setRatio: '38, 40, 42, 44',
+    gstPercent: 12.00,
+    imageUrl: ''
   };
+  selectedProductImageFile: File | null = null;
+  productImagePreview: string | null = null;
+
+  onProductImageSelected(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      this.selectedProductImageFile = file;
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.productImagePreview = reader.result as string;
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  clearProductImageSelection() {
+    this.selectedProductImageFile = null;
+    this.productImagePreview = null;
+  }
+
+  onUploadBatchPhoto(batch: any, event: any) {
+    const file = event.target.files[0];
+    if (file && batch) {
+      const prodId = batch.productId || batch.product?.id;
+      if (prodId) {
+        this.clearMessages();
+        this.apiService.uploadProductImage(prodId, file).subscribe({
+          next: () => {
+            this.successMessage = `Photo uploaded for ${batch.designName || 'manufactured shirts'}!`;
+            this.fetchBatches();
+            this.fetchProducts();
+            setTimeout(() => this.successMessage = '', 3000);
+          },
+          error: (err) => {
+            this.errorMessage = err.error?.message || 'Failed to upload photo.';
+            setTimeout(() => this.errorMessage = '', 4000);
+          }
+        });
+      } else {
+        alert('Please complete the batch to link it to a product before uploading photo, or upload from Item Master.');
+      }
+    }
+  }
 
   // Fabric Form
   newFabric = {
@@ -229,7 +280,11 @@ export class DashboardComponent implements OnInit {
     productId: null as number | null,
     designName: '',
     quantityToSew: 0,
-    fabricPerShirt: 1.30
+    fabricPerShirt: 1.30,
+    setSize: 4,
+    setRatio: '38, 40, 42, 44',
+    sellingPrice: 325,
+    distributorPrice: 300
   };
 
   // Complete Production Batch Form
@@ -341,6 +396,10 @@ export class DashboardComponent implements OnInit {
         break;
       case 'settings':
         this.loadCompanyProfile();
+        break;
+      case 'wholesale':
+        this.fetchWholesaleCustomers();
+        this.fetchWholesaleOrders();
         break;
       case 'users':
         if (this.apiService.isAdmin()) {
@@ -1082,23 +1141,61 @@ export class DashboardComponent implements OnInit {
   onSubmitProduct() {
     this.clearMessages();
     this.apiService.createProduct(this.newProduct).subscribe({
-      next: () => {
-        this.successMessage = 'Product created successfully!';
-        this.fetchProducts();
+      next: (createdProd: any) => {
+        if (this.selectedProductImageFile && createdProd && createdProd.id) {
+          this.apiService.uploadProductImage(createdProd.id, this.selectedProductImageFile).subscribe({
+            next: () => {
+              this.successMessage = 'Product & Photo saved successfully!';
+              this.fetchProducts();
+              this.clearProductImageSelection();
+            },
+            error: () => {
+              this.successMessage = 'Product created, but photo upload failed.';
+              this.fetchProducts();
+            }
+          });
+        } else {
+          this.successMessage = 'Product created successfully!';
+          this.fetchProducts();
+        }
+
         // Reset form
         this.newProduct = {
           name: '',
-          category: '',
+          category: 'Shirts',
           productType: 'MANUFACTURED',
           designBrand: '',
-          size: '',
+          size: '38, 40, 42, 44',
           color: '',
           sellingPrice: 0,
-          gstPercent: 12.00
+          distributorPrice: 0,
+          setSize: 4,
+          setRatio: '38, 40, 42, 44',
+          gstPercent: 12.00,
+          imageUrl: ''
         };
+        this.clearProductImageSelection();
       },
       error: (err) => this.errorMessage = err.error?.message || 'Failed to create product.'
     });
+  }
+
+  onUploadDirectPhoto(productId: number, event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      this.clearMessages();
+      this.apiService.uploadProductImage(productId, file).subscribe({
+        next: () => {
+          this.successMessage = 'Product photo updated successfully!';
+          this.fetchProducts();
+          setTimeout(() => this.successMessage = '', 3000);
+        },
+        error: (err) => {
+          this.errorMessage = err.error?.message || 'Failed to upload product photo.';
+          setTimeout(() => this.errorMessage = '', 4000);
+        }
+      });
+    }
   }
 
   onDeleteProduct(id: number) {
@@ -1158,7 +1255,7 @@ export class DashboardComponent implements OnInit {
         this.successMessage = 'Production batch started!';
         this.fetchBatches();
         this.fetchFabrics(); // Reload fabric remaining totals
-        this.newBatch = { batchCode: '', fabricId: null, fabricMetersUsed: 0, wastageMeters: 0, productId: null, designName: '', quantityToSew: 0, fabricPerShirt: 1.30 };
+        this.newBatch = { batchCode: '', fabricId: null, fabricMetersUsed: 0, wastageMeters: 0, productId: null, designName: '', quantityToSew: 0, fabricPerShirt: 1.30, setSize: 4, setRatio: '38, 40, 42, 44', sellingPrice: 325, distributorPrice: 300 };
       },
       error: (err) => this.errorMessage = err.error?.message || 'Failed to start production batch.'
     });
@@ -1528,5 +1625,92 @@ export class DashboardComponent implements OnInit {
         error: (err) => this.errorMessage = err.error?.message || 'Failed to delete expense.'
       });
     }
+  }
+
+  // ==========================================
+  // WHOLESALE BUYERS & ORDERS (ADMIN)
+  // ==========================================
+
+  fetchWholesaleCustomers() {
+    this.apiService.getWholesaleCustomers().subscribe({
+      next: (data) => this.wholesaleCustomers = data,
+      error: (err) => console.error('Failed to load wholesale customers:', err)
+    });
+  }
+
+  fetchWholesaleOrders() {
+    this.apiService.getPortalWholesaleOrders().subscribe({
+      next: (data) => this.wholesaleOrders = data,
+      error: (err) => console.error('Failed to load wholesale orders:', err)
+    });
+  }
+
+  approveCustomer(customer: any, type: string) {
+    this.clearMessages();
+    this.apiService.updateCustomerType(customer.id, type).subscribe({
+      next: () => {
+        this.apiService.updateCustomerStatus(customer.id, 'ACTIVE').subscribe({
+          next: () => {
+            this.successMessage = `Approved ${customer.shopName} as ${type} customer successfully!`;
+            this.fetchWholesaleCustomers();
+          },
+          error: (err) => this.errorMessage = err.error?.message || 'Failed to activate customer.'
+        });
+      },
+      error: (err) => this.errorMessage = err.error?.message || 'Failed to set pricing group.'
+    });
+  }
+
+  setCustomerStatus(customer: any, status: string) {
+    this.clearMessages();
+    this.apiService.updateCustomerStatus(customer.id, status).subscribe({
+      next: () => {
+        this.successMessage = `Customer ${customer.shopName} marked as ${status}.`;
+        this.fetchWholesaleCustomers();
+      },
+      error: (err) => this.errorMessage = err.error?.message || 'Failed to update status.'
+    });
+  }
+
+  setCustomerType(customer: any, type: string) {
+    this.clearMessages();
+    this.apiService.updateCustomerType(customer.id, type).subscribe({
+      next: () => {
+        this.successMessage = `Pricing tier for ${customer.shopName} updated to ${type}.`;
+        this.fetchWholesaleCustomers();
+      },
+      error: (err) => this.errorMessage = err.error?.message || 'Failed to update pricing group.'
+    });
+  }
+
+  changeOrderStatus(order: any, newStatus: string) {
+    this.clearMessages();
+    this.apiService.updateOrderStatus(order.id, newStatus).subscribe({
+      next: () => {
+        this.successMessage = `Order #${order.invoiceNo} status updated to ${newStatus}.`;
+        this.fetchWholesaleOrders();
+      },
+      error: (err) => this.errorMessage = err.error?.message || 'Failed to update order status.'
+    });
+  }
+
+  filteredWholesaleCustomers() {
+    if (!this.customerSearchQuery.trim()) return this.wholesaleCustomers;
+    const q = this.customerSearchQuery.toLowerCase();
+    return this.wholesaleCustomers.filter(c => 
+      (c.shopName && c.shopName.toLowerCase().includes(q)) || 
+      (c.ownerName && c.ownerName.toLowerCase().includes(q)) || 
+      (c.phone && c.phone.toLowerCase().includes(q)) || 
+      (c.city && c.city.toLowerCase().includes(q))
+    );
+  }
+
+  filteredWholesaleOrders() {
+    if (this.orderStatusFilter === 'ALL') return this.wholesaleOrders;
+    return this.wholesaleOrders.filter(o => o.orderStatus === this.orderStatusFilter);
+  }
+
+  countPendingCustomers(): number {
+    return this.wholesaleCustomers.filter(c => c.status === 'PENDING').length;
   }
 }

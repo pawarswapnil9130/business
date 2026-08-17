@@ -46,8 +46,24 @@ namespace ApparelERP.Api.Models
         [Column("selling_price")]
         public decimal SellingPrice { get; set; }
 
+        [Column("distributor_price")]
+        public decimal DistributorPrice { get; set; } = 0.00m;
+
         [Column("gst_percent")]
         public decimal GstPercent { get; set; } = 18.00m;
+
+        [Column("image_url")]
+        public string? ImageUrl { get; set; }
+
+        [Column("set_size")]
+        public int SetSize { get; set; } = 4; // Set size (e.g. 3 pcs or 4 pcs per ratio bundle)
+
+        [Column("set_ratio")]
+        [MaxLength(255)]
+        public string? SetRatio { get; set; } = "38, 40, 42, 44"; // e.g. "M, L, XL" or "38, 40, 42, 44"
+
+        [Column("is_active")]
+        public bool IsActive { get; set; } = true;
 
         [Column("created_at")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

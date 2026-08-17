@@ -29,6 +29,10 @@ namespace ApparelERP.Api.Models.Dto
         public int? ProductId { get; set; }
         public string? DesignName { get; set; }
         public int QuantityToSew { get; set; }
+        public int SetSize { get; set; } = 4;
+        public string? SetRatio { get; set; } = "38, 40, 42, 44";
+        public decimal SellingPrice { get; set; }
+        public decimal DistributorPrice { get; set; }
     }
 
     public class CompleteProductionBatchDto
@@ -206,5 +210,171 @@ namespace ApparelERP.Api.Models.Dto
         public string Username { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
         public string Role { get; set; } = string.Empty;
+    }
+
+    // ==========================================
+    // CUSTOMER WHOLESALE PORTAL DTOs
+    // ==========================================
+
+    public class CustomerApplyDto
+    {
+        public string ShopName { get; set; } = string.Empty;
+        public string OwnerName { get; set; } = string.Empty;
+        public string Phone { get; set; } = string.Empty;
+        public string? Whatsapp { get; set; }
+        public string? Email { get; set; }
+        public string Address { get; set; } = string.Empty;
+        public string City { get; set; } = string.Empty;
+        public string? GstNumber { get; set; }
+        public string? Password { get; set; }
+        public string? Notes { get; set; }
+    }
+
+    public class CustomerLoginDto
+    {
+        public string PhoneOrUsername { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
+    }
+
+    public class CustomerLoginStep1ResponseDto
+    {
+        public bool RequireOtp { get; set; } = true;
+        public string Message { get; set; } = string.Empty;
+        public string PhoneMasked { get; set; } = string.Empty;
+        public string TempSessionToken { get; set; } = string.Empty;
+    }
+
+    public class CustomerOtpVerifyDto
+    {
+        public string TempSessionToken { get; set; } = string.Empty;
+        public string OtpCode { get; set; } = string.Empty;
+    }
+
+    public class CustomerAuthResponseDto
+    {
+        public string Token { get; set; } = string.Empty;
+        public int CustomerId { get; set; }
+        public string ShopName { get; set; } = string.Empty;
+        public string OwnerName { get; set; } = string.Empty;
+        public string CustomerType { get; set; } = "REGULAR"; // 'REGULAR' or 'DISTRIBUTOR'
+        public string City { get; set; } = string.Empty;
+    }
+
+    public class CustomerProductDto
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Category { get; set; } = string.Empty;
+        public string? DesignBrand { get; set; }
+        public string Size { get; set; } = string.Empty;
+        public string Color { get; set; } = string.Empty;
+        public decimal Price { get; set; } // The exact tier price per piece (Regular or Distributor)
+        public int SetSize { get; set; } = 4; // e.g. 3 or 4 pcs per ratio pack
+        public string? SetRatio { get; set; } = "38, 40, 42, 44";
+        public decimal SetPrice => Price * (SetSize > 0 ? SetSize : 1);
+        public decimal GstPercent { get; set; }
+        public int AvailableStock { get; set; } // Current pieces in stock
+        public int AvailableSets => SetSize > 0 ? (AvailableStock / SetSize) : AvailableStock; // Max full sets available
+        public bool Available => AvailableSets > 0; // True only if at least 1 full set is in stock
+        public string? ImageUrl { get; set; }
+    }
+
+    public class CustomerPublicProductDto
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Category { get; set; } = string.Empty;
+        public string? DesignBrand { get; set; }
+        public string Size { get; set; } = string.Empty;
+        public string Color { get; set; } = string.Empty;
+        public int SetSize { get; set; } = 4;
+        public string? SetRatio { get; set; } = "38, 40, 42, 44";
+        public string? ImageUrl { get; set; }
+        public int AvailableSets { get; set; }
+        public bool Available => AvailableSets > 0;
+    }
+
+    public class CustomerOrderCreateDto
+    {
+        public string? Notes { get; set; }
+        public List<CustomerOrderItemCreateDto> Items { get; set; } = new();
+    }
+
+    public class CustomerOrderItemCreateDto
+    {
+        public int ProductId { get; set; }
+        public int Quantity { get; set; } // Total pieces (must be multiple of SetSize)
+        public int SetsCount { get; set; } // Number of sets ordered (e.g. 2 sets)
+    }
+
+    public class CustomerOrderDto
+    {
+        public int Id { get; set; }
+        public string InvoiceNo { get; set; } = string.Empty;
+        public string OrderStatus { get; set; } = "PENDING";
+        public string OrderSource { get; set; } = "WHOLESALE_PORTAL";
+        public decimal TotalAmount { get; set; }
+        public decimal TotalGst { get; set; }
+        public decimal FinalAmount { get; set; }
+        public DateTime SalesDate { get; set; }
+        public List<CustomerOrderItemDto> Items { get; set; } = new();
+    }
+
+    public class CustomerOrderItemDto
+    {
+        public int ProductId { get; set; }
+        public string ProductName { get; set; } = string.Empty;
+        public string Category { get; set; } = string.Empty;
+        public string Size { get; set; } = string.Empty;
+        public string Color { get; set; } = string.Empty;
+        public string? DesignBrand { get; set; }
+        public int SetSize { get; set; } = 4;
+        public string? SetRatio { get; set; }
+        public int SetsCount { get; set; }
+        public int Quantity { get; set; }
+        public decimal UnitPrice { get; set; }
+        public decimal GstPercent { get; set; }
+        public decimal SubTotal { get; set; }
+    }
+
+    // ==========================================
+    // ADMIN CUSTOMER MANAGEMENT DTOs
+    // ==========================================
+
+    public class AdminCustomerSummaryDto
+    {
+        public int Id { get; set; }
+        public int? UserId { get; set; }
+        public string ShopName { get; set; } = string.Empty;
+        public string OwnerName { get; set; } = string.Empty;
+        public string Phone { get; set; } = string.Empty;
+        public string? Whatsapp { get; set; }
+        public string? Email { get; set; }
+        public string Address { get; set; } = string.Empty;
+        public string City { get; set; } = string.Empty;
+        public string? GstNumber { get; set; }
+        public string CustomerType { get; set; } = "REGULAR";
+        public string Status { get; set; } = "PENDING";
+        public string? Notes { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public DateTime? ApprovedAt { get; set; }
+        public int TotalOrdersPlaced { get; set; }
+        public decimal TotalSpent { get; set; }
+    }
+
+    public class UpdateCustomerStatusDto
+    {
+        public string Status { get; set; } = "ACTIVE"; // 'PENDING', 'ACTIVE', 'SUSPENDED', 'REJECTED'
+        public string? Notes { get; set; }
+    }
+
+    public class UpdateCustomerTypeDto
+    {
+        public string CustomerType { get; set; } = "REGULAR"; // 'REGULAR' or 'DISTRIBUTOR'
+    }
+
+    public class UpdateOrderStatusDto
+    {
+        public string OrderStatus { get; set; } = "CONFIRMED"; // 'PENDING', 'CONFIRMED', 'PROCESSING', 'DISPATCHED', 'DELIVERED', 'CANCELLED'
     }
 }

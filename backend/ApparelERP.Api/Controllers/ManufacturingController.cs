@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ApparelERP.Api.Data;
@@ -12,6 +13,7 @@ namespace ApparelERP.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize(Roles = "SUPER_ADMIN,ADMIN,EMPLOYEE,CA")]
     public class ManufacturingController : ControllerBase
     {
         private readonly ApparelDbContext _context;

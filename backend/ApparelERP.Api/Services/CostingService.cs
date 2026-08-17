@@ -44,13 +44,16 @@ namespace ApparelERP.Api.Services
                     var newProduct = new Product
                     {
                         Name = dto.DesignName.Trim(),
-                        Category = "Uncategorized",
+                        Category = "Shirts",
                         ProductType = "MANUFACTURED",
                         DesignBrand = "Generic",
-                        Size = "Free",
-                        Color = "Standard",
+                        Size = !string.IsNullOrWhiteSpace(dto.SetRatio) ? dto.SetRatio.Trim() : "38, 40, 42, 44",
+                        Color = fabric.Color ?? "Standard",
+                        SetSize = dto.SetSize > 0 ? dto.SetSize : 4,
+                        SetRatio = !string.IsNullOrWhiteSpace(dto.SetRatio) ? dto.SetRatio.Trim() : "38, 40, 42, 44",
                         CostPrice = 0.00m,
-                        SellingPrice = 0.00m,
+                        SellingPrice = dto.SellingPrice > 0 ? dto.SellingPrice : 325.00m,
+                        DistributorPrice = dto.DistributorPrice > 0 ? dto.DistributorPrice : 300.00m,
                         GstPercent = 12.00m
                     };
                     _context.Products.Add(newProduct);

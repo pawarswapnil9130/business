@@ -24,3 +24,8 @@ Thumbs.db
 # Environment
 .env
 appsettings.Development.json
+
+# Temporary Assets
+temp images/
+temp*/
+

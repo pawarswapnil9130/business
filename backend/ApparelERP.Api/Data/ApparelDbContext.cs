@@ -20,6 +20,7 @@ namespace ApparelERP.Api.Data
         public DbSet<StockLedger> StockLedgerEntries { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<Expense> Expenses { get; set; }
+        public DbSet<Customer> Customers { get; set; }
         
         // Keyless views
         public DbSet<StockSummaryDto> StockSummaries { get; set; }

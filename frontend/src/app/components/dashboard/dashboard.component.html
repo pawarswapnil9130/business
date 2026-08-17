@@ -52,6 +52,10 @@
       <a *ngIf="currentUser?.role !== 'EMPLOYEE'" href="javascript:void(0)" [class.active]="currentTab === 'reports'" (click)="loadTab('reports')">
         <span class="nav-icon">📈</span> Profit & Loss Ledger
       </a>
+      <!-- Wholesale Tab (Visible to SUPER_ADMIN and ADMIN) -->
+      <a *ngIf="currentUser?.role === 'SUPER_ADMIN' || currentUser?.role === 'ADMIN'" href="javascript:void(0)" [class.active]="currentTab === 'wholesale'" (click)="loadTab('wholesale')">
+        <span class="nav-icon">👥</span> Wholesale Buyers & Portal
+      </a>
       <!-- Admin Tab (Visible to SUPER_ADMIN and ADMIN) -->
       <a *ngIf="currentUser?.role === 'SUPER_ADMIN' || currentUser?.role === 'ADMIN'" href="javascript:void(0)" [class.active]="currentTab === 'users'" (click)="loadTab('users')">
         <span class="nav-icon">🛡️</span> Users & Permissions
@@ -460,23 +464,57 @@
 
               <div class="form-row">
                 <div class="form-group">
-                  <label>Size Specification</label>
-                  <input type="text" name="size" [(ngModel)]="newProduct.size" placeholder="e.g. 38, 40, 42, L, XL" required />
+                  <label>Wholesale Set Size (Pieces per Set)</label>
+                  <select name="setSize" [(ngModel)]="newProduct.setSize" required>
+                    <option [value]="3">Set of 3 Pcs (e.g. M, L, XL)</option>
+                    <option [value]="4">Set of 4 Pcs (e.g. 38, 40, 42, 44 or M, L, XL, XXL)</option>
+                    <option [value]="5">Set of 5 Pcs</option>
+                    <option [value]="6">Set of 6 Pcs (Master Box)</option>
+                    <option [value]="1">Single / Loose (1 Pc)</option>
+                  </select>
                 </div>
                 <div class="form-group">
-                  <label>Color Specification</label>
-                  <input type="text" name="color" [(ngModel)]="newProduct.color" placeholder="e.g. Navy Blue, White, Black" required />
+                  <label>Set Sizing / Ratio Breakdown</label>
+                  <input type="text" name="setRatio" [(ngModel)]="newProduct.setRatio" placeholder="e.g. 38, 40, 42, 44 or M, L, XL" required />
                 </div>
               </div>
 
               <div class="form-row">
                 <div class="form-group">
-                  <label>Standard Selling Rate (₹)</label>
-                  <input type="number" name="sellingPrice" [(ngModel)]="newProduct.sellingPrice" required min="1" />
+                  <label>Color Specification</label>
+                  <input type="text" name="color" [(ngModel)]="newProduct.color" placeholder="e.g. Navy Blue, White, Black" required />
+                </div>
+                <div class="form-group">
+                  <label>Standard Size Tag</label>
+                  <input type="text" name="size" [(ngModel)]="newProduct.size" placeholder="e.g. 38 to 44 (Ratio Pack)" required />
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Regular Wholesale Rate / Pc (₹)</label>
+                  <input type="number" name="sellingPrice" [(ngModel)]="newProduct.sellingPrice" required min="1" placeholder="e.g. 325" />
+                </div>
+                <div class="form-group">
+                  <label>Distributor Bulk Rate / Pc (₹)</label>
+                  <input type="number" name="distributorPrice" [(ngModel)]="newProduct.distributorPrice" min="0" placeholder="e.g. 300 (Optional)" />
                 </div>
                 <div class="form-group">
                   <label>GST Slab (%)</label>
                   <input type="number" name="gstPercent" [(ngModel)]="newProduct.gstPercent" required min="0" />
+                </div>
+              </div>
+
+              <!-- Product Photo Upload -->
+              <div class="form-group" style="background: var(--bg-subtle, #f8fafc); padding: 12px; border-radius: 8px; border: 1px dashed #cbd5e1;">
+                <label style="font-weight: 700;">📸 Upload Shirt / Product Photo (Optional)</label>
+                <input type="file" (change)="onProductImageSelected($event)" accept="image/*" style="margin-top: 4px;" />
+                <div *ngIf="productImagePreview" style="margin-top: 10px; display: flex; align-items: center; gap: 10px;">
+                  <img [src]="productImagePreview" alt="Preview" style="width: 60px; height: 60px; object-fit: cover; border-radius: 6px; border: 1px solid #cbd5e1;" />
+                  <div>
+                    <span style="font-size: 12px; color: #10b981; font-weight: 600;">✓ Ready to upload</span>
+                    <button type="button" class="btn btn-secondary btn-sm" (click)="clearProductImageSelection()" style="margin-left: 8px; font-size: 11px;">✕ Remove</button>
+                  </div>
                 </div>
               </div>
 
@@ -491,17 +529,30 @@
               <table class="table">
                 <thead>
                   <tr>
+                    <th>Photo</th>
                     <th>Type</th>
                     <th>Item Description</th>
                     <th>Category</th>
                     <th>Variant</th>
                     <th>Cost Basis</th>
-                    <th>Selling Rate</th>
+                    <th>Selling / Wholesale Rates</th>
                     <th>Action</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr *ngFor="let p of products">
+                    <td style="width: 70px; text-align: center;">
+                      <div *ngIf="p.imageUrl" style="position: relative; display: inline-block;">
+                        <img [src]="p.imageUrl" [alt]="p.name" style="width: 48px; height: 48px; object-fit: cover; border-radius: 6px; border: 1px solid #cbd5e1;" />
+                      </div>
+                      <div *ngIf="!p.imageUrl" style="width: 48px; height: 48px; background: #f1f5f9; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 20px; border: 1px dashed #cbd5e1; margin: 0 auto;">
+                        👔
+                      </div>
+                      <label style="display: block; font-size: 10px; color: #2563eb; cursor: pointer; margin-top: 2px; font-weight: 600;">
+                        <span>📷 {{ p.imageUrl ? 'Change' : 'Upload' }}</span>
+                        <input type="file" (change)="onUploadDirectPhoto(p.id, $event)" accept="image/*" style="display: none;" />
+                      </label>
+                    </td>
                     <td>
                       <span class="badge" [class.badge-primary]="p.productType === 'MANUFACTURED'" [class.badge-info]="p.productType === 'TRADED'">
                         {{ p.productType === 'MANUFACTURED' ? 'MFG' : 'TRADED' }}
@@ -509,15 +560,25 @@
                     </td>
                     <td><strong>{{ p.name }}</strong><br/><small class="text-muted">{{ p.designBrand }}</small></td>
                     <td>{{ p.category }}</td>
-                    <td>{{ p.size }} / {{ p.color }}</td>
+                    <td>
+                      <div><strong>{{ p.color }}</strong></div>
+                      <span class="badge" style="background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; font-size: 10px; margin-top: 4px; display: inline-block;">
+                        📦 Set of {{ p.setSize || 4 }} ({{ p.setRatio || p.size }})
+                      </span>
+                    </td>
                     <td>₹{{ p.costPrice | number:'1.2-2' }}</td>
-                    <td>₹{{ p.sellingPrice | number:'1.2-2' }} <small class="text-muted">({{ p.gstPercent }}% GST)</small></td>
+                    <td>
+                      <strong>₹{{ p.sellingPrice | number:'1.2-2' }}</strong> <small class="text-muted">({{ p.gstPercent }}% GST)</small>
+                      <div *ngIf="p.distributorPrice > 0" style="font-size: 11px; color: #f59e0b; font-weight: 600;">
+                        ⭐ Dist: ₹{{ p.distributorPrice | number:'1.2-2' }}
+                      </div>
+                    </td>
                     <td>
                       <button class="btn btn-danger btn-sm" (click)="onDeleteProduct(p.id)">Delete</button>
                     </td>
                   </tr>
                   <tr *ngIf="products.length === 0">
-                    <td colspan="7" class="text-center text-muted pad-30">No items recorded in catalog.</td>
+                    <td colspan="8" class="text-center text-muted pad-30">No items recorded in catalog.</td>
                   </tr>
                 </tbody>
               </table>
@@ -675,9 +736,38 @@
                 </div>
               </div>
               <div class="form-group">
-                <label>Product Master Name (Optional)</label>
+                <label>Design / Shirt Master Name</label>
                 <input type="text" name="batchDesignName" [(ngModel)]="newBatch.designName" placeholder="e.g. Premium Linen Shirt" />
               </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Wholesale Set Size (Pieces per Set)</label>
+                  <select name="batchSetSize" [(ngModel)]="newBatch.setSize">
+                    <option [value]="3">Set of 3 Pcs (e.g. M, L, XL)</option>
+                    <option [value]="4">Set of 4 Pcs (e.g. 38, 40, 42, 44)</option>
+                    <option [value]="5">Set of 5 Pcs</option>
+                    <option [value]="6">Set of 6 Pcs (Master Box)</option>
+                    <option [value]="1">Single / Loose (1 Pc)</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Set Sizing / Ratio Breakdown</label>
+                  <input type="text" name="batchSetRatio" [(ngModel)]="newBatch.setRatio" placeholder="e.g. 38, 40, 42, 44 or M, L, XL" />
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Wholesale Rate / Pc (₹)</label>
+                  <input type="number" name="batchSellingPrice" [(ngModel)]="newBatch.sellingPrice" placeholder="e.g. 325" />
+                </div>
+                <div class="form-group">
+                  <label>Distributor Rate / Pc (₹)</label>
+                  <input type="number" name="batchDistPrice" [(ngModel)]="newBatch.distributorPrice" placeholder="e.g. 300 (Optional)" />
+                </div>
+              </div>
+
               <button type="submit" class="btn btn-primary btn-block">Issue Production Work Order</button>
             </form>
           </div>
@@ -689,6 +779,7 @@
                 <thead>
                   <tr>
                     <th>Batch ID</th>
+                    <th>Photo</th>
                     <th>Item Specifications</th>
                     <th>Fabric M</th>
                     <th>Calculated Unit Cost</th>
@@ -699,6 +790,20 @@
                 <tbody>
                   <tr *ngFor="let b of batches">
                     <td><strong>{{ b.batchCode }}</strong></td>
+                    <td style="width: 90px; text-align: center;">
+                      <div *ngIf="b.product?.imageUrl" style="position: relative; display: inline-block;">
+                        <img [src]="b.product.imageUrl" alt="Batch Photo" style="width: 46px; height: 46px; object-fit: cover; border-radius: 6px; border: 1px solid #cbd5e1;" />
+                      </div>
+                      <div *ngIf="!b.product?.imageUrl" style="width: 46px; height: 46px; background: #f1f5f9; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; font-size: 20px; border: 1px dashed #cbd5e1;">
+                        👔
+                      </div>
+                      <div style="margin-top: 4px;">
+                        <label [for]="'mfg-file-' + b.id" style="cursor: pointer; font-size: 11px; color: #2563eb; font-weight: 600; text-decoration: underline;">
+                          📷 {{ b.product?.imageUrl ? 'Change' : 'Upload' }}
+                        </label>
+                        <input [id]="'mfg-file-' + b.id" type="file" (change)="onUploadBatchPhoto(b, $event)" accept="image/*" style="display: none;" />
+                      </div>
+                    </td>
                     <td>
                       <span *ngIf="b.product">
                         <strong>{{ b.product.name }}</strong> <small>({{ b.product.size }} / {{ b.product.color }})</small>
@@ -733,7 +838,7 @@
                     </td>
                   </tr>
                   <tr *ngIf="batches.length === 0">
-                    <td colspan="6" class="text-center text-muted pad-30">No production batches launched.</td>
+                    <td colspan="7" class="text-center text-muted pad-30">No production batches launched.</td>
                   </tr>
                 </tbody>
               </table>
@@ -1658,6 +1763,215 @@
             </button>
           </div>
         </form>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- TAB 10: WHOLESALE BUYERS & PORTAL ORDERS   -->
+      <!-- ========================================== -->
+      <section *ngIf="currentTab === 'wholesale'" class="tab-content animate-fade">
+        <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+          <div>
+            <h3 style="margin: 0; font-size: 1.3rem; font-weight: 800; color: var(--text-primary);">👥 Wholesale Buyers & Portal Orders</h3>
+            <p style="margin: 4px 0 0 0; font-size: 0.85rem; color: var(--text-secondary);">Manage B2B shopkeeper registrations, assign pricing groups (Regular / Distributor), and track online orders.</p>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn btn-secondary btn-sm" (click)="fetchWholesaleCustomers(); fetchWholesaleOrders()">🔄 Refresh</button>
+          </div>
+        </div>
+
+        <!-- Metric KPI Cards -->
+        <div class="metrics-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 24px;">
+          <div class="metric-card">
+            <div class="metric-icon" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6;">🏪</div>
+            <div class="metric-info">
+              <span class="metric-label">Total Buyers</span>
+              <span class="metric-value">{{ wholesaleCustomers.length }}</span>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-icon" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;">⏳</div>
+            <div class="metric-info">
+              <span class="metric-label">Pending Approval</span>
+              <span class="metric-value" style="color: #f59e0b;">
+                {{ countPendingCustomers() }}
+              </span>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-icon" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">📦</div>
+            <div class="metric-info">
+              <span class="metric-label">Portal Orders</span>
+              <span class="metric-value">{{ wholesaleOrders.length }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 1: Wholesale Customer Accounts -->
+        <div class="card" style="margin-bottom: 24px;">
+          <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+            <h4 style="margin: 0; font-size: 1rem; font-weight: 700; color: var(--text-primary);">🏪 Wholesale Shopkeeper Accounts ({{ filteredWholesaleCustomers().length }})</h4>
+            <input type="text" [(ngModel)]="customerSearchQuery" placeholder="🔍 Search shop, owner, phone, city..." style="padding: 6px 12px; font-size: 0.85rem; border: 1px solid var(--border-input); border-radius: 6px; width: 280px;" />
+          </div>
+          <div class="card-body" style="padding: 0;">
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Shop / Business</th>
+                    <th>Contact</th>
+                    <th>City & Address</th>
+                    <th>Pricing Group</th>
+                    <th>Status</th>
+                    <th>Orders</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngIf="filteredWholesaleCustomers().length === 0">
+                    <td colspan="7" style="text-align: center; padding: 24px; color: var(--text-muted);">
+                      No wholesale customer accounts found.
+                    </td>
+                  </tr>
+                  <tr *ngFor="let c of filteredWholesaleCustomers()">
+                    <td>
+                      <strong>{{ c.shopName }}</strong>
+                      <div style="font-size: 0.8rem; color: var(--text-secondary);">Prop: {{ c.ownerName }}</div>
+                      <div *ngIf="c.gstNumber" style="font-size: 0.75rem; color: var(--text-muted);">GST: {{ c.gstNumber }}</div>
+                    </td>
+                    <td>
+                      <div>📞 {{ c.phone }}</div>
+                      <div *ngIf="c.whatsapp" style="font-size: 0.8rem; color: #10b981;">💬 WA: {{ c.whatsapp }}</div>
+                    </td>
+                    <td>
+                      <div>📍 {{ c.city }}</div>
+                      <div style="font-size: 0.75rem; color: var(--text-secondary); max-width: 180px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" [title]="c.address">{{ c.address }}</div>
+                    </td>
+                    <td>
+                      <select [ngModel]="c.customerType" (ngModelChange)="setCustomerType(c, $event)" style="padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; border: 1px solid var(--border-input);">
+                        <option value="REGULAR">🏷️ REGULAR</option>
+                        <option value="DISTRIBUTOR">⭐ DISTRIBUTOR</option>
+                      </select>
+                    </td>
+                    <td>
+                      <span class="badge" [ngClass]="{
+                        'badge-warning': c.status === 'PENDING',
+                        'badge-success': c.status === 'ACTIVE',
+                        'badge-danger': c.status === 'SUSPENDED' || c.status === 'REJECTED'
+                      }">{{ c.status }}</span>
+                    </td>
+                    <td>
+                      <strong>{{ c.totalOrdersPlaced }} orders</strong>
+                      <div style="font-size: 0.75rem; color: var(--text-secondary);">₹{{ c.totalSpent | number:'1.0-0' }}</div>
+                    </td>
+                    <td>
+                      <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                        <button *ngIf="c.status === 'PENDING'" class="btn btn-success btn-sm" (click)="approveCustomer(c, 'REGULAR')" title="Approve with Regular Wholesale Price">
+                          ✓ Approve Regular
+                        </button>
+                        <button *ngIf="c.status === 'PENDING'" class="btn btn-primary btn-sm" (click)="approveCustomer(c, 'DISTRIBUTOR')" title="Approve with Distributor Price">
+                          ⭐ Approve Distributor
+                        </button>
+                        <button *ngIf="c.status === 'ACTIVE'" class="btn btn-warning btn-sm" (click)="setCustomerStatus(c, 'SUSPENDED')">
+                          ⏸ Suspend
+                        </button>
+                        <button *ngIf="c.status === 'SUSPENDED' || c.status === 'REJECTED'" class="btn btn-success btn-sm" (click)="setCustomerStatus(c, 'ACTIVE')">
+                          ▶ Activate
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 2: Wholesale Portal Orders Feed -->
+        <div class="card">
+          <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+            <h4 style="margin: 0; font-size: 1rem; font-weight: 700; color: var(--text-primary);">📦 Wholesale Online Orders ({{ filteredWholesaleOrders().length }})</h4>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <label style="font-size: 0.85rem; color: var(--text-secondary); margin: 0;">Status Filter:</label>
+              <select [(ngModel)]="orderStatusFilter" style="padding: 5px 10px; font-size: 0.85rem; border: 1px solid var(--border-input); border-radius: 6px;">
+                <option value="ALL">All Statuses</option>
+                <option value="PENDING">⏳ PENDING</option>
+                <option value="CONFIRMED">✓ CONFIRMED</option>
+                <option value="PROCESSING">⚙️ PROCESSING</option>
+                <option value="DISPATCHED">🚚 DISPATCHED</option>
+                <option value="DELIVERED">🎉 DELIVERED</option>
+                <option value="CANCELLED">✕ CANCELLED</option>
+              </select>
+            </div>
+          </div>
+          <div class="card-body" style="padding: 0;">
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Order #</th>
+                    <th>Customer / Shop</th>
+                    <th>Items Ordered</th>
+                    <th>Total Value</th>
+                    <th>Status</th>
+                    <th>Update Status</th>
+                    <th>Invoice</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngIf="filteredWholesaleOrders().length === 0">
+                    <td colspan="7" style="text-align: center; padding: 24px; color: var(--text-muted);">
+                      No wholesale portal orders found for the selected filter.
+                    </td>
+                  </tr>
+                  <tr *ngFor="let o of filteredWholesaleOrders()">
+                    <td>
+                      <strong>{{ o.invoiceNo }}</strong>
+                      <div style="font-size: 0.75rem; color: var(--text-secondary);">{{ o.salesDate | date:'short' }}</div>
+                    </td>
+                    <td>
+                      <strong>{{ o.customerName }}</strong>
+                      <div style="font-size: 0.8rem; color: var(--text-secondary);">📞 {{ o.customerPhone }}</div>
+                    </td>
+                    <td>
+                      <div *ngFor="let item of o.items" style="font-size: 0.8rem; line-height: 1.4;">
+                        • {{ item.product?.name || 'Product #' + item.productId }} ({{ item.product?.size }}/{{ item.product?.color }}) × <strong>{{ item.quantity }} pcs</strong> @ ₹{{ item.unitPrice }}
+                      </div>
+                    </td>
+                    <td>
+                      <strong style="color: var(--color-primary); font-size: 0.95rem;">₹{{ o.finalAmount | number:'1.2-2' }}</strong>
+                      <div style="font-size: 0.75rem; color: var(--text-secondary);">Tax: ₹{{ o.totalGst | number:'1.2-2' }}</div>
+                    </td>
+                    <td>
+                      <span class="badge" [ngClass]="{
+                        'badge-warning': o.orderStatus === 'PENDING',
+                        'badge-primary': o.orderStatus === 'CONFIRMED' || o.orderStatus === 'PROCESSING',
+                        'badge-info': o.orderStatus === 'DISPATCHED',
+                        'badge-success': o.orderStatus === 'DELIVERED' || o.orderStatus === 'COMPLETED',
+                        'badge-danger': o.orderStatus === 'CANCELLED'
+                      }">{{ o.orderStatus }}</span>
+                    </td>
+                    <td>
+                      <select [ngModel]="o.orderStatus" (ngModelChange)="changeOrderStatus(o, $event)" style="padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; border: 1px solid var(--border-input);">
+                        <option value="PENDING">⏳ PENDING</option>
+                        <option value="CONFIRMED">✓ CONFIRMED</option>
+                        <option value="PROCESSING">⚙️ PROCESSING</option>
+                        <option value="DISPATCHED">🚚 DISPATCHED</option>
+                        <option value="DELIVERED">🎉 DELIVERED</option>
+                        <option value="CANCELLED">✕ CANCELLED</option>
+                      </select>
+                    </td>
+                    <td>
+                      <button class="btn btn-secondary btn-sm" (click)="generateInvoicePdf(o)" title="Download Tax Invoice">
+                        📄 Invoice
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
       </section>
 
     </div>

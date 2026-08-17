@@ -152,13 +152,46 @@ using (var scope = app.Services.CreateScope())
                 Console.WriteLine("[Startup Db Helper] Adding is_deleted column to fabrics...");
                 dbContext.Database.ExecuteSqlRaw("ALTER TABLE fabrics ADD COLUMN IF NOT EXISTS is_deleted BOOLEAN DEFAULT FALSE;");
                 
+                Console.WriteLine("[Startup Db Helper] Adding wholesale columns to products...");
+                dbContext.Database.ExecuteSqlRaw("ALTER TABLE products ADD COLUMN IF NOT EXISTS distributor_price NUMERIC(10, 2) DEFAULT 0.00;");
+                dbContext.Database.ExecuteSqlRaw("ALTER TABLE products ADD COLUMN IF NOT EXISTS image_url TEXT;");
+                dbContext.Database.ExecuteSqlRaw("ALTER TABLE products ADD COLUMN IF NOT EXISTS set_size INT DEFAULT 4;");
+                dbContext.Database.ExecuteSqlRaw("ALTER TABLE products ADD COLUMN IF NOT EXISTS set_ratio VARCHAR(255) DEFAULT '38, 40, 42, 44';");
+                dbContext.Database.ExecuteSqlRaw("ALTER TABLE products ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT TRUE;");
 
+                Console.WriteLine("[Startup Db Helper] Creating customers table if not exists...");
+                dbContext.Database.ExecuteSqlRaw(@"
+                    CREATE TABLE IF NOT EXISTS customers (
+                        id SERIAL PRIMARY KEY,
+                        user_id INT UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+                        shop_name VARCHAR(255) NOT NULL,
+                        owner_name VARCHAR(255) NOT NULL,
+                        phone VARCHAR(50) UNIQUE NOT NULL,
+                        whatsapp VARCHAR(50),
+                        email VARCHAR(100),
+                        address TEXT NOT NULL,
+                        city VARCHAR(100) NOT NULL,
+                        gst_number VARCHAR(50),
+                        customer_type VARCHAR(50) DEFAULT 'REGULAR',
+                        status VARCHAR(50) DEFAULT 'PENDING',
+                        otp_code VARCHAR(10),
+                        otp_expiry TIMESTAMP WITH TIME ZONE,
+                        notes TEXT,
+                        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                        approved_at TIMESTAMP WITH TIME ZONE
+                    );
+                ");
 
-                Console.WriteLine("[Startup Db Helper] Constraints adjusted successfully.");
+                Console.WriteLine("[Startup Db Helper] Adding customer & status columns to sales_orders...");
+                dbContext.Database.ExecuteSqlRaw("ALTER TABLE sales_orders ADD COLUMN IF NOT EXISTS customer_id INT REFERENCES customers(id) ON DELETE SET NULL;");
+                dbContext.Database.ExecuteSqlRaw("ALTER TABLE sales_orders ADD COLUMN IF NOT EXISTS order_status VARCHAR(50) DEFAULT 'COMPLETED';");
+                dbContext.Database.ExecuteSqlRaw("ALTER TABLE sales_orders ADD COLUMN IF NOT EXISTS order_source VARCHAR(50) DEFAULT 'POS_DESK';");
+
+                Console.WriteLine("[Startup Db Helper] Constraints and wholesale tables adjusted successfully.");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[Startup Db Helper] Warning: could not drop roles check constraint: {ex.Message}");
+                Console.WriteLine($"[Startup Db Helper] Warning: schema check exception: {ex.Message}");
             }
         }
         else
@@ -198,6 +231,24 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors();
+
+app.UseDefaultFiles();
+app.UseStaticFiles();
+
+// Serve Customer Wholesale Portal at /portal
+var portalDir = Path.Combine(builder.Environment.ContentRootPath, "..", "..", "customer-portal");
+if (!Directory.Exists(portalDir))
+{
+    portalDir = Path.Combine(builder.Environment.ContentRootPath, "customer-portal");
+}
+if (Directory.Exists(portalDir))
+{
+    app.UseStaticFiles(new StaticFileOptions
+    {
+        FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(Path.GetFullPath(portalDir)),
+        RequestPath = "/portal"
+    });
+}
 
 // Authentication middleware must be before Authorization middleware
 app.UseAuthentication();

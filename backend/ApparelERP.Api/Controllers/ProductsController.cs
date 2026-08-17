@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ApparelERP.Api.Data;
@@ -10,6 +11,7 @@ namespace ApparelERP.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize(Roles = "SUPER_ADMIN,ADMIN,EMPLOYEE,CA")]
     public class ProductsController : ControllerBase
     {
         private readonly ApparelDbContext _context;
@@ -97,6 +99,49 @@ namespace ApparelERP.Api.Controllers
             await _context.SaveChangesAsync();
 
             return NoContent();
+        }
+
+        [HttpPost("{id}/upload-image")]
+        public async Task<IActionResult> UploadProductImage(int id, [FromForm] IFormFile file)
+        {
+            var product = await _context.Products.FindAsync(id);
+            if (product == null)
+            {
+                return NotFound(new { message = "Product not found." });
+            }
+
+            if (file == null || file.Length == 0)
+            {
+                return BadRequest(new { message = "No image file provided." });
+            }
+
+            var allowedExts = new[] { ".jpg", ".jpeg", ".png", ".webp", ".gif" };
+            var ext = System.IO.Path.GetExtension(file.FileName).ToLower();
+            if (!allowedExts.Contains(ext))
+            {
+                return BadRequest(new { message = "Only JPG, PNG, WEBP, or GIF image formats are supported." });
+            }
+
+            var webRoot = System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), "wwwroot");
+            var uploadsDir = System.IO.Path.Combine(webRoot, "uploads", "products");
+            if (!System.IO.Directory.Exists(uploadsDir))
+            {
+                System.IO.Directory.CreateDirectory(uploadsDir);
+            }
+
+            var fileName = $"prod_{id}_{System.DateTime.UtcNow.Ticks}{ext}";
+            var filePath = System.IO.Path.Combine(uploadsDir, fileName);
+
+            using (var stream = new System.IO.FileStream(filePath, System.IO.FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            var relativeUrl = $"/uploads/products/{fileName}";
+            product.ImageUrl = relativeUrl;
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Product image uploaded successfully!", imageUrl = relativeUrl });
         }
 
         private bool ProductExists(int id)

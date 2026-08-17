@@ -9,6 +9,7 @@ namespace ApparelERP.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize(Roles = "SUPER_ADMIN,ADMIN,EMPLOYEE,CA")]
     public class InventoryController : ControllerBase
     {
         private readonly IInventoryService _inventoryService;

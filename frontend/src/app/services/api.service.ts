@@ -7,7 +7,9 @@ import { map } from 'rxjs/operators';
   providedIn: 'root'
 })
 export class ApiService {
-  private baseUrl = 'https://business-backend-q18v.onrender.com/api';
+  private baseUrl = (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'))
+    ? (window.location.port === '4200' ? 'http://localhost:5000/api' : '/api')
+    : 'https://business-backend-q18v.onrender.com/api';
 
   private currentUserSubject = new BehaviorSubject<any>(null);
 
@@ -231,5 +233,39 @@ export class ApiService {
 
   getDashboardSummary(): Observable<any> {
     return this.http.get<any>(`${this.baseUrl}/reports/dashboard`, { headers: this.getHeaders() });
+  }
+
+  // ==========================================
+  // WHOLESALE CUSTOMERS & PORTAL ORDERS (ADMIN)
+  // ==========================================
+
+  getWholesaleCustomers(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/admin/customers`, { headers: this.getHeaders() });
+  }
+
+  updateCustomerStatus(id: number, status: string, notes?: string): Observable<any> {
+    return this.http.put<any>(`${this.baseUrl}/admin/customers/${id}/status`, { status, notes }, { headers: this.getHeaders() });
+  }
+
+  updateCustomerType(id: number, customerType: string): Observable<any> {
+    return this.http.put<any>(`${this.baseUrl}/admin/customers/${id}/type`, { customerType }, { headers: this.getHeaders() });
+  }
+
+  getPortalWholesaleOrders(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/admin/customers/orders`, { headers: this.getHeaders() });
+  }
+
+  updateOrderStatus(id: number, orderStatus: string): Observable<any> {
+    return this.http.put<any>(`${this.baseUrl}/admin/customers/orders/${id}/status`, { orderStatus }, { headers: this.getHeaders() });
+  }
+
+  uploadProductImage(productId: number, file: File): Observable<any> {
+    const formData = new FormData();
+    formData.append('file', file);
+    let headers = new HttpHeaders();
+    if (this.currentUserValue && this.currentUserValue.token) {
+      headers = headers.set('Authorization', `Bearer ${this.currentUserValue.token}`);
+    }
+    return this.http.post<any>(`${this.baseUrl}/products/${productId}/upload-image`, formData, { headers });
   }
 }

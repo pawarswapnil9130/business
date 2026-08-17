@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ApparelERP.Api.Models;
 using ApparelERP.Api.Models.Dto;
@@ -10,6 +11,7 @@ namespace ApparelERP.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize(Roles = "SUPER_ADMIN,ADMIN,EMPLOYEE,CA")]
     public class SalesController : ControllerBase
     {
         private readonly ISalesService _salesService;

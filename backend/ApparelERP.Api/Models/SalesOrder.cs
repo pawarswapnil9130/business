@@ -26,6 +26,22 @@ namespace ApparelERP.Api.Models
         [MaxLength(50)]
         public string? CustomerPhone { get; set; }
 
+        [Column("customer_id")]
+        public int? CustomerId { get; set; }
+
+        [ForeignKey("CustomerId")]
+        public Customer? Customer { get; set; }
+
+        [Required]
+        [Column("order_status")]
+        [MaxLength(50)]
+        public string OrderStatus { get; set; } = "COMPLETED"; // 'PENDING', 'CONFIRMED', 'PROCESSING', 'DISPATCHED', 'DELIVERED', 'CANCELLED', 'COMPLETED'
+
+        [Required]
+        [Column("order_source")]
+        [MaxLength(50)]
+        public string OrderSource { get; set; } = "POS_DESK"; // 'POS_DESK' or 'WHOLESALE_PORTAL'
+
         [Required]
         [Column("total_amount")]
         public decimal TotalAmount { get; set; }
