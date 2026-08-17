@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Casa Enterprises | Wholesale B2B Apparel Portal</title>
+  <meta name="description" content="Shop premium wholesale shirts direct from manufacturer. Exclusive B2B rates, 24-hour transport dispatch from Hadapsar, Pune.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Brand Favicon -->
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="alternate icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="favicon.svg">
+  
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- ========================================== -->
+  <!-- 1. TOP FLASH ANNOUNCEMENT STRIP (ZEPTO STYLE)-->
+  <!-- ========================================== -->
+  <div class="top-flash-strip">
+    <div class="strip-container">
+      <span class="flash-icon">⚡</span>
+      <span class="flash-text"><strong>PUNE FACTORY DISPATCH:</strong> Orders placed before 4:00 PM dispatched same day across Maharashtra & India! 🚚</span>
+      <span class="flash-contact">📞 Desk: +91 98765 43210</span>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- 2. MAIN HEADER (FLIPKART / MYNTRA STYLE)   -->
+  <!-- ========================================== -->
+  <header class="main-header">
+    <div class="header-container">
+      
+      <!-- Brand Logo -->
+      <div class="brand-container" onclick="scrollToTop()">
+        <div class="logo-box">
+          <span class="logo-letters">CASA</span>
+        </div>
+        <div class="brand-meta">
+          <h1 class="brand-title">CASA ENTERPRISES</h1>
+          <span class="brand-sub">B2B Wholesale Shirts • Pune</span>
+        </div>
+      </div>
+
+      <!-- Quick Warehouse Location Indicator (Zepto Style) -->
+      <div class="warehouse-indicator" id="warehouse-pill">
+        <span class="loc-icon">📍</span>
+        <div class="loc-details">
+          <span class="loc-label">Dispatching From</span>
+          <strong class="loc-city">Hadapsar, Pune Unit</strong>
+        </div>
+      </div>
+
+      <!-- Search Bar with Instant Auto-Filter (Myntra Style) -->
+      <div class="header-search-bar">
+        <span class="search-lens">🔍</span>
+        <input type="text" id="header-search-input" placeholder="Search 100% Cotton Shirts, Oxford Checks, Linens, Sizing..." oninput="handleSearchFilter(this.value)">
+        <button class="clear-search-btn" id="btn-clear-search" onclick="clearSearch()" style="display: none;">✕</button>
+      </div>
+
+      <!-- Header Action Items -->
+      <div class="header-actions">
+        
+        <!-- Unauthenticated Buttons -->
+        <div class="unauth-header-group" id="header-unauth-group">
+          <button class="btn btn-nav-apply" onclick="openApplyModal()">
+            📝 Register Shop
+          </button>
+          <button class="btn btn-nav-login" onclick="openLoginModal()">
+            🔑 Shopkeeper Login
+          </button>
+        </div>
+
+        <!-- Authenticated Customer Profile & Badges (Flipkart Style) -->
+        <div class="auth-header-group" id="header-auth-group" style="display: none;">
+          
+          <div class="account-menu-wrapper" onclick="toggleAccountDropdown()">
+            <div class="user-avatar-pill">
+              <span class="avatar-icon">🏪</span>
+              <div class="avatar-text">
+                <strong id="header-shop-name">Shree Ganesh</strong>
+                <span class="tier-tag-pill" id="header-tier-tag">REGULAR</span>
+              </div>
+              <span class="dropdown-chevron">▼</span>
+            </div>
+
+            <!-- Account Dropdown Menu -->
+            <div class="account-dropdown-menu" id="account-dropdown">
+              <div class="dropdown-header">
+                <strong id="dropdown-full-shop">Shree Ganesh Menswear</strong>
+                <p id="dropdown-owner-phone">Prop: Ramesh Patil • 9876543210</p>
+                <div class="tier-status-box">
+                  <span>Wholesale Tier:</span>
+                  <strong id="dropdown-tier-name" style="color: #2563eb;">REGULAR WHOLESALE</strong>
+                </div>
+              </div>
+              <a href="javascript:void(0)" onclick="openOrdersModal()"><span class="menu-icon">📦</span> My Order History</a>
+              <a href="https://wa.me/919876543210?text=Hi%20Casa%20Enterprises,%20I%20need%20assistance." target="_blank"><span class="menu-icon">💬</span> WhatsApp Support Desk</a>
+              <hr>
+              <a href="javascript:void(0)" onclick="handleLogout()" class="logout-link"><span class="menu-icon">🚪</span> Sign Out Account</a>
+            </div>
+          </div>
+
+          <!-- Orders Button -->
+          <button class="nav-icon-btn" onclick="openOrdersModal()" title="View Orders">
+            <span class="icon">📦</span>
+            <span class="btn-text">Orders</span>
+          </button>
+
+          <!-- Zepto Style Floating Cart Trigger -->
+          <button class="header-cart-btn" onclick="openCartDrawer()" id="header-cart-btn">
+            <div class="cart-icon-badge-wrap">
+              <span class="cart-icon">🛒</span>
+              <span class="cart-badge-count" id="cart-badge-count">0</span>
+            </div>
+            <div class="cart-total-preview">
+              <span class="cart-preview-label">My Cart</span>
+              <strong class="cart-preview-amount" id="cart-preview-total">₹0</strong>
+            </div>
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ========================================== -->
+  <!-- 3. CATEGORY ICONS STRIP (ZEPTO / FLIPKART) -->
+  <!-- ========================================== -->
+  <section class="category-strip">
+    <div class="category-container">
+      <div class="category-card active" onclick="setCategory('ALL', this)">
+        <div class="cat-icon-circle" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8);">
+          <span class="cat-emoji">👕</span>
+        </div>
+        <span class="cat-title">All Shirts</span>
+      </div>
+
+      <div class="category-card" onclick="setCategory('Formal', this)">
+        <div class="cat-icon-circle" style="background: linear-gradient(135deg, #6366f1, #4338ca);">
+          <span class="cat-emoji">👔</span>
+        </div>
+        <span class="cat-title">Formal Solids</span>
+      </div>
+
+      <div class="category-card" onclick="setCategory('Checks', this)">
+        <div class="cat-icon-circle" style="background: linear-gradient(135deg, #ec4899, #be185d);">
+          <span class="cat-emoji">📐</span>
+        </div>
+        <span class="cat-title">Oxford Checks</span>
+      </div>
+
+      <div class="category-card" onclick="setCategory('Linen', this)">
+        <div class="cat-icon-circle" style="background: linear-gradient(135deg, #10b981, #047857);">
+          <span class="cat-emoji">🌿</span>
+        </div>
+        <span class="cat-title">Pure Linen</span>
+      </div>
+
+      <div class="category-card" onclick="setCategory('Casual', this)">
+        <div class="cat-icon-circle" style="background: linear-gradient(135deg, #f59e0b, #b45309);">
+          <span class="cat-emoji">🎨</span>
+        </div>
+        <span class="cat-title">Casual & Prints</span>
+      </div>
+
+      <div class="category-card" onclick="setCategory('Jeans', this)">
+        <div class="cat-icon-circle" style="background: linear-gradient(135deg, #0ea5e9, #0369a1);">
+          <span class="cat-emoji">👖</span>
+        </div>
+        <span class="cat-title">Denim Jeans</span>
+      </div>
+
+      <div class="category-card" onclick="setCategory('Bulk', this)">
+        <div class="cat-icon-circle" style="background: linear-gradient(135deg, #8b5cf6, #6d28d9);">
+          <span class="cat-emoji">📦</span>
+        </div>
+        <span class="cat-title">Ratio Box Sets</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- 4. HERO PROMOTIONAL BANNER CAROUSEL        -->
+  <!-- ========================================== -->
+  <section class="banner-carousel-section">
+    <div class="carousel-container">
+      
+      <!-- Slide 1: Factory Direct Deal -->
+      <div class="promo-slide active" style="background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%);">
+        <div class="slide-content">
+          <div class="slide-badge">🏭 DIRECT MANUFACTURER WHOLESALE</div>
+          <h2 class="slide-title">100% Combed Cotton Formals & Oxford Weaves</h2>
+          <p class="slide-desc">Direct factory rates with premium double-needle stitching and mill-finish cotton for retail shopkeepers.</p>
+          <div class="slide-pills">
+            <span class="pill">✨ Sizes: 38 (M), 40 (L), 42 (XL), 44 (XXL)</span>
+            <span class="pill">⚡ Same Day Dispatch</span>
+            <span class="pill">📦 Ratio Packs Available</span>
+          </div>
+          <div class="slide-actions">
+            <button class="btn btn-slide-primary" onclick="scrollToProducts()">
+              🛒 Browse Wholesale Catalog
+            </button>
+            <button class="btn btn-slide-outline" onclick="openApplyModal()">
+              📝 Register Wholesale Account
+            </button>
+          </div>
+        </div>
+        <div class="slide-visual">
+          <div class="visual-card">
+            <span class="visual-emoji">👔</span>
+            <div class="visual-badge">Wholesale B2B</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- 5. VERIFIED WHOLESALE PRICING NOTICE BANNER -->
+  <!-- ========================================== -->
+  <div class="b2b-notice-bar" id="b2b-unauth-banner">
+    <div class="notice-inner">
+      <div class="notice-left">
+        <span class="notice-shield">🔒</span>
+        <div>
+          <strong>Wholesale Rate Protection Active</strong>
+          <p>Public retail visitors cannot see wholesale rates. Approved shopkeepers please login to unlock your specific pricing tier.</p>
+        </div>
+      </div>
+      <div class="notice-right">
+        <button class="btn btn-sm btn-white-login" onclick="openLoginModal()">🔑 Shopkeeper Login</button>
+        <button class="btn btn-sm btn-transparent-apply" onclick="openApplyModal()">📝 Apply for Account</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Authenticated Customer Welcome Bar -->
+  <div class="b2b-welcome-bar" id="b2b-auth-banner" style="display: none;">
+    <div class="welcome-inner">
+      <div class="welcome-left">
+        <span class="store-badge-icon">🏪</span>
+        <div>
+          <span>Logged in as: <strong id="auth-banner-shop">Shree Ganesh Menswear</strong> (Prop: <span id="auth-banner-owner">Ramesh Patil</span>)</span>
+          <p>📍 Dispatch Destination: <strong id="auth-banner-city">Pune</strong> • Pricing Tier: <span class="badge badge-gold" id="auth-banner-tier">REGULAR WHOLESALE</span></p>
+        </div>
+      </div>
+      <div class="welcome-right">
+        <button class="btn btn-sm btn-gold-action" onclick="openCartDrawer()">🛒 View Bulk Cart (<span id="auth-banner-cart-count">0</span> Pcs)</button>
+        <button class="btn btn-sm btn-outline-white" onclick="openOrdersModal()">📦 My Orders Ledger</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- 6. MAIN PRODUCT SHOPPING GRID              -->
+  <!-- ========================================== -->
+  <main class="main-catalog-section" id="products-section">
+    <div class="catalog-container">
+      
+      <!-- Catalog Controls & Sort Bar (Myntra Style) -->
+      <div class="catalog-top-bar">
+        <div>
+          <h2 class="catalog-title" id="catalog-title-text">Wholesale Shirt Collection</h2>
+          <span class="item-count-text" id="catalog-count-text">Showing active manufactured & traded lines</span>
+        </div>
+
+        <div class="sort-filter-group">
+          <div class="filter-chips">
+            <button class="chip active" onclick="setQuickFilter('ALL', this)">All</button>
+            <button class="chip" onclick="setQuickFilter('IN_STOCK', this)">🟢 In Stock Only</button>
+            <button class="chip" onclick="setQuickFilter('SHIRTS', this)">Shirts</button>
+            <button class="chip" onclick="setQuickFilter('JEANS', this)">Denim Jeans</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Products Grid -->
+      <div class="ecom-products-grid" id="ecom-products-grid">
+        <!-- Injected dynamically by app.js -->
+        <div class="loading-state">
+          <div class="pulsing-spinner"></div>
+          <p>Fetching real-time wholesale catalog...</p>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ========================================== -->
+  <!-- 7. WHY CHOOSE CASA ENTERPRISES (TRUST GRID)-->
+  <!-- ========================================== -->
+  <section class="trust-features-section">
+    <div class="trust-container">
+      <div class="trust-box">
+        <span class="t-icon">🏭</span>
+        <strong>Factory-Direct Rates</strong>
+        <p>Zero middlemen margin. Straight from our Hadapsar unit.</p>
+      </div>
+      <div class="trust-box">
+        <span class="t-icon">⚡</span>
+        <strong>24-Hour Dispatch</strong>
+        <p>Booked on standard transport across Maharashtra & India.</p>
+      </div>
+      <div class="trust-box">
+        <span class="t-icon">📏</span>
+        <strong>Guaranteed Indian Fit</strong>
+        <p>Calibrated collars, chests, and sleeves for local buyers.</p>
+      </div>
+      <div class="trust-box">
+        <span class="t-icon">🔄</span>
+        <strong>1-Click Quick Reorder</strong>
+        <p>Replenish your best-selling shirt designs in 5 seconds.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- 8. FOOTER (ZEPTO / FLIPKART STYLE)         -->
+  <!-- ========================================== -->
+  <footer class="ecom-footer">
+    <div class="footer-inner">
+      <div class="f-col">
+        <h3 class="f-brand">CASA ENTERPRISES</h3>
+        <p class="f-desc">Wholesale Apparel & Shirt Manufacturing Unit based in Hadapsar Industrial Area, Pune - 411028, Maharashtra.</p>
+        <p class="f-support">📞 Wholesale Desk: +91 98765 43210 | +91 91300 00000</p>
+      </div>
+      <div class="f-col">
+        <h4>Wholesale Categories</h4>
+        <ul>
+          <li><a href="javascript:void(0)" onclick="setCategory('Formal')">Formal Plain Shirts</a></li>
+          <li><a href="javascript:void(0)" onclick="setCategory('Checks')">Oxford Check Shirts</a></li>
+          <li><a href="javascript:void(0)" onclick="setCategory('Linen')">Pure Linen Collection</a></li>
+          <li><a href="javascript:void(0)" onclick="setCategory('Jeans')">Denim Jeans</a></li>
+        </ul>
+      </div>
+      <div class="f-col">
+        <h4>Shopkeeper Portals</h4>
+        <ul>
+          <li><a href="javascript:void(0)" onclick="openLoginModal()">Wholesale Login</a></li>
+          <li><a href="javascript:void(0)" onclick="openApplyModal()">Apply for Wholesale Account</a></li>
+          <li><a href="javascript:void(0)" onclick="openOrdersModal()">My Order History</a></li>
+          <li><a href="https://wa.me/919876543210" target="_blank">Chat with Factory Manager</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 Casa Enterprises. All Rights Reserved. Built for Maharashtra Wholesale Shopkeepers.</span>
+    </div>
+  </footer>
+
+  <!-- ========================================== -->
+  <!-- 9. SLIDE-OUT CART DRAWER (ZEPTO STYLE)     -->
+  <!-- ========================================== -->
+  <div class="cart-drawer-overlay" id="cart-drawer-overlay" onclick="closeCartDrawer()"></div>
+  <aside class="cart-slide-drawer" id="cart-slide-drawer">
+    
+    <div class="drawer-header">
+      <div class="drawer-header-title">
+        <span class="drawer-icon">🛒</span>
+        <div>
+          <h3>My Wholesale Bulk Cart</h3>
+          <span class="drawer-sub" id="drawer-total-items-badge">0 items selected</span>
+        </div>
+      </div>
+      <button class="drawer-close-btn" onclick="closeCartDrawer()">✕</button>
+    </div>
+
+    <!-- Empty State or Items List -->
+    <div class="drawer-body" id="drawer-cart-body">
+      <!-- Injected by app.js -->
+    </div>
+
+    <!-- Sticky Drawer Footer with Bill Details -->
+    <div class="drawer-footer" id="drawer-footer-checkout">
+      <div class="bill-breakdown-card">
+        <div class="bill-row">
+          <span>Items Quantity:</span>
+          <strong id="bill-total-pcs">0 Pieces</strong>
+        </div>
+        <div class="bill-row">
+          <span>Taxable Amount:</span>
+          <span id="bill-taxable-amt">₹0.00</span>
+        </div>
+        <div class="bill-row">
+          <span>GST Taxes:</span>
+          <span id="bill-gst-amt">₹0.00</span>
+        </div>
+        <hr class="bill-divider">
+        <div class="bill-row bill-grand-total">
+          <span>Grand Total:</span>
+          <strong id="bill-grand-total">₹0.00</strong>
+        </div>
+      </div>
+
+      <div class="dispatch-notes-input">
+        <label>🚚 Transport / Booking Instructions (Optional):</label>
+        <input type="text" id="drawer-order-notes" placeholder="e.g. Please book parcel via V-Trans Hadapsar">
+      </div>
+
+      <div class="order-submit-error" id="drawer-order-error" style="display: none;"></div>
+
+      <button class="btn-checkout-primary" id="btn-submit-order" onclick="submitWholesaleOrder()">
+        <span class="btn-checkout-text">PLACE WHOLESALE ORDER</span>
+        <span class="btn-checkout-price" id="btn-checkout-price-preview">₹0.00</span>
+      </button>
+    </div>
+
+  </aside>
+
+  <!-- ========================================== -->
+  <!-- 10. MODAL: 2-STEP LOGIN (PASSWORD + OTP)   -->
+  <!-- ========================================== -->
+  <div class="modal-backdrop" id="modal-login" style="display: none;">
+    <div class="modal-dialog">
+      <button class="modal-close-btn" onclick="closeLoginModal()">✕</button>
+      
+      <!-- Step 1: Mobile & Password -->
+      <div id="login-step-1">
+        <div class="modal-hero-icon">🔑</div>
+        <h3 class="modal-title">Wholesale Shopkeeper Login</h3>
+        <p class="modal-subtitle">Enter your registered mobile number and password to access manufacturer rates.</p>
+        
+        <form onsubmit="handleLoginStep1(event)" class="modern-form">
+          <div class="input-field-group">
+            <label>Registered Mobile Number / Username *</label>
+            <input type="text" id="login-phone" required placeholder="e.g. 9876543210" autocomplete="tel">
+          </div>
+          <div class="input-field-group">
+            <label>Account Password *</label>
+            <input type="password" id="login-password" required placeholder="••••••••" autocomplete="current-password">
+          </div>
+          <div class="form-alert-error" id="login-step1-error" style="display: none;"></div>
+          <button type="submit" class="btn btn-modern-primary w-100" id="btn-login-step1">
+            Verify & Send OTP ➔
+          </button>
+        </form>
+        
+        <div class="modal-bottom-cta">
+          New wholesale shopkeeper? <a href="javascript:void(0)" onclick="closeLoginModal(); openApplyModal();">Apply for Wholesale Account</a>
+        </div>
+      </div>
+
+      <!-- Step 2: 6-Digit OTP Verification -->
+      <div id="login-step-2" style="display: none;">
+        <div class="modal-hero-icon" style="background: #ecfdf5; color: #10b981;">🛡️</div>
+        <h3 class="modal-title">2-Step Security Verification</h3>
+        <p class="modal-subtitle" id="otp-phone-label">Enter the 6-digit OTP code sent to your phone.</p>
+        
+        <form onsubmit="handleVerifyOtp(event)" class="modern-form">
+          <div class="input-field-group text-center">
+            <label>6-Digit OTP Code *</label>
+            <input type="text" id="login-otp" required maxlength="6" placeholder="• • • • • •" class="otp-box-input" autocomplete="one-time-code">
+          </div>
+          
+          <div class="demo-otp-banner" id="demo-otp-banner">
+            💡 <strong>Testing Code:</strong> <span id="demo-otp-code">123456</span> (Auto-generated in dev mode)
+          </div>
+
+          <div class="form-alert-error" id="login-step2-error" style="display: none;"></div>
+          <button type="submit" class="btn btn-modern-success w-100" id="btn-verify-otp">
+            ✓ Complete Login & Access Portal
+          </button>
+          <button type="button" class="btn btn-modern-ghost w-100 mt-2" onclick="backToLoginStep1()">
+            ← Back to Password Login
+          </button>
+        </form>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- 11. MODAL: APPLY FOR WHOLESALE ACCOUNT     -->
+  <!-- ========================================== -->
+  <div class="modal-backdrop" id="modal-apply" style="display: none;">
+    <div class="modal-dialog modal-dialog-lg">
+      <button class="modal-close-btn" onclick="closeApplyModal()">✕</button>
+      <div class="modal-hero-icon" style="background: #eff6ff; color: #2563eb;">📝</div>
+      <h3 class="modal-title">Apply for Wholesale Buyer Account</h3>
+      <p class="modal-subtitle">Join over 200+ retail shopkeepers who source direct from Casa Enterprises.</p>
+      
+      <form onsubmit="handleApplyAccount(event)" class="modern-form" id="apply-form">
+        <div class="form-grid-2">
+          <div class="input-field-group">
+            <label>Shop / Business Name *</label>
+            <input type="text" id="apply-shop" required placeholder="e.g. Shree Ganesh Menswear">
+          </div>
+          <div class="input-field-group">
+            <label>Owner / Proprietor Name *</label>
+            <input type="text" id="apply-owner" required placeholder="e.g. Ramesh Patil">
+          </div>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="input-field-group">
+            <label>Mobile Number (For Login & OTP) *</label>
+            <input type="tel" id="apply-phone" required placeholder="e.g. 9876543210">
+          </div>
+          <div class="input-field-group">
+            <label>WhatsApp Number</label>
+            <input type="tel" id="apply-whatsapp" placeholder="e.g. 9876543210 (If different)">
+          </div>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="input-field-group">
+            <label>City / Town *</label>
+            <input type="text" id="apply-city" required placeholder="e.g. Pune, Solapur, Kolhapur">
+          </div>
+          <div class="input-field-group">
+            <label>GST Number (Optional)</label>
+            <input type="text" id="apply-gst" placeholder="27AAAAA0000A1Z5">
+          </div>
+        </div>
+
+        <div class="input-field-group">
+          <label>Full Shop Address *</label>
+          <textarea id="apply-address" required rows="2" placeholder="Shop No., Market / Main Road, Area, Landmark..."></textarea>
+        </div>
+
+        <div class="input-field-group">
+          <label>Create Login Password *</label>
+          <input type="password" id="apply-password" required placeholder="Minimum 6 characters">
+        </div>
+
+        <div class="form-alert-error" id="apply-error" style="display: none;"></div>
+        <div class="form-alert-success" id="apply-success" style="display: none;"></div>
+
+        <button type="submit" class="btn btn-modern-primary w-100" id="btn-submit-apply">
+          🚀 Submit Wholesale Application
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- 12. MODAL: ORDER CONFIRMATION SUCCESS      -->
+  <!-- ========================================== -->
+  <div class="modal-backdrop" id="modal-order-success" style="display: none;">
+    <div class="modal-dialog text-center">
+      <div class="success-icon-badge">🎉</div>
+      <h3 style="color: #10b981; font-weight: 800; font-size: 1.4rem;">Wholesale Order Placed!</h3>
+      <p id="success-order-invoice-no" style="font-weight: 700; color: #1e293b; font-size: 1.1rem; margin-top: 4px;">Order #WS-20260817-001</p>
+      <p style="font-size: 0.88rem; color: #64748b; margin-top: 8px;">Your order has been recorded into Casa ERP. Our Hadapsar warehouse will pack and prepare your parcel for transport dispatch.</p>
+      
+      <div class="order-receipt-summary">
+        <div class="receipt-row">
+          <span>Total Shirts:</span>
+          <strong id="success-total-qty">0 Pcs</strong>
+        </div>
+        <div class="receipt-row">
+          <span>Total Order Value:</span>
+          <strong id="success-total-amt" style="color: #2563eb;">₹0.00</strong>
+        </div>
+        <div class="receipt-row">
+          <span>Status:</span>
+          <span class="badge badge-warning">PENDING PACKING</span>
+        </div>
+      </div>
+
+      <div class="mt-4">
+        <button class="btn btn-modern-primary w-100" onclick="closeOrderSuccessModal(); openOrdersModal();">
+          📦 View My Orders Ledger
+        </button>
+        <button class="btn btn-modern-ghost w-100 mt-2" onclick="closeOrderSuccessModal()">
+          👕 Continue Shopping
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- 13. MODAL: MY ORDERS & 1-CLICK REORDER     -->
+  <!-- ========================================== -->
+  <div class="modal-backdrop" id="modal-orders" style="display: none;">
+    <div class="modal-dialog modal-dialog-xl">
+      <button class="modal-close-btn" onclick="closeOrdersModal()">✕</button>
+      <div class="modal-header-flex">
+        <div class="modal-hero-icon" style="margin: 0; background: #eff6ff; color: #2563eb;">📦</div>
+        <div>
+          <h3 class="modal-title" style="text-align: left;">My Wholesale Orders Ledger</h3>
+          <p class="modal-subtitle" style="text-align: left;">Track your past shipments, dispatch statuses, and 1-click reorder favorite shirts.</p>
+        </div>
+      </div>
+
+      <div class="orders-ledger-list" id="orders-ledger-list">
+        <!-- Injected dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- 14. MOBILE BOTTOM APP DOCK (MYNTRA / ZEPTO)-->
+  <!-- ========================================== -->
+  <nav class="mobile-app-bottom-nav">
+    <button class="app-nav-item active" onclick="scrollToTop()">
+      <span class="nav-ico">🏠</span>
+      <span class="nav-txt">Home</span>
+    </button>
+    <button class="app-nav-item" onclick="scrollToProducts()">
+      <span class="nav-ico">👕</span>
+      <span class="nav-txt">Shirts</span>
+    </button>
+    <button class="app-nav-item" onclick="openOrdersModal()">
+      <span class="nav-ico">📦</span>
+      <span class="nav-txt">Orders</span>
+    </button>
+    <button class="app-nav-item" onclick="openCartDrawer()">
+      <div class="nav-cart-badge-wrap">
+        <span class="nav-ico">🛒</span>
+        <span class="nav-cart-counter" id="mobile-bottom-cart-count">0</span>
+      </div>
+      <span class="nav-txt">Cart</span>
+    </button>
+    <button class="app-nav-item" onclick="handleAccountButtonClick()">
+      <span class="nav-ico">👤</span>
+      <span class="nav-txt" id="mobile-nav-account-label">Account</span>
+    </button>
+  </nav>
+
+  <!-- Floating Toast Notification -->
+  <div class="toast-notification" id="toast-msg"></div>
+
+  <!-- Main JavaScript Application Logic -->
+  <script src="app.js"></script>
+</body>
+</html>

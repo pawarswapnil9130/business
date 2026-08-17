@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="casaGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2563EB"/>
+      <stop offset="100%" stop-color="#0F172A"/>
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8"/>
+      <stop offset="100%" stop-color="#0284C7"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000000" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+
+  <!-- Canvas Background with Smooth Rounded Corners -->
+  <rect width="512" height="512" rx="112" fill="url(#casaGrad)"/>
+
+  <!-- Subtle Inner Border Highlight -->
+  <rect x="12" y="12" width="488" height="488" rx="100" fill="none" stroke="#60A5FA" stroke-width="8" stroke-opacity="0.35"/>
+
+  <!-- Outer Apparel Hanger & Shirt Shape -->
+  <g filter="url(#glow)">
+    <!-- Hanger Top Hook -->
+    <path d="M256 120 C275 120 290 135 290 154 C290 178 268 190 256 205 L256 218" 
+          fill="none" stroke="#F8FAFC" stroke-width="24" stroke-linecap="round"/>
+    
+    <!-- Shirt Collar & Shoulders -->
+    <path d="M256 218 L152 268 C135 276 124 293 124 312 L124 416 C124 426 132 434 142 434 L370 434 C380 434 388 426 388 416 L388 312 C388 293 377 276 360 268 Z" 
+          fill="#1E293B" stroke="#F8FAFC" stroke-width="20" stroke-linejoin="round"/>
+
+    <!-- Crisp White Collar Wings -->
+    <polygon points="256,236 210,300 256,285" fill="#FFFFFF"/>
+    <polygon points="256,236 302,300 256,285" fill="#E2E8F0"/>
+
+    <!-- Tie / Placket Accent in Electric Sky Blue -->
+    <polygon points="256,290 268,310 264,420 248,420 244,310" fill="url(#accentGrad)"/>
+
+    <!-- Bold Monogram "C" Emblem -->
+    <circle cx="256" cy="358" r="44" fill="#0F172A" stroke="#38BDF8" stroke-width="6"/>
+    <path d="M272 342 C267 336 261 334 254 334 C241 334 232 344 232 358 C232 372 241 382 254 382 C261 382 267 380 272 374" 
+          fill="none" stroke="#FFFFFF" stroke-width="12" stroke-linecap="round"/>
+  </g>
+</svg>

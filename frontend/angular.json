@@ -51,7 +51,12 @@
             "tsConfig": "tsconfig.app.json",
             "assets": [
               "src/favicon.svg",
-              "src/assets"
+              "src/assets",
+              {
+                "glob": "**/*",
+                "input": "../customer-portal",
+                "output": "portal"
+              }
             ],
             "styles": [
               "src/styles.css"
