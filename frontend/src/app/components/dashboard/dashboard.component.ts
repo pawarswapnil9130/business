@@ -1494,8 +1494,7 @@ export class DashboardComponent implements OnInit {
   recalculateCartLine(item: any) {
     const qty = item.quantity;
     const baseSub = (qty * item.unitPrice) - item.discount;
-    const gstVal = baseSub * (item.gstPercent / 100.0);
-    item.subTotal = baseSub + gstVal;
+    item.subTotal = baseSub;
   }
 
   removeFromCart(index: number) {
@@ -1507,14 +1506,11 @@ export class DashboardComponent implements OnInit {
   }
 
   get cartTaxTotal() {
-    return this.salesCart.reduce((sum, item) => {
-      const baseSub = (item.quantity * item.unitPrice) - item.discount;
-      return sum + (baseSub * (item.gstPercent / 100.0));
-    }, 0);
+    return 0;
   }
 
   get cartFinalTotal() {
-    return this.salesCart.reduce((sum, item) => sum + item.subTotal, 0);
+    return this.cartPreTaxTotal;
   }
 
   checkoutSalesOrder() {

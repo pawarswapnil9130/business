@@ -105,9 +105,8 @@ namespace ApparelERP.Api.Services
                 decimal lineQty = itemDto.Quantity;
                 decimal itemSubtotalExcludingTax = (lineQty * itemDto.UnitPrice) - itemDto.Discount;
                 
-                decimal taxRate = product.GstPercent / 100.0m;
-                decimal itemGstAmount = itemSubtotalExcludingTax * taxRate;
-                decimal itemSubtotalWithTax = itemSubtotalExcludingTax + itemGstAmount;
+                decimal itemGstAmount = 0.00m;
+                decimal itemSubtotalWithTax = itemSubtotalExcludingTax;
 
                 orderTotalAmount += itemSubtotalExcludingTax;
                 orderTotalGst += itemGstAmount;
