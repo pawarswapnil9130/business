@@ -230,7 +230,6 @@ function renderProductsGrid() {
         <div class="price-unlocked-view">
           <span class="wholesale-rate-big">₹${unitRate.toFixed(2)}<small style="font-size: 11px; font-weight: normal; color: var(--text-muted);">/pc</small></span>
           <span class="set-price-tag">₹${Math.round(setPrice).toLocaleString('en-IN')} / Set (${setSize} pcs)</span>
-          <span class="gst-note">+${p.gstPercent}% GST</span>
         </div>
       `;
 
@@ -508,8 +507,6 @@ function renderCartDrawer() {
       </div>
     `;
     document.getElementById('bill-total-pcs').textContent = '0 Sets (0 Pieces)';
-    document.getElementById('bill-taxable-amt').textContent = '₹0.00';
-    document.getElementById('bill-gst-amt').textContent = '₹0.00';
     document.getElementById('bill-grand-total').textContent = '₹0.00';
     document.getElementById('btn-checkout-price-preview').textContent = '₹0.00';
     document.getElementById('btn-submit-order').disabled = true;
@@ -526,8 +523,8 @@ function renderCartDrawer() {
   body.innerHTML = items.map(({ product, setsCount, setSize, quantity }) => {
     const unitPrice = Number(product.price || 325);
     const subtotal = quantity * unitPrice;
-    const gst = subtotal * (product.gstPercent / 100.0);
-    const lineTotal = subtotal + gst;
+    const gst = 0;
+    const lineTotal = subtotal;
     const currentSets = setsCount || 1;
     const currentSetSize = setSize || product.setSize || 4;
     const ratio = product.setRatio || product.size || '38, 40, 42, 44';
@@ -564,8 +561,6 @@ function renderCartDrawer() {
   const grandTotal = totalTaxable + totalGst;
 
   document.getElementById('bill-total-pcs').textContent = `${totalSets} Sets (${totalQty} Pieces)`;
-  document.getElementById('bill-taxable-amt').textContent = `₹${totalTaxable.toFixed(2)}`;
-  document.getElementById('bill-gst-amt').textContent = `₹${totalGst.toFixed(2)}`;
   document.getElementById('bill-grand-total').textContent = `₹${grandTotal.toFixed(2)}`;
   document.getElementById('btn-checkout-price-preview').textContent = `₹${grandTotal.toFixed(2)}`;
 }

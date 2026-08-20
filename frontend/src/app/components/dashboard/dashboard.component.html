@@ -1961,8 +1961,11 @@
                       </select>
                     </td>
                     <td>
-                      <button class="btn btn-secondary btn-sm" (click)="generateInvoicePdf(o)" title="Download Tax Invoice">
+                      <button class="btn btn-secondary btn-sm" (click)="generateInvoicePdf(o, false)" title="Download Invoice" style="margin-right: 4px;">
                         📄 Invoice
+                      </button>
+                      <button class="btn btn-secondary btn-sm" (click)="generateInvoicePdf(o, true)" title="Download GST Invoice">
+                        📝 GST Invoice
                       </button>
                     </td>
                   </tr>

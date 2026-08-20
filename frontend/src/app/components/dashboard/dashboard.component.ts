@@ -737,21 +737,21 @@ export class DashboardComponent implements OnInit {
     }
   }
 
-  downloadInvoice(order: any) {
+  downloadInvoice(order: any, withGst: boolean = false) {
     if (!order) return;
 
     // If items array is empty or missing, fetch full order by ID
     if (!order.items || order.items.length === 0) {
       if (order.id) {
         this.apiService.getSalesOrderById(order.id).subscribe({
-          next: (fullOrder) => this.generateInvoicePdf(fullOrder),
-          error: () => this.generateInvoicePdf(order)
+          next: (fullOrder) => this.generateInvoicePdf(fullOrder, withGst),
+          error: () => this.generateInvoicePdf(order, withGst)
         });
         return;
       }
     }
 
-    this.generateInvoicePdf(order);
+    this.generateInvoicePdf(order, withGst);
   }
 
   convertNumberToWords(amount: number): string {
@@ -773,7 +773,7 @@ export class DashboardComponent implements OnInit {
     return 'INR ' + numToWords(rounded).trim() + ' Only';
   }
 
-  generateInvoicePdf(order: any) {
+  generateInvoicePdf(order: any, withGst: boolean = false) {
     const doc = new jsPDF('p', 'mm', 'a4');
     const pageWidth = doc.internal.pageSize.getWidth(); // 210mm
     const pageHeight = doc.internal.pageSize.getHeight(); // 297mm
@@ -891,6 +891,8 @@ export class DashboardComponent implements OnInit {
     let tableBody: any[] = [];
     let totalQty = 0;
     let totalDiscount = 0;
+    let calcTotalTaxable = 0;
+    let calcTotalGst = 0;
 
     if (items.length > 0) {
       tableBody = items.map((item: any, idx: number) => {
@@ -910,11 +912,23 @@ export class DashboardComponent implements OnInit {
         const discount = item.discount || 0;
         totalDiscount += discount;
 
-        const unitRate = item.unitPrice || 0;
-        const subtotalExclTax = (qty * unitRate) - discount;
-        const gstPercent = item.gstPercent ?? prod.gstPercent ?? 12.00;
-        const gstAmount = subtotalExclTax * (gstPercent / 100.0);
-        const lineTotal = item.subTotal || (subtotalExclTax + gstAmount);
+        const finalUnitPrice = item.unitPrice || 0;
+        let unitRate = finalUnitPrice;
+        let gstPercent = 0;
+        let gstAmount = 0;
+        let subtotalExclTax = (qty * finalUnitPrice) - discount;
+        let lineTotal = subtotalExclTax;
+
+        if (withGst) {
+          gstPercent = item.gstPercent ?? prod.gstPercent ?? 12.00;
+          unitRate = finalUnitPrice / (1 + (gstPercent / 100.0));
+          subtotalExclTax = (qty * unitRate) - discount;
+          gstAmount = (qty * finalUnitPrice) - discount - subtotalExclTax;
+          lineTotal = subtotalExclTax + gstAmount;
+        }
+        
+        calcTotalTaxable += subtotalExclTax;
+        calcTotalGst += gstAmount;
 
         return [
           (idx + 1).toString().padStart(2, '0'),
@@ -929,17 +943,31 @@ export class DashboardComponent implements OnInit {
         ];
       });
     } else {
+      const finalAmt = order.finalAmount || order.totalAmount || 0;
+      let billGstPercent = 0;
+      let billUnitRate = finalAmt;
+      let billTaxable = finalAmt;
+
+      if (withGst) {
+        billGstPercent = order.totalGst > 0 ? ((order.totalGst / (order.totalAmount || 1)) * 100) : 12.0;
+        billUnitRate = finalAmt / (1 + (billGstPercent / 100.0));
+        billTaxable = billUnitRate;
+      }
+      
+      calcTotalTaxable = billTaxable;
+      calcTotalGst = finalAmt - billTaxable;
+
       tableBody = [
         [
           '01',
           'Garments / Apparel Items (Consolidated Bill)',
           'PCS',
           '1',
-          `Rs. ${(order.totalAmount || 0).toFixed(2)}`,
+          `Rs. ${billUnitRate.toFixed(2)}`,
           '-',
-          `${((order.totalGst / (order.totalAmount || 1)) * 100).toFixed(0)}%`,
-          `Rs. ${(order.totalAmount || 0).toFixed(2)}`,
-          `Rs. ${(order.finalAmount || 0).toFixed(2)}`
+          `${billGstPercent.toFixed(0)}%`,
+          `Rs. ${billTaxable.toFixed(2)}`,
+          `Rs. ${finalAmt.toFixed(2)}`
         ]
       ];
       totalQty = 1;
@@ -1049,10 +1077,10 @@ export class DashboardComponent implements OnInit {
       margin: { left: summaryCardX, right: margin },
       body: [
         ['Total Quantity:', `${totalQty} Units`],
-        ['Taxable Net Subtotal:', `Rs. ${(order.totalAmount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`],
+        ['Taxable Net Subtotal:', `Rs. ${calcTotalTaxable.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`],
         ['Total Discount:', totalDiscount > 0 ? `- Rs. ${totalDiscount.toFixed(2)}` : 'Rs. 0.00'],
-        ['CGST (Tax):', `+ Rs. ${((order.totalGst || 0) / 2).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`],
-        ['SGST (Tax):', `+ Rs. ${((order.totalGst || 0) / 2).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`],
+        ['CGST (Tax):', `+ Rs. ${(calcTotalGst / 2).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`],
+        ['SGST (Tax):', `+ Rs. ${(calcTotalGst / 2).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`],
         ['TOTAL PAYABLE:', `Rs. ${(order.finalAmount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`]
       ],
       theme: 'plain',
