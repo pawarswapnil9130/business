@@ -1462,8 +1462,9 @@
                   <td>₹{{ order.totalGst | number:'1.2-2' }}</td>
                   <td><strong>₹{{ order.finalAmount | number:'1.2-2' }}</strong></td>
                   <td>
-                    <div class="action-buttons" style="display: flex; gap: 6px;">
-                      <button class="btn btn-secondary btn-sm" (click)="downloadInvoice(order)">⬇️ Download PDF</button>
+                    <div class="action-buttons" style="display: flex; gap: 6px; flex-direction: column;">
+                      <button class="btn btn-secondary btn-sm" (click)="downloadInvoice(order, false)" title="Download Invoice">📄 Invoice</button>
+                      <button class="btn btn-secondary btn-sm" (click)="downloadInvoice(order, true)" title="Download GST Invoice">📝 GST Invoice</button>
                       <button class="btn btn-danger btn-sm" (click)="onDeleteSalesOrder(order.id)">Delete</button>
                     </div>
                   </td>
