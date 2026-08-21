@@ -21,6 +21,7 @@ namespace ApparelERP.Api.Data
         public DbSet<User> Users { get; set; }
         public DbSet<Expense> Expenses { get; set; }
         public DbSet<Customer> Customers { get; set; }
+        public DbSet<SystemSetting> SystemSettings { get; set; }
         
         // Keyless views
         public DbSet<StockSummaryDto> StockSummaries { get; set; }

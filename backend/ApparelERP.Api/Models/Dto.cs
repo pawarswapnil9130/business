@@ -297,6 +297,8 @@ namespace ApparelERP.Api.Models.Dto
     public class CustomerOrderCreateDto
     {
         public string? Notes { get; set; }
+        public string? TransactionId { get; set; }
+        public string? PaymentProofUrl { get; set; }
         public List<CustomerOrderItemCreateDto> Items { get; set; } = new();
     }
 
@@ -317,6 +319,8 @@ namespace ApparelERP.Api.Models.Dto
         public decimal TotalGst { get; set; }
         public decimal FinalAmount { get; set; }
         public DateTime SalesDate { get; set; }
+        public string? TransactionId { get; set; }
+        public string? PaymentProofUrl { get; set; }
         public List<CustomerOrderItemDto> Items { get; set; } = new();
     }
 

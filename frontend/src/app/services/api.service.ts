@@ -268,4 +268,26 @@ export class ApiService {
     }
     return this.http.post<any>(`${this.baseUrl}/products/${productId}/upload-image`, formData, { headers });
   }
+
+  // ==========================================
+  // SETTINGS
+  // ==========================================
+
+  getSettings(key: string): Observable<any> {
+    return this.http.get(`${this.baseUrl}/settings/${key}`, { responseType: 'text' });
+  }
+
+  saveSettings(key: string, value: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/settings/${key}`, value, { headers: this.getHeaders() });
+  }
+
+  uploadQrCode(file: File): Observable<any> {
+    const formData = new FormData();
+    formData.append('file', file);
+    let headers = new HttpHeaders();
+    if (this.currentUserValue && this.currentUserValue.token) {
+      headers = headers.set('Authorization', `Bearer ${this.currentUserValue.token}`);
+    }
+    return this.http.post<any>(`${this.baseUrl}/settings/upload-qr`, formData, { headers: headers });
+  }
 }

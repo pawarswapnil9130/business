@@ -123,7 +123,9 @@ async function loadCatalog() {
   try {
     const isLoggedIn = !!state.token;
     const url = isLoggedIn ? `${API_BASE}/customer/products` : `${API_BASE}/customer/public-showcase`;
-    const headers = isLoggedIn ? { 'Authorization': `Bearer ${state.token}` } : {};
+    const headers = isLoggedIn 
+      ? { 'Authorization': `Bearer ${state.token}`, 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' } 
+      : { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' };
 
     const res = await fetch(url, { headers });
     if (!res.ok) {
@@ -557,12 +559,169 @@ function renderCartDrawer() {
       </div>
     `;
   }).join('');
-
   const grandTotal = totalTaxable + totalGst;
 
   document.getElementById('bill-total-pcs').textContent = `${totalSets} Sets (${totalQty} Pieces)`;
   document.getElementById('bill-grand-total').textContent = `₹${grandTotal.toFixed(2)}`;
   document.getElementById('btn-checkout-price-preview').textContent = `₹${grandTotal.toFixed(2)}`;
+  document.getElementById('btn-submit-order').disabled = false;
+}
+
+let companyProfileData = null;
+
+async function proceedToPayment() {
+  const items = Object.values(state.cart);
+  if (items.length === 0) return;
+
+  // Show loading
+  const btn = document.getElementById('btn-submit-order');
+  btn.disabled = true;
+  btn.querySelector('.btn-checkout-text').textContent = 'LOADING PAYMENT DETAILS...';
+
+  try {
+    const res = await fetch(`${API_BASE}/settings/company_profile`);
+    if (res.ok) {
+      companyProfileData = await res.json();
+    }
+  } catch (e) {
+    console.error('Failed to fetch settings', e);
+  }
+
+  btn.disabled = false;
+  btn.querySelector('.btn-checkout-text').textContent = 'PROCEED TO PAYMENT';
+
+  // Calculate Grand Total
+  let grandTotal = 0;
+  items.forEach(({ product, quantity }) => {
+    const unitPrice = Number(product.price || 325);
+    grandTotal += quantity * unitPrice;
+  });
+
+  // Hide cart, show payment
+  document.getElementById('drawer-cart-body').style.display = 'none';
+  document.getElementById('drawer-footer-checkout').style.display = 'none';
+  document.getElementById('drawer-payment-body').style.display = 'block';
+
+  // Fill data
+  document.getElementById('payment-amount-display').textContent = `₹${grandTotal.toFixed(2)}`;
+  
+  if (companyProfileData) {
+    document.getElementById('payment-bank-name').textContent = companyProfileData.bankName || '--';
+    document.getElementById('payment-account-name').textContent = companyProfileData.accountName || '--';
+    document.getElementById('payment-account-number').textContent = companyProfileData.accountNumber || '--';
+    document.getElementById('payment-ifsc').textContent = companyProfileData.ifscCode || '--';
+    document.getElementById('payment-upi').textContent = companyProfileData.upiId || '--';
+
+    if (companyProfileData.qrCodeUrl) {
+      document.getElementById('payment-qr-image').src = companyProfileData.qrCodeUrl;
+      document.getElementById('payment-qr-image').style.display = 'inline-block';
+      document.getElementById('payment-qr-placeholder').style.display = 'none';
+    } else {
+      document.getElementById('payment-qr-image').style.display = 'none';
+      document.getElementById('payment-qr-placeholder').style.display = 'block';
+      document.getElementById('payment-qr-placeholder').textContent = 'No QR Code provided by store.';
+    }
+  }
+}
+
+function backToCart() {
+  document.getElementById('drawer-payment-body').style.display = 'none';
+  document.getElementById('drawer-cart-body').style.display = 'block';
+  document.getElementById('drawer-footer-checkout').style.display = 'block';
+}
+
+async function confirmPaymentAndPlaceOrder() {
+  const transactionIdInput = document.getElementById('payment-transaction-id').value.trim();
+  const proofFileInput = document.getElementById('payment-proof-file').files[0];
+
+  if (!transactionIdInput || !proofFileInput) {
+    alert("Please enter Transaction ID and upload the Payment Proof screenshot.");
+    return;
+  }
+
+  const btn = document.getElementById('btn-confirm-payment');
+  const errorDiv = document.getElementById('drawer-order-error');
+  const notes = document.getElementById('drawer-order-notes').value.trim();
+
+  errorDiv.style.display = 'none';
+
+  const cartItems = Object.values(state.cart);
+  const items = cartItems.map(({ product, setsCount, quantity }) => ({
+    productId: product.id,
+    quantity,
+    setsCount: setsCount || 1
+  }));
+
+  const totalSets = cartItems.reduce((s, i) => s + (i.setsCount || 1), 0);
+  const totalPcs = cartItems.reduce((s, i) => s + i.quantity, 0);
+
+  btn.disabled = true;
+  btn.textContent = 'UPLOADING PROOF...';
+
+  try {
+    // 1. Upload Payment Proof File
+    let paymentProofUrl = null;
+    const formData = new FormData();
+    formData.append('file', proofFileInput);
+    
+    const uploadRes = await fetch(`${API_BASE}/customer/upload-proof`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${state.token}` },
+      body: formData
+    });
+
+    if (!uploadRes.ok) throw new Error("Failed to upload payment proof.");
+    const uploadData = await uploadRes.json();
+    paymentProofUrl = uploadData.url;
+
+    btn.textContent = 'PLACING ORDER...';
+
+    // 2. Place Order
+    const payload = {
+      items,
+      notes,
+      totalSets,
+      totalPcs,
+      transactionId: transactionIdInput,
+      paymentProofUrl: paymentProofUrl
+    };
+
+    const res = await fetch(`${API_BASE}/customer/wholesale-orders`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${state.token}`
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      
+      // Clear cart
+      state.cart = {};
+      updateCartBadges();
+      closeCartDrawer();
+      showToast(`Order Placed Successfully! (Invoice #${data.invoiceNo})`);
+      
+      // Refresh past orders view if user navigates there
+      setTimeout(() => {
+        // Assuming there might be a function to refresh orders
+        if (typeof fetchCustomerOrders === 'function') fetchCustomerOrders();
+      }, 1500);
+      
+    } else {
+      const err = await res.json();
+      throw new Error(err.message || 'Failed to place order');
+    }
+
+  } catch (error) {
+    console.error('Order placement error:', error);
+    alert(error.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'CONFIRM & PLACE ORDER';
+  }
 }
 
 async function submitWholesaleOrder() {

@@ -107,6 +107,7 @@ export class DashboardComponent implements OnInit {
     ifscCode: 'HDFC0001234',
     upiId: 'casaenterprises@upi',
     gpayPhone: '+91 9876543210',
+    qrCodeUrl: '',
     // Terms & Conditions on Invoice
     termsText: '1. Goods once sold will not be exchanged or returned without original bill.\n2. Please check sizes and items at the time of delivery.\n3. All disputes are subject to Pune jurisdiction only.',
     terms: [
@@ -117,13 +118,38 @@ export class DashboardComponent implements OnInit {
   };
 
   loadCompanyProfile() {
+    this.apiService.getSettings('company_profile').subscribe({
+      next: (res) => {
+        if (res) {
+          try {
+            const parsed = typeof res === 'string' ? JSON.parse(res) : res;
+            this.companyProfile = { ...this.companyProfile, ...parsed };
+            if (this.companyProfile.termsText) {
+              this.companyProfile.terms = this.companyProfile.termsText.split('\n').filter((t: string) => t.trim().length > 0);
+            }
+            // Save a local copy
+            localStorage.setItem('apparel_company_profile', JSON.stringify(this.companyProfile));
+          } catch (e) {
+            console.error('Failed to parse backend company profile:', e);
+            this.loadCompanyProfileFallback();
+          }
+        }
+      },
+      error: (err) => {
+        console.error('Failed to load company profile from backend', err);
+        this.loadCompanyProfileFallback();
+      }
+    });
+  }
+
+  loadCompanyProfileFallback() {
     const saved = localStorage.getItem('apparel_company_profile');
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
         this.companyProfile = { ...this.companyProfile, ...parsed };
         if (this.companyProfile.termsText) {
-          this.companyProfile.terms = this.companyProfile.termsText.split('\n').filter(t => t.trim().length > 0);
+          this.companyProfile.terms = this.companyProfile.termsText.split('\n').filter((t: string) => t.trim().length > 0);
         }
       } catch (e) {
         console.error('Failed to parse saved company profile:', e);
@@ -133,11 +159,39 @@ export class DashboardComponent implements OnInit {
 
   saveCompanyProfile() {
     if (this.companyProfile.termsText) {
-      this.companyProfile.terms = this.companyProfile.termsText.split('\n').filter(t => t.trim().length > 0);
+      this.companyProfile.terms = this.companyProfile.termsText.split('\n').filter((t: string) => t.trim().length > 0);
     }
     localStorage.setItem('apparel_company_profile', JSON.stringify(this.companyProfile));
-    this.successMessage = 'Store profile & bank details saved successfully! All future invoice downloads will use these details.';
-    setTimeout(() => this.successMessage = '', 5000);
+
+    this.apiService.saveSettings('company_profile', this.companyProfile).subscribe({
+      next: () => {
+        this.successMessage = 'Store profile & bank details saved to global settings successfully!';
+        setTimeout(() => this.successMessage = '', 5000);
+      },
+      error: (err) => {
+        console.error('Failed to save settings', err);
+        this.successMessage = 'Saved locally, but failed to sync to global settings.';
+        setTimeout(() => this.successMessage = '', 5000);
+      }
+    });
+  }
+
+  onQrCodeSelected(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      this.apiService.uploadQrCode(file).subscribe({
+        next: (res) => {
+          this.companyProfile.qrCodeUrl = res.url;
+          this.successMessage = 'QR Code uploaded successfully! Please click Save Store Settings.';
+          setTimeout(() => this.successMessage = '', 5000);
+        },
+        error: (err) => {
+          console.error('Failed to upload QR', err);
+          this.successMessage = 'Failed to upload QR Code.';
+          setTimeout(() => this.successMessage = '', 5000);
+        }
+      });
+    }
   }
 
   resetCompanyProfile() {
@@ -155,6 +209,7 @@ export class DashboardComponent implements OnInit {
       ifscCode: 'HDFC0001234',
       upiId: 'casaenterprises@upi',
       gpayPhone: '+91 9876543210',
+      qrCodeUrl: '',
       termsText: '1. Goods once sold will not be exchanged or returned without original bill.\n2. Please check sizes and items at the time of delivery.\n3. All disputes are subject to Pune jurisdiction only.',
       terms: [
         '1. Goods once sold will not be exchanged or returned without original bill.',
@@ -1277,6 +1332,12 @@ export class DashboardComponent implements OnInit {
   // Production Batches
   onSubmitBatch() {
     this.clearMessages();
+
+    if (!this.newBatch.fabricId) {
+      this.errorMessage = 'Please select a Fabric Roll.';
+      return;
+    }
+
     this.newBatch.fabricMetersUsed = this.newBatch.quantityToSew * this.newBatch.fabricPerShirt;
     this.apiService.startBatch(this.newBatch).subscribe({
       next: () => {

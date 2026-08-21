@@ -57,6 +57,14 @@ namespace ApparelERP.Api.Models
         [Column("sales_date")]
         public DateTime SalesDate { get; set; } = DateTime.UtcNow;
 
+        [Column("transaction_id")]
+        [MaxLength(100)]
+        public string? TransactionId { get; set; }
+
+        [Column("payment_proof_url")]
+        [MaxLength(500)]
+        public string? PaymentProofUrl { get; set; }
+
         public ICollection<SalesOrderItem> Items { get; set; } = new List<SalesOrderItem>();
     }
 }

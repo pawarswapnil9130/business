@@ -29,21 +29,26 @@ namespace ApparelERP.Api.Services
                 ?? throw new ArgumentException("Fabric not found");
 
             int? productId = dto.ProductId;
+            string actualDesignName = !string.IsNullOrWhiteSpace(dto.DesignName) 
+                ? dto.DesignName.Trim() 
+                : $"Stitched {fabric.Name ?? "Fabric"} ({fabric.Color ?? "Standard"})";
 
-            if (!productId.HasValue && !string.IsNullOrWhiteSpace(dto.DesignName))
+            if (!productId.HasValue)
             {
                 var existingProduct = await _context.Products
-                    .FirstOrDefaultAsync(p => p.Name.ToLower() == dto.DesignName.Trim().ToLower() && p.ProductType == "MANUFACTURED");
+                    .FirstOrDefaultAsync(p => p.Name.ToLower() == actualDesignName.ToLower() && p.ProductType == "MANUFACTURED");
 
                 if (existingProduct != null)
                 {
                     productId = existingProduct.Id;
+                    if (dto.SellingPrice > 0) existingProduct.SellingPrice = dto.SellingPrice;
+                    if (dto.DistributorPrice > 0) existingProduct.DistributorPrice = dto.DistributorPrice;
                 }
                 else
                 {
                     var newProduct = new Product
                     {
-                        Name = dto.DesignName.Trim(),
+                        Name = actualDesignName,
                         Category = "Shirts",
                         ProductType = "MANUFACTURED",
                         DesignBrand = "Generic",
@@ -71,6 +76,9 @@ namespace ApparelERP.Api.Services
                 {
                     throw new InvalidOperationException("Cannot start production batch for a non-manufactured product.");
                 }
+
+                if (dto.SellingPrice > 0) product.SellingPrice = dto.SellingPrice;
+                if (dto.DistributorPrice > 0) product.DistributorPrice = dto.DistributorPrice;
             }
 
             decimal totalMetersRequired = dto.FabricMetersUsed + dto.WastageMeters;
@@ -95,7 +103,7 @@ namespace ApparelERP.Api.Services
                 FabricMetersUsed = dto.FabricMetersUsed,
                 WastageMeters = dto.WastageMeters,
                 ProductId = productId,
-                DesignName = dto.DesignName,
+                DesignName = actualDesignName,
                 QuantityToSew = dto.QuantityToSew,
                 Status = "IN_PRODUCTION",
                 DateCreated = DateTime.UtcNow
@@ -164,7 +172,7 @@ namespace ApparelERP.Api.Services
                         Size = "Free",
                         Color = batch.Fabric?.Color ?? "Standard",
                         CostPrice = costPerPiece,
-                        SellingPrice = 0.00m,
+                        SellingPrice = 325.00m,
                         GstPercent = 12.00m
                     };
                     _context.Products.Add(newProduct);

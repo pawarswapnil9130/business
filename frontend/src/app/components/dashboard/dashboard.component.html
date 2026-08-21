@@ -1723,6 +1723,26 @@
                     <input type="text" [(ngModel)]="companyProfile.gpayPhone" name="gpayPhone" placeholder="+91 9876543210" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-input); border-radius: 6px; font-size: 0.9rem;" />
                   </div>
                 </div>
+                
+                <!-- Payment QR Code Upload -->
+                <div style="margin-top: 15px; border-top: 1px solid var(--border-color); padding-top: 15px;">
+                  <label style="font-size: 0.9rem; font-weight: 600; color: var(--text-primary); margin-bottom: 8px; display: block;">Payment QR Code (For Customer Portal)</label>
+                  <div style="display: flex; gap: 15px; align-items: flex-start;">
+                    <div *ngIf="companyProfile.qrCodeUrl" style="width: 100px; height: 100px; border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; background: white; padding: 5px;">
+                      <img [src]="companyProfile.qrCodeUrl" alt="Payment QR" style="width: 100%; height: 100%; object-fit: contain;">
+                    </div>
+                    <div>
+                      <input type="file" id="qrUpload" (change)="onQrCodeSelected($event)" accept="image/*" style="display: none;">
+                      <label for="qrUpload" class="btn btn-secondary" style="cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                        <span>📷</span> {{ companyProfile.qrCodeUrl ? 'Change QR Code' : 'Upload QR Code' }}
+                      </label>
+                      <button *ngIf="companyProfile.qrCodeUrl" type="button" class="btn btn-outline" (click)="companyProfile.qrCodeUrl = ''" style="margin-top: 8px; margin-left: 8px; color: var(--danger-color); border-color: var(--danger-color);">
+                        Remove QR
+                      </button>
+                      <p style="margin: 6px 0 0; font-size: 0.75rem; color: var(--text-secondary);">Upload your shop's Google Pay/PhonePe QR code. Customers will see this when placing orders on the wholesale portal.</p>
+                    </div>
+                  </div>
+                </div>
 
                 <div style="background: var(--bg-primary); border: 1px dashed var(--border-color); border-radius: 6px; padding: 10px 14px; margin-top: 4px;">
                   <p style="margin: 0; font-size: 0.8rem; color: var(--text-secondary);">
@@ -1905,6 +1925,7 @@
                     <th>Customer / Shop</th>
                     <th>Items Ordered</th>
                     <th>Total Value</th>
+                    <th>Payment Proof</th>
                     <th>Status</th>
                     <th>Update Status</th>
                     <th>Invoice</th>
@@ -1933,6 +1954,19 @@
                     <td>
                       <strong style="color: var(--color-primary); font-size: 0.95rem;">₹{{ o.finalAmount | number:'1.2-2' }}</strong>
                       <div style="font-size: 0.75rem; color: var(--text-secondary);">Tax: ₹{{ o.totalGst | number:'1.2-2' }}</div>
+                    </td>
+                    <td>
+                      <div *ngIf="o.transactionId" style="font-size: 0.85rem; font-family: monospace; background: var(--bg-secondary); padding: 4px 6px; border-radius: 4px; display: inline-block; margin-bottom: 4px;">
+                        TXN: {{ o.transactionId }}
+                      </div>
+                      <div *ngIf="o.paymentProofUrl">
+                        <a [href]="o.paymentProofUrl" target="_blank" class="btn btn-outline btn-sm" style="font-size: 0.75rem; padding: 4px 8px; display: inline-flex; align-items: center; gap: 4px;">
+                          <span>🧾</span> View Proof
+                        </a>
+                      </div>
+                      <div *ngIf="!o.transactionId && !o.paymentProofUrl" style="font-size: 0.8rem; color: var(--text-muted); font-style: italic;">
+                        Pending
+                      </div>
                     </td>
                     <td>
                       <span class="badge" [ngClass]="{
