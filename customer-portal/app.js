@@ -690,7 +690,7 @@ async function confirmPaymentAndPlaceOrder() {
       paymentProofUrl: paymentProofUrl
     };
 
-    const res = await fetch(`${API_BASE}/customer/wholesale-orders`, {
+    const res = await fetch(`${API_BASE}/customer/orders`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
