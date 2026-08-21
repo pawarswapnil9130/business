@@ -528,15 +528,16 @@ namespace ApparelERP.Api.Controllers
             return Ok(reorderCart);
         }
 
+
         // ==========================================
         // 6. PAYMENT PROOF UPLOAD
         // ==========================================
 
         [HttpPost("upload-proof")]
         [Authorize(Roles = "CUSTOMER")]
-        public async Task<ActionResult> UploadPaymentProof(IFormFile proof)
+        public async Task<ActionResult> UploadPaymentProof(IFormFile proofFile)
         {
-            if (proof == null || proof.Length == 0)
+            if (proofFile == null || proofFile.Length == 0)
             {
                 return BadRequest(new { message = "No file uploaded." });
             }
@@ -548,12 +549,12 @@ namespace ApparelERP.Api.Controllers
                 Directory.CreateDirectory(uploadsFolder);
             }
 
-            var fileName = $"proof_{DateTime.UtcNow.Ticks}{Path.GetExtension(proof.FileName)}";
+            var fileName = $"proof_{DateTime.UtcNow.Ticks}{Path.GetExtension(proofFile.FileName)}";
             var filePath = Path.Combine(uploadsFolder, fileName);
 
             using (var stream = new FileStream(filePath, FileMode.Create))
             {
-                await proof.CopyToAsync(stream);
+                await proofFile.CopyToAsync(stream);
             }
 
             var url = $"/uploads/proofs/{fileName}";
