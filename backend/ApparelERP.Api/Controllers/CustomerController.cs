@@ -535,7 +535,7 @@ namespace ApparelERP.Api.Controllers
 
         [HttpPost("upload-proof")]
         [Authorize(Roles = "CUSTOMER")]
-        public async Task<ActionResult> UploadPaymentProof(IFormFile proofFile)
+        public async Task<ActionResult> UploadPaymentProof([FromForm] IFormFile proofFile)
         {
             if (proofFile == null || proofFile.Length == 0)
             {
