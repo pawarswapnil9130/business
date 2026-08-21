@@ -529,6 +529,38 @@ namespace ApparelERP.Api.Controllers
         }
 
         // ==========================================
+        // 6. PAYMENT PROOF UPLOAD
+        // ==========================================
+
+        [HttpPost("upload-proof")]
+        [Authorize(Roles = "CUSTOMER")]
+        public async Task<ActionResult> UploadPaymentProof(IFormFile proof)
+        {
+            if (proof == null || proof.Length == 0)
+            {
+                return BadRequest(new { message = "No file uploaded." });
+            }
+
+            // Ensure directory exists
+            var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "proofs");
+            if (!Directory.Exists(uploadsFolder))
+            {
+                Directory.CreateDirectory(uploadsFolder);
+            }
+
+            var fileName = $"proof_{DateTime.UtcNow.Ticks}{Path.GetExtension(proof.FileName)}";
+            var filePath = Path.Combine(uploadsFolder, fileName);
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await proof.CopyToAsync(stream);
+            }
+
+            var url = $"/uploads/proofs/{fileName}";
+            return Ok(new { url });
+        }
+
+        // ==========================================
         // HELPER METHODS
         // ==========================================
 
