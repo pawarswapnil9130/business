@@ -4,9 +4,11 @@
  */
 
 // API Base URL configuration
-const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-  ? (window.location.port === '5000' ? '/api' : 'http://localhost:5000/api')
-  : 'https://business-backend-q18v.onrender.com/api';
+const API_BASE = (window.location.port === '5000') 
+  ? '/api' 
+  : ((window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname.startsWith('192.168.'))
+      ? 'http://localhost:5000/api' 
+      : 'https://business-backend-q18v.onrender.com/api');
 
 const BACKEND_ORIGIN = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
   ? (window.location.port === '5000' ? '' : 'http://localhost:5000')
@@ -613,7 +615,9 @@ async function proceedToPayment() {
     document.getElementById('payment-upi').textContent = companyProfileData.upiId || '--';
 
     if (companyProfileData.qrCodeUrl) {
-      document.getElementById('payment-qr-image').src = companyProfileData.qrCodeUrl;
+      const baseUrl = API_BASE.replace('/api', '');
+      const qrUrl = companyProfileData.qrCodeUrl.startsWith('http') ? companyProfileData.qrCodeUrl : (baseUrl + companyProfileData.qrCodeUrl);
+      document.getElementById('payment-qr-image').src = qrUrl;
       document.getElementById('payment-qr-image').style.display = 'inline-block';
       document.getElementById('payment-qr-placeholder').style.display = 'none';
     } else {
