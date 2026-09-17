@@ -524,23 +524,41 @@
 
           <!-- Products List -->
           <div class="panel">
-            <h3>📁 Items Master & Price Catalog</h3>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+              <h3 style="margin: 0;">📁 Items Master & Price Catalog</h3>
+              <div style="display: flex; gap: 10px; align-items: center;">
+                <input type="text" class="input" placeholder="Search Items..." [(ngModel)]="productsSearch" style="max-width: 250px;">
+                <button *ngIf="getSelectedCount('products') > 0" class="btn btn-danger btn-sm" (click)="deleteSelectedMultiple('products')">
+                  🗑️ Delete Selected ({{getSelectedCount('products')}})
+                </button>
+              </div>
+            </div>
             <div class="table-responsive">
               <table class="table">
                 <thead>
                   <tr>
-                    <th>Photo</th>
-                    <th>Type</th>
-                    <th>Item Description</th>
-                    <th>Category</th>
-                    <th>Variant</th>
-                    <th>Cost Basis</th>
-                    <th>Selling / Wholesale Rates</th>
+                    <th>
+                      <input type="checkbox" 
+                             [checked]="isAllSelected('products', products)" 
+                             (change)="toggleAll('products', products, $event)">
+                    </th>
+                    <th style="cursor: pointer" (click)="sortBy('products', 'imageUrl')">Photo <span *ngIf="productsSort === 'imageUrl'">{{productsSortDesc ? '▼' : '▲'}}</span></th>
+                    <th style="cursor: pointer" (click)="sortBy('products', 'productType')">Type <span *ngIf="productsSort === 'productType'">{{productsSortDesc ? '▼' : '▲'}}</span></th>
+                    <th style="cursor: pointer" (click)="sortBy('products', 'name')">Item Description <span *ngIf="productsSort === 'name'">{{productsSortDesc ? '▼' : '▲'}}</span></th>
+                    <th style="cursor: pointer" (click)="sortBy('products', 'category')">Category <span *ngIf="productsSort === 'category'">{{productsSortDesc ? '▼' : '▲'}}</span></th>
+                    <th style="cursor: pointer" (click)="sortBy('products', 'color')">Variant <span *ngIf="productsSort === 'color'">{{productsSortDesc ? '▼' : '▲'}}</span></th>
+                    <th style="cursor: pointer" (click)="sortBy('products', 'costPrice')">Cost Basis <span *ngIf="productsSort === 'costPrice'">{{productsSortDesc ? '▼' : '▲'}}</span></th>
+                    <th style="cursor: pointer" (click)="sortBy('products', 'sellingPrice')">Selling / Wholesale Rates <span *ngIf="productsSort === 'sellingPrice'">{{productsSortDesc ? '▼' : '▲'}}</span></th>
                     <th>Action</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr *ngFor="let p of products">
+                  <tr *ngFor="let p of products | searchFilter:productsSearch | sort:productsSort:productsSortDesc | paginate: { itemsPerPage: 10, currentPage: productsPage, id: 'productsPagination' }">
+                    <td>
+                      <input type="checkbox" 
+                             [checked]="isSelected('products', p.id)" 
+                             (change)="toggleSelection('products', p.id, $event)">
+                    </td>
                     <td style="width: 70px; text-align: center;">
                       <div *ngIf="p.imageUrl" style="position: relative; display: inline-block;">
                         <img [src]="p.imageUrl" [alt]="p.name" style="width: 48px; height: 48px; object-fit: cover; border-radius: 6px; border: 1px solid #cbd5e1;" />
@@ -577,11 +595,14 @@
                       <button class="btn btn-danger btn-sm" (click)="onDeleteProduct(p.id)">Delete</button>
                     </td>
                   </tr>
-                  <tr *ngIf="products.length === 0">
-                    <td colspan="8" class="text-center text-muted pad-30">No items recorded in catalog.</td>
+                  <tr *ngIf="(products | searchFilter:productsSearch).length === 0">
+                    <td colspan="9" class="text-center text-muted pad-30">No items recorded in catalog.</td>
                   </tr>
                 </tbody>
               </table>
+            </div>
+            <div style="margin-top: 15px; text-align: right;">
+              <pagination-controls id="productsPagination" (pageChange)="productsPage = $event"></pagination-controls>
             </div>
           </div>
         </div>
@@ -657,21 +678,39 @@
           </div>
 
           <div class="panel">
-            <h3>📦 Raw Fabric Inventory Ledger</h3>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+              <h3 style="margin: 0;">📦 Raw Fabric Inventory Ledger</h3>
+              <div style="display: flex; gap: 10px; align-items: center;">
+                <input type="text" class="input" placeholder="Search Fabrics..." [(ngModel)]="materialsSearch" style="max-width: 250px;">
+                <button *ngIf="getSelectedCount('fabrics') > 0" class="btn btn-danger btn-sm" (click)="deleteSelectedMultiple('fabrics')">
+                  🗑️ Delete Selected ({{getSelectedCount('fabrics')}})
+                </button>
+              </div>
+            </div>
             <div class="table-responsive">
               <table class="table">
                 <thead>
                   <tr>
-                    <th>Fabric Quality</th>
-                    <th>Color</th>
-                    <th>Rate / M</th>
-                    <th>Inward M</th>
+                    <th>
+                      <input type="checkbox" 
+                             [checked]="isAllSelected('fabrics', fabrics)" 
+                             (change)="toggleAll('fabrics', fabrics, $event)">
+                    </th>
+                    <th style="cursor: pointer" (click)="sortBy('materials', 'name')">Fabric Quality <span *ngIf="materialsSort === 'name'">{{materialsSortDesc ? '▼' : '▲'}}</span></th>
+                    <th style="cursor: pointer" (click)="sortBy('materials', 'color')">Color <span *ngIf="materialsSort === 'color'">{{materialsSortDesc ? '▼' : '▲'}}</span></th>
+                    <th style="cursor: pointer" (click)="sortBy('materials', 'costPerMeter')">Rate / M <span *ngIf="materialsSort === 'costPerMeter'">{{materialsSortDesc ? '▼' : '▲'}}</span></th>
+                    <th style="cursor: pointer" (click)="sortBy('materials', 'totalMeters')">Inward M <span *ngIf="materialsSort === 'totalMeters'">{{materialsSortDesc ? '▼' : '▲'}}</span></th>
                     <th>Available Stock</th>
                     <th>Action</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr *ngFor="let f of fabrics">
+                  <tr *ngFor="let f of fabrics | searchFilter:materialsSearch | sort:materialsSort:materialsSortDesc | paginate: { itemsPerPage: 10, currentPage: materialsPage, id: 'materialsPagination' }">
+                    <td>
+                      <input type="checkbox" 
+                             [checked]="isSelected('fabrics', f.id)" 
+                             (change)="toggleSelection('fabrics', f.id, $event)">
+                    </td>
                     <td><strong>{{ f.name }}</strong></td>
                     <td>{{ f.color }}</td>
                     <td>₹{{ f.costPerMeter | number:'1.2-2' }}</td>
@@ -685,11 +724,15 @@
                       <button class="btn btn-danger btn-sm" (click)="onDeleteFabric(f.id)">Delete</button>
                     </td>
                   </tr>
-                  <tr *ngIf="fabrics.length === 0">
-                    <td colspan="6" class="text-center text-muted pad-30">No fabric inventory recorded.</td>
+                  </tr>
+                  <tr *ngIf="(fabrics | searchFilter:materialsSearch).length === 0">
+                    <td colspan="7" class="text-center text-muted pad-30">No fabric inventory recorded.</td>
                   </tr>
                 </tbody>
               </table>
+            </div>
+            <div style="margin-top: 15px; text-align: right;">
+              <pagination-controls id="materialsPagination" (pageChange)="materialsPage = $event"></pagination-controls>
             </div>
           </div>
         </div>
@@ -773,22 +816,40 @@
           </div>
 
           <div class="panel">
-            <h3>⚙️ Production Batches & Work Orders</h3>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+              <h3 style="margin: 0;">⚙️ Production Batches & Work Orders</h3>
+              <div style="display: flex; gap: 10px; align-items: center;">
+                <input type="text" class="input" placeholder="Search Batches..." [(ngModel)]="batchesSearch" style="max-width: 250px;">
+                <button *ngIf="getSelectedCount('batches') > 0" class="btn btn-danger btn-sm" (click)="deleteSelectedMultiple('batches')">
+                  🗑️ Delete Selected ({{getSelectedCount('batches')}})
+                </button>
+              </div>
+            </div>
             <div class="table-responsive">
               <table class="table">
                 <thead>
                   <tr>
-                    <th>Batch ID</th>
+                    <th>
+                      <input type="checkbox" 
+                             [checked]="isAllSelected('batches', batches)" 
+                             (change)="toggleAll('batches', batches, $event)">
+                    </th>
+                    <th style="cursor: pointer" (click)="sortBy('batches', 'batchCode')">Batch ID <span *ngIf="batchesSort === 'batchCode'">{{batchesSortDesc ? '▼' : '▲'}}</span></th>
                     <th>Photo</th>
-                    <th>Item Specifications</th>
-                    <th>Fabric M</th>
-                    <th>Calculated Unit Cost</th>
-                    <th>Status</th>
+                    <th style="cursor: pointer" (click)="sortBy('batches', 'designName')">Item Specifications <span *ngIf="batchesSort === 'designName'">{{batchesSortDesc ? '▼' : '▲'}}</span></th>
+                    <th style="cursor: pointer" (click)="sortBy('batches', 'fabricMetersUsed')">Fabric M <span *ngIf="batchesSort === 'fabricMetersUsed'">{{batchesSortDesc ? '▼' : '▲'}}</span></th>
+                    <th style="cursor: pointer" (click)="sortBy('batches', 'costPerPiece')">Calculated Unit Cost <span *ngIf="batchesSort === 'costPerPiece'">{{batchesSortDesc ? '▼' : '▲'}}</span></th>
+                    <th style="cursor: pointer" (click)="sortBy('batches', 'status')">Status <span *ngIf="batchesSort === 'status'">{{batchesSortDesc ? '▼' : '▲'}}</span></th>
                     <th>Action</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr *ngFor="let b of batches">
+                  <tr *ngFor="let b of batches | searchFilter:batchesSearch | sort:batchesSort:batchesSortDesc | paginate: { itemsPerPage: 10, currentPage: batchesPage, id: 'batchesPagination' }">
+                    <td>
+                      <input type="checkbox" 
+                             [checked]="isSelected('batches', b.id)" 
+                             (change)="toggleSelection('batches', b.id, $event)">
+                    </td>
                     <td><strong>{{ b.batchCode }}</strong></td>
                     <td style="width: 90px; text-align: center;">
                       <div *ngIf="b.product?.imageUrl" style="position: relative; display: inline-block;">
@@ -837,11 +898,14 @@
                       </div>
                     </td>
                   </tr>
-                  <tr *ngIf="batches.length === 0">
-                    <td colspan="7" class="text-center text-muted pad-30">No production batches launched.</td>
+                  <tr *ngIf="(batches | searchFilter:batchesSearch).length === 0">
+                    <td colspan="7" class="text-center text-muted pad-30">No production batches found.</td>
                   </tr>
                 </tbody>
               </table>
+            </div>
+            <div style="margin-top: 15px; text-align: right;">
+              <pagination-controls id="batchesPagination" (pageChange)="batchesPage = $event"></pagination-controls>
             </div>
           </div>
         </div>
@@ -935,20 +999,38 @@
           </div>
 
           <div class="panel">
-            <h3>👥 Vendor & Supplier Directory</h3>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+              <h3 style="margin: 0;">👥 Vendor & Supplier Directory</h3>
+              <div style="display: flex; gap: 10px; align-items: center;">
+                <input type="text" class="input" placeholder="Search Vendors..." [(ngModel)]="suppliersSearch" style="max-width: 250px;">
+                <button *ngIf="getSelectedCount('suppliers') > 0" class="btn btn-danger btn-sm" (click)="deleteSelectedMultiple('suppliers')">
+                  🗑️ Delete Selected ({{getSelectedCount('suppliers')}})
+                </button>
+              </div>
+            </div>
             <div class="table-responsive">
               <table class="table">
                 <thead>
                   <tr>
-                    <th>Vendor Name</th>
-                    <th>Phone</th>
-                    <th>Email</th>
-                    <th>Address</th>
+                    <th>
+                      <input type="checkbox" 
+                             [checked]="isAllSelected('suppliers', suppliers)" 
+                             (change)="toggleAll('suppliers', suppliers, $event)">
+                    </th>
+                    <th style="cursor: pointer" (click)="sortBy('suppliers', 'name')">Vendor Name <span *ngIf="suppliersSort === 'name'">{{suppliersSortDesc ? '▼' : '▲'}}</span></th>
+                    <th style="cursor: pointer" (click)="sortBy('suppliers', 'contactNumber')">Phone <span *ngIf="suppliersSort === 'contactNumber'">{{suppliersSortDesc ? '▼' : '▲'}}</span></th>
+                    <th style="cursor: pointer" (click)="sortBy('suppliers', 'email')">Email <span *ngIf="suppliersSort === 'email'">{{suppliersSortDesc ? '▼' : '▲'}}</span></th>
+                    <th style="cursor: pointer" (click)="sortBy('suppliers', 'address')">Address <span *ngIf="suppliersSort === 'address'">{{suppliersSortDesc ? '▼' : '▲'}}</span></th>
                     <th>Action</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr *ngFor="let s of suppliers">
+                  <tr *ngFor="let s of suppliers | searchFilter:suppliersSearch | sort:suppliersSort:suppliersSortDesc | paginate: { itemsPerPage: 10, currentPage: suppliersPage, id: 'suppliersPagination' }">
+                    <td>
+                      <input type="checkbox" 
+                             [checked]="isSelected('suppliers', s.id)" 
+                             (change)="toggleSelection('suppliers', s.id, $event)">
+                    </td>
                     <td><strong>{{ s.name }}</strong></td>
                     <td>{{ s.contactNumber || '--' }}</td>
                     <td>{{ s.email || '--' }}</td>
@@ -957,11 +1039,15 @@
                       <button class="btn btn-danger btn-sm" (click)="onDeleteSupplier(s.id)">Delete</button>
                     </td>
                   </tr>
-                  <tr *ngIf="suppliers.length === 0">
-                    <td colspan="5" class="text-center text-muted pad-30">No suppliers registered.</td>
+                  </tr>
+                  <tr *ngIf="(suppliers | searchFilter:suppliersSearch).length === 0">
+                    <td colspan="6" class="text-center text-muted pad-30">No suppliers registered.</td>
                   </tr>
                 </tbody>
               </table>
+            </div>
+            <div style="margin-top: 15px; text-align: right;">
+              <pagination-controls id="suppliersPagination" (pageChange)="suppliersPage = $event"></pagination-controls>
             </div>
           </div>
         </div>
@@ -1014,22 +1100,40 @@
           </div>
 
           <div class="panel">
-            <h3>📜 Ready-Made Purchase Vouchers Ledger</h3>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+              <h3 style="margin: 0;">📜 Ready-Made Purchase Vouchers Ledger</h3>
+              <div style="display: flex; gap: 10px; align-items: center;">
+                <input type="text" class="input" placeholder="Search Purchases..." [(ngModel)]="purchasesSearch" style="max-width: 250px;">
+                <button *ngIf="getSelectedCount('purchases') > 0" class="btn btn-danger btn-sm" (click)="deleteSelectedMultiple('purchases')">
+                  🗑️ Delete Selected ({{getSelectedCount('purchases')}})
+                </button>
+              </div>
+            </div>
             <div class="table-responsive">
               <table class="table">
                 <thead>
                   <tr>
-                    <th>Invoice No</th>
-                    <th>Vendor</th>
-                    <th>Item Description</th>
-                    <th>Qty</th>
-                    <th>Unit Cost</th>
-                    <th>Total (inc. GST)</th>
+                    <th>
+                      <input type="checkbox" 
+                             [checked]="isAllSelected('purchases', purchases)" 
+                             (change)="toggleAll('purchases', purchases, $event)">
+                    </th>
+                    <th style="cursor: pointer" (click)="sortBy('purchases', 'invoiceNo')">Invoice No <span *ngIf="purchasesSort === 'invoiceNo'">{{purchasesSortDesc ? '▼' : '▲'}}</span></th>
+                    <th style="cursor: pointer" (click)="sortBy('purchases', 'supplier.name')">Vendor <span *ngIf="purchasesSort === 'supplier.name'">{{purchasesSortDesc ? '▼' : '▲'}}</span></th>
+                    <th style="cursor: pointer" (click)="sortBy('purchases', 'product.name')">Item Description <span *ngIf="purchasesSort === 'product.name'">{{purchasesSortDesc ? '▼' : '▲'}}</span></th>
+                    <th style="cursor: pointer" (click)="sortBy('purchases', 'quantity')">Qty <span *ngIf="purchasesSort === 'quantity'">{{purchasesSortDesc ? '▼' : '▲'}}</span></th>
+                    <th style="cursor: pointer" (click)="sortBy('purchases', 'purchasePrice')">Unit Cost <span *ngIf="purchasesSort === 'purchasePrice'">{{purchasesSortDesc ? '▼' : '▲'}}</span></th>
+                    <th style="cursor: pointer" (click)="sortBy('purchases', 'totalCost')">Total (inc. GST) <span *ngIf="purchasesSort === 'totalCost'">{{purchasesSortDesc ? '▼' : '▲'}}</span></th>
                     <th>Action</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr *ngFor="let pur of purchases">
+                  <tr *ngFor="let pur of purchases | searchFilter:purchasesSearch | sort:purchasesSort:purchasesSortDesc | paginate: { itemsPerPage: 10, currentPage: purchasesPage, id: 'purchasesPagination' }">
+                    <td>
+                      <input type="checkbox" 
+                             [checked]="isSelected('purchases', pur.id)" 
+                             (change)="toggleSelection('purchases', pur.id, $event)">
+                    </td>
                     <td><strong>{{ pur.invoiceNo }}</strong></td>
                     <td>{{ pur.supplier?.name }}</td>
                     <td>{{ pur.product?.name }} <small>({{ pur.product?.size }}/{{ pur.product?.color }})</small></td>
@@ -1040,11 +1144,14 @@
                       <button class="btn btn-danger btn-sm" (click)="onDeletePurchase(pur.id)">Delete</button>
                     </td>
                   </tr>
-                  <tr *ngIf="purchases.length === 0">
-                    <td colspan="7" class="text-center text-muted pad-30">No purchase vouchers recorded.</td>
+                  <tr *ngIf="(purchases | searchFilter:purchasesSearch).length === 0">
+                    <td colspan="8" class="text-center text-muted pad-30">No purchase vouchers recorded.</td>
                   </tr>
                 </tbody>
               </table>
+            </div>
+            <div style="margin-top: 15px; text-align: right;">
+              <pagination-controls id="purchasesPagination" (pageChange)="purchasesPage = $event"></pagination-controls>
             </div>
           </div>
         </div>
@@ -1159,38 +1266,46 @@
 
           <!-- Expense Ledger -->
           <div class="panel">
-            <div class="panel-header-action">
+            <div class="panel-header-action" style="align-items: center; margin-bottom: 15px;">
               <div>
-                <h3>📜 Operating Expense Ledger</h3>
+                <h3 style="margin: 0;">📜 Operating Expense Ledger</h3>
                 <p class="subtitle" style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 2px;">
                   Itemized list of recorded overhead expenses.
                 </p>
               </div>
-              <button class="btn btn-secondary btn-sm" (click)="fetchExpenses()">🔄 Refresh</button>
-            </div>
-
-            <div class="form-group" style="margin-bottom: 12px;">
-              <input 
-                type="text" 
-                [(ngModel)]="expenseSearchQuery" 
-                placeholder="🔍 Search expenses by title, category, payment mode..." 
-              />
+              <div style="display: flex; gap: 10px; align-items: center;">
+                <input type="text" class="input" placeholder="Search Expenses..." [(ngModel)]="expensesSearch" style="max-width: 250px;">
+                <button class="btn btn-secondary btn-sm" (click)="fetchExpenses()">🔄 Refresh</button>
+                <button *ngIf="getSelectedCount('expenses') > 0" class="btn btn-danger btn-sm" (click)="deleteSelectedMultiple('expenses')">
+                  🗑️ Delete Selected ({{getSelectedCount('expenses')}})
+                </button>
+              </div>
             </div>
 
             <div class="table-responsive">
               <table class="table table-sm">
                 <thead>
                   <tr>
-                    <th>Date</th>
-                    <th>Title / Description</th>
-                    <th>Category</th>
-                    <th>Mode</th>
-                    <th>Amount (₹)</th>
+                    <th>
+                      <input type="checkbox" 
+                             [checked]="isAllSelected('expenses', expenses)" 
+                             (change)="toggleAll('expenses', expenses, $event)">
+                    </th>
+                    <th style="cursor: pointer" (click)="sortBy('expenses', 'expenseDate')">Date <span *ngIf="expensesSort === 'expenseDate'">{{expensesSortDesc ? '▼' : '▲'}}</span></th>
+                    <th style="cursor: pointer" (click)="sortBy('expenses', 'title')">Title / Description <span *ngIf="expensesSort === 'title'">{{expensesSortDesc ? '▼' : '▲'}}</span></th>
+                    <th style="cursor: pointer" (click)="sortBy('expenses', 'category')">Category <span *ngIf="expensesSort === 'category'">{{expensesSortDesc ? '▼' : '▲'}}</span></th>
+                    <th style="cursor: pointer" (click)="sortBy('expenses', 'paymentMode')">Mode <span *ngIf="expensesSort === 'paymentMode'">{{expensesSortDesc ? '▼' : '▲'}}</span></th>
+                    <th style="cursor: pointer" (click)="sortBy('expenses', 'amount')">Amount (₹) <span *ngIf="expensesSort === 'amount'">{{expensesSortDesc ? '▼' : '▲'}}</span></th>
                     <th>Action</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr *ngFor="let exp of filteredExpenses">
+                  <tr *ngFor="let exp of expenses | searchFilter:expensesSearch | sort:expensesSort:expensesSortDesc | paginate: { itemsPerPage: 10, currentPage: expensesPage, id: 'expensesPagination' }">
+                    <td>
+                      <input type="checkbox" 
+                             [checked]="isSelected('expenses', exp.id)" 
+                             (change)="toggleSelection('expenses', exp.id, $event)">
+                    </td>
                     <td>{{ exp.expenseDate | date:'mediumDate' }}</td>
                     <td>
                       <strong>{{ exp.title }}</strong>
@@ -1203,11 +1318,15 @@
                       <button class="btn btn-danger btn-sm" (click)="onDeleteExpense(exp.id)">Delete</button>
                     </td>
                   </tr>
-                  <tr *ngIf="filteredExpenses.length === 0">
-                    <td colspan="6" class="text-center text-muted pad-30">No expenses recorded.</td>
+                  </tr>
+                  <tr *ngIf="(expenses | searchFilter:expensesSearch).length === 0">
+                    <td colspan="7" class="text-center text-muted pad-30">No expenses recorded.</td>
                   </tr>
                 </tbody>
               </table>
+            </div>
+            <div style="margin-top: 15px; text-align: right;">
+              <pagination-controls id="expensesPagination" (pageChange)="expensesPage = $event"></pagination-controls>
             </div>
           </div>
         </div>
@@ -1218,12 +1337,13 @@
       <!-- ======================================================= -->
       <section *ngIf="currentTab === 'inventory'" class="tab-pane">
         <div class="panel">
-          <div class="panel-header-action">
+          <div class="panel-header-action" style="align-items: center;">
             <div>
-              <h3>📦 Unified Warehouse Stock Ledger</h3>
+              <h3 style="margin: 0;">📦 Unified Warehouse Stock Ledger</h3>
               <p class="subtitle" style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 2px;">Comprehensive on-hand valuation and inventory status.</p>
             </div>
             <div style="display: flex; gap: 10px; align-items: center;">
+              <input type="text" class="input" placeholder="Search Stock..." [(ngModel)]="stocksSearch" style="max-width: 250px;">
               <button *ngIf="currentUser?.role === 'SUPER_ADMIN' || currentUser?.role === 'ADMIN'" class="btn btn-danger btn-sm" (click)="onClearAllStock()">
                 ⚠️ Reset All Stock
               </button>
@@ -1235,19 +1355,19 @@
             <table class="table">
               <thead>
                 <tr>
-                  <th>Sourcing Type</th>
-                  <th>Category</th>
-                  <th>Item Description</th>
-                  <th>Brand / Code</th>
-                  <th>Variant (Size / Color)</th>
-                  <th>Landed Cost Basis</th>
-                  <th>Current Stock</th>
+                  <th style="cursor: pointer" (click)="sortBy('stocks', 'productType')">Sourcing Type <span *ngIf="stocksSort === 'productType'">{{stocksSortDesc ? '▼' : '▲'}}</span></th>
+                  <th style="cursor: pointer" (click)="sortBy('stocks', 'category')">Category <span *ngIf="stocksSort === 'category'">{{stocksSortDesc ? '▼' : '▲'}}</span></th>
+                  <th style="cursor: pointer" (click)="sortBy('stocks', 'productName')">Item Description <span *ngIf="stocksSort === 'productName'">{{stocksSortDesc ? '▼' : '▲'}}</span></th>
+                  <th style="cursor: pointer" (click)="sortBy('stocks', 'designBrand')">Brand / Code <span *ngIf="stocksSort === 'designBrand'">{{stocksSortDesc ? '▼' : '▲'}}</span></th>
+                  <th style="cursor: pointer" (click)="sortBy('stocks', 'size')">Variant (Size / Color) <span *ngIf="stocksSort === 'size'">{{stocksSortDesc ? '▼' : '▲'}}</span></th>
+                  <th style="cursor: pointer" (click)="sortBy('stocks', 'costPrice')">Landed Cost Basis <span *ngIf="stocksSort === 'costPrice'">{{stocksSortDesc ? '▼' : '▲'}}</span></th>
+                  <th style="cursor: pointer" (click)="sortBy('stocks', 'currentStock')">Current Stock <span *ngIf="stocksSort === 'currentStock'">{{stocksSortDesc ? '▼' : '▲'}}</span></th>
                   <th>Inventory Status</th>
                   <th *ngIf="currentUser?.role === 'SUPER_ADMIN' || currentUser?.role === 'ADMIN'">Action</th>
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let s of stocks">
+                <tr *ngFor="let s of stocks | searchFilter:stocksSearch | sort:stocksSort:stocksSortDesc | paginate: { itemsPerPage: 10, currentPage: stocksPage, id: 'stocksPagination' }">
                   <td>
                     <span class="badge" [class.badge-primary]="s.productType === 'MANUFACTURED'" [class.badge-info]="s.productType === 'TRADED'">
                       {{ s.productType === 'MANUFACTURED' ? 'MANUFACTURED' : 'TRADED' }}
@@ -1268,11 +1388,15 @@
                     <button class="btn btn-danger btn-sm" (click)="onDeleteProduct(s.productId)">Delete</button>
                   </td>
                 </tr>
-                <tr *ngIf="stocks.length === 0">
+                </tr>
+                <tr *ngIf="(stocks | searchFilter:stocksSearch).length === 0">
                   <td [attr.colspan]="(currentUser?.role === 'SUPER_ADMIN' || currentUser?.role === 'ADMIN') ? 9 : 8" class="text-center text-muted pad-30">No inventory records found.</td>
                 </tr>
               </tbody>
             </table>
+          </div>
+          <div style="margin-top: 15px; text-align: right;">
+            <pagination-controls id="stocksPagination" (pageChange)="stocksPage = $event"></pagination-controls>
           </div>
         </div>
       </section>
@@ -1439,22 +1563,40 @@
 
         <!-- Invoices List -->
         <div class="panel">
-          <h3>📜 Sales Invoice Records (Billing Ledger)</h3>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h3 style="margin: 0;">📜 Sales Invoice Records (Billing Ledger)</h3>
+            <div style="display: flex; gap: 10px; align-items: center;">
+              <input type="text" class="input" placeholder="Search Invoices..." [(ngModel)]="salesSearch" style="max-width: 250px;">
+              <button *ngIf="getSelectedCount('sales') > 0" class="btn btn-danger btn-sm" (click)="deleteSelectedMultiple('sales')">
+                🗑️ Delete Selected ({{getSelectedCount('sales')}})
+              </button>
+            </div>
+          </div>
           <div class="table-responsive">
             <table class="table">
               <thead>
                 <tr>
-                  <th>Invoice No</th>
-                  <th>Date & Time</th>
-                  <th>Customer Name</th>
-                  <th>Taxable Net</th>
-                  <th>GST Amount</th>
-                  <th>Final Total</th>
+                  <th>
+                    <input type="checkbox" 
+                           [checked]="isAllSelected('sales', salesOrders)" 
+                           (change)="toggleAll('sales', salesOrders, $event)">
+                  </th>
+                  <th style="cursor: pointer" (click)="sortBy('sales', 'invoiceNo')">Invoice No <span *ngIf="salesSort === 'invoiceNo'">{{salesSortDesc ? '▼' : '▲'}}</span></th>
+                  <th style="cursor: pointer" (click)="sortBy('sales', 'salesDate')">Date & Time <span *ngIf="salesSort === 'salesDate'">{{salesSortDesc ? '▼' : '▲'}}</span></th>
+                  <th style="cursor: pointer" (click)="sortBy('sales', 'customerName')">Customer Name <span *ngIf="salesSort === 'customerName'">{{salesSortDesc ? '▼' : '▲'}}</span></th>
+                  <th style="cursor: pointer" (click)="sortBy('sales', 'totalAmount')">Taxable Net <span *ngIf="salesSort === 'totalAmount'">{{salesSortDesc ? '▼' : '▲'}}</span></th>
+                  <th style="cursor: pointer" (click)="sortBy('sales', 'totalGst')">GST Amount <span *ngIf="salesSort === 'totalGst'">{{salesSortDesc ? '▼' : '▲'}}</span></th>
+                  <th style="cursor: pointer" (click)="sortBy('sales', 'finalAmount')">Final Total <span *ngIf="salesSort === 'finalAmount'">{{salesSortDesc ? '▼' : '▲'}}</span></th>
                   <th>Action</th>
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let order of salesOrders">
+                <tr *ngFor="let order of salesOrders | searchFilter:salesSearch | sort:salesSort:salesSortDesc | paginate: { itemsPerPage: 10, currentPage: salesPage, id: 'salesPagination' }">
+                  <td>
+                    <input type="checkbox" 
+                           [checked]="isSelected('sales', order.id)" 
+                           (change)="toggleSelection('sales', order.id, $event)">
+                  </td>
                   <td><strong>{{ order.invoiceNo }}</strong></td>
                   <td>{{ order.salesDate | date:'medium' }}</td>
                   <td>{{ order.customerName }} <br/><small class="text-muted">{{ order.customerPhone }}</small></td>
@@ -1469,11 +1611,15 @@
                     </div>
                   </td>
                 </tr>
-                <tr *ngIf="salesOrders.length === 0">
-                  <td colspan="7" class="text-center text-muted pad-30">No sales invoices recorded.</td>
+                </tr>
+                <tr *ngIf="(salesOrders | searchFilter:salesSearch).length === 0">
+                  <td colspan="8" class="text-center text-muted pad-30">No sales invoices recorded.</td>
                 </tr>
               </tbody>
             </table>
+          </div>
+          <div style="margin-top: 15px; text-align: right;">
+            <pagination-controls id="salesPagination" (pageChange)="salesPage = $event"></pagination-controls>
           </div>
         </div>
       </section>
@@ -1483,10 +1629,13 @@
       <!-- ======================================================= -->
       <section *ngIf="currentTab === 'reports'" class="tab-pane">
         <div class="panel">
-          <div class="panel-header-action">
+          <div class="panel-header-action" style="align-items: center;">
             <div>
-              <h3>📈 Itemized Profit & Loss Ledger</h3>
+              <h3 style="margin: 0;">📈 Itemized Profit & Loss Ledger</h3>
               <p class="subtitle" style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 2px;">Calculates exact profit split between Manufacturing cost basis and Trading purchase basis.</p>
+            </div>
+            <div style="display: flex; gap: 10px; align-items: center;">
+              <input type="text" class="input" placeholder="Search Ledgers..." [(ngModel)]="profitSearch" style="max-width: 250px;">
             </div>
           </div>
           
@@ -1494,20 +1643,20 @@
             <table class="table">
               <thead>
                 <tr>
-                  <th>Invoice Ref</th>
-                  <th>Date</th>
-                  <th>Item Sourcing</th>
-                  <th>Product Details</th>
-                  <th>Sold Qty</th>
-                  <th>Packaging</th>
-                  <th>Revenue (inc. GST)</th>
-                  <th>Cost Basis / Unit</th>
-                  <th>Total Cost Basis</th>
-                  <th>Net Margin</th>
+                  <th style="cursor: pointer" (click)="sortBy('profit', 'invoiceNo')">Invoice Ref <span *ngIf="profitSort === 'invoiceNo'">{{profitSortDesc ? '▼' : '▲'}}</span></th>
+                  <th style="cursor: pointer" (click)="sortBy('profit', 'salesDate')">Date <span *ngIf="profitSort === 'salesDate'">{{profitSortDesc ? '▼' : '▲'}}</span></th>
+                  <th style="cursor: pointer" (click)="sortBy('profit', 'productType')">Item Sourcing <span *ngIf="profitSort === 'productType'">{{profitSortDesc ? '▼' : '▲'}}</span></th>
+                  <th style="cursor: pointer" (click)="sortBy('profit', 'productName')">Product Details <span *ngIf="profitSort === 'productName'">{{profitSortDesc ? '▼' : '▲'}}</span></th>
+                  <th style="cursor: pointer" (click)="sortBy('profit', 'quantitySold')">Sold Qty <span *ngIf="profitSort === 'quantitySold'">{{profitSortDesc ? '▼' : '▲'}}</span></th>
+                  <th style="cursor: pointer" (click)="sortBy('profit', 'itemType')">Packaging <span *ngIf="profitSort === 'itemType'">{{profitSortDesc ? '▼' : '▲'}}</span></th>
+                  <th style="cursor: pointer" (click)="sortBy('profit', 'itemRevenue')">Revenue (inc. GST) <span *ngIf="profitSort === 'itemRevenue'">{{profitSortDesc ? '▼' : '▲'}}</span></th>
+                  <th style="cursor: pointer" (click)="sortBy('profit', 'costPricePerUnit')">Cost Basis / Unit <span *ngIf="profitSort === 'costPricePerUnit'">{{profitSortDesc ? '▼' : '▲'}}</span></th>
+                  <th style="cursor: pointer" (click)="sortBy('profit', 'totalCostBasis')">Total Cost Basis <span *ngIf="profitSort === 'totalCostBasis'">{{profitSortDesc ? '▼' : '▲'}}</span></th>
+                  <th style="cursor: pointer" (click)="sortBy('profit', 'netProfit')">Net Margin <span *ngIf="profitSort === 'netProfit'">{{profitSortDesc ? '▼' : '▲'}}</span></th>
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let rep of profitReports">
+                <tr *ngFor="let rep of profitReports | searchFilter:profitSearch | sort:profitSort:profitSortDesc | paginate: { itemsPerPage: 10, currentPage: profitPage, id: 'profitPagination' }">
                   <td><strong>{{ rep.invoiceNo }}</strong><br/><small class="text-muted">{{ rep.customerName }}</small></td>
                   <td>{{ rep.salesDate | date:'short' }}</td>
                   <td>
@@ -1527,11 +1676,14 @@
                     </strong>
                   </td>
                 </tr>
-                <tr *ngIf="profitReports.length === 0">
+                <tr *ngIf="(profitReports | searchFilter:profitSearch).length === 0">
                   <td colspan="10" class="text-center text-muted pad-30">No transaction records found.</td>
                 </tr>
               </tbody>
             </table>
+          </div>
+          <div style="margin-top: 15px; text-align: right;">
+            <pagination-controls id="profitPagination" (pageChange)="profitPage = $event"></pagination-controls>
           </div>
         </div>
       </section>
@@ -1573,22 +1725,27 @@
 
           <!-- User Accounts List -->
           <div class="panel">
-            <h3>👥 User Administration & Permissions Console</h3>
-            <p class="subtitle" style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 16px;">Authorize pending signups or revoke staff logins.</p>
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
+              <div>
+                <h3 style="margin: 0;">👥 User Administration & Permissions Console</h3>
+                <p class="subtitle" style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 2px;">Authorize pending signups or revoke staff logins.</p>
+              </div>
+              <input type="text" class="input" placeholder="Search Users..." [(ngModel)]="usersSearch" style="max-width: 250px;">
+            </div>
 
             <div class="table-responsive">
               <table class="table">
                 <thead>
                   <tr>
-                    <th>Username</th>
-                    <th>Role</th>
-                    <th>Status</th>
-                    <th>Created At</th>
+                    <th style="cursor: pointer" (click)="sortBy('users', 'username')">Username <span *ngIf="usersSort === 'username'">{{usersSortDesc ? '▼' : '▲'}}</span></th>
+                    <th style="cursor: pointer" (click)="sortBy('users', 'role')">Role <span *ngIf="usersSort === 'role'">{{usersSortDesc ? '▼' : '▲'}}</span></th>
+                    <th style="cursor: pointer" (click)="sortBy('users', 'isApproved')">Status <span *ngIf="usersSort === 'isApproved'">{{usersSortDesc ? '▼' : '▲'}}</span></th>
+                    <th style="cursor: pointer" (click)="sortBy('users', 'createdAt')">Created At <span *ngIf="usersSort === 'createdAt'">{{usersSortDesc ? '▼' : '▲'}}</span></th>
                     <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr *ngFor="let u of users">
+                  <tr *ngFor="let u of users | searchFilter:usersSearch | sort:usersSort:usersSortDesc | paginate: { itemsPerPage: 10, currentPage: usersPage, id: 'usersPagination' }">
                     <td><strong>{{ u.username }}</strong></td>
                     <td>
                       <span class="badge" 
@@ -1613,11 +1770,14 @@
                       </div>
                     </td>
                   </tr>
-                  <tr *ngIf="users.length === 0">
+                  <tr *ngIf="(users | searchFilter:usersSearch).length === 0">
                     <td colspan="5" class="text-center text-muted pad-30">No other user accounts found.</td>
                   </tr>
                 </tbody>
               </table>
+            </div>
+            <div style="margin-top: 15px; text-align: right;">
+              <pagination-controls id="usersPagination" (pageChange)="usersPage = $event"></pagination-controls>
             </div>
           </div>
         </div>
@@ -1830,11 +1990,11 @@
               <table class="data-table">
                 <thead>
                   <tr>
-                    <th>Shop / Business</th>
-                    <th>Contact</th>
-                    <th>City & Address</th>
-                    <th>Pricing Group</th>
-                    <th>Status</th>
+                    <th style="cursor: pointer" (click)="sortBy('wholesaleCustomers', 'shopName')">Shop / Business <span *ngIf="wholesaleCustomersSort === 'shopName'">{{wholesaleCustomersSortDesc ? '▼' : '▲'}}</span></th>
+                    <th style="cursor: pointer" (click)="sortBy('wholesaleCustomers', 'phone')">Contact <span *ngIf="wholesaleCustomersSort === 'phone'">{{wholesaleCustomersSortDesc ? '▼' : '▲'}}</span></th>
+                    <th style="cursor: pointer" (click)="sortBy('wholesaleCustomers', 'city')">City & Address <span *ngIf="wholesaleCustomersSort === 'city'">{{wholesaleCustomersSortDesc ? '▼' : '▲'}}</span></th>
+                    <th style="cursor: pointer" (click)="sortBy('wholesaleCustomers', 'customerType')">Pricing Group <span *ngIf="wholesaleCustomersSort === 'customerType'">{{wholesaleCustomersSortDesc ? '▼' : '▲'}}</span></th>
+                    <th style="cursor: pointer" (click)="sortBy('wholesaleCustomers', 'status')">Status <span *ngIf="wholesaleCustomersSort === 'status'">{{wholesaleCustomersSortDesc ? '▼' : '▲'}}</span></th>
                     <th>Orders</th>
                     <th>Actions</th>
                   </tr>
@@ -1845,7 +2005,7 @@
                       No wholesale customer accounts found.
                     </td>
                   </tr>
-                  <tr *ngFor="let c of filteredWholesaleCustomers()">
+                  <tr *ngFor="let c of filteredWholesaleCustomers() | sort:wholesaleCustomersSort:wholesaleCustomersSortDesc | paginate: { itemsPerPage: 10, currentPage: wholesaleCustomersPage, id: 'wholesaleCustomersPagination' }">
                     <td>
                       <strong>{{ c.shopName }}</strong>
                       <div style="font-size: 0.8rem; color: var(--text-secondary);">Prop: {{ c.ownerName }}</div>
@@ -1896,15 +2056,19 @@
                 </tbody>
               </table>
             </div>
+            <div style="padding: 15px; text-align: right; border-top: 1px solid var(--border-light);">
+              <pagination-controls id="wholesaleCustomersPagination" (pageChange)="wholesaleCustomersPage = $event"></pagination-controls>
+            </div>
           </div>
         </div>
 
         <!-- Section 2: Wholesale Portal Orders Feed -->
         <div class="card">
           <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
-            <h4 style="margin: 0; font-size: 1rem; font-weight: 700; color: var(--text-primary);">📦 Wholesale Online Orders ({{ filteredWholesaleOrders().length }})</h4>
+            <h4 style="margin: 0; font-size: 1rem; font-weight: 700; color: var(--text-primary);">📦 Wholesale Online Orders ({{ (filteredWholesaleOrders() | searchFilter:wholesaleSearch).length }})</h4>
             <div style="display: flex; gap: 8px; align-items: center;">
-              <label style="font-size: 0.85rem; color: var(--text-secondary); margin: 0;">Status Filter:</label>
+              <input type="text" class="input" placeholder="Search Orders..." [(ngModel)]="wholesaleSearch" style="max-width: 200px; padding: 5px 10px; font-size: 0.85rem; border: 1px solid var(--border-input); border-radius: 6px;">
+              <label style="font-size: 0.85rem; color: var(--text-secondary); margin: 0; margin-left: 8px;">Status Filter:</label>
               <select [(ngModel)]="orderStatusFilter" style="padding: 5px 10px; font-size: 0.85rem; border: 1px solid var(--border-input); border-radius: 6px;">
                 <option value="ALL">All Statuses</option>
                 <option value="PENDING">⏳ PENDING</option>
@@ -1921,23 +2085,23 @@
               <table class="data-table">
                 <thead>
                   <tr>
-                    <th>Order #</th>
-                    <th>Customer / Shop</th>
+                    <th style="cursor: pointer" (click)="sortBy('wholesale', 'invoiceNo')">Order # <span *ngIf="wholesaleSort === 'invoiceNo'">{{wholesaleSortDesc ? '▼' : '▲'}}</span></th>
+                    <th style="cursor: pointer" (click)="sortBy('wholesale', 'customerName')">Customer / Shop <span *ngIf="wholesaleSort === 'customerName'">{{wholesaleSortDesc ? '▼' : '▲'}}</span></th>
                     <th>Items Ordered</th>
-                    <th>Total Value</th>
+                    <th style="cursor: pointer" (click)="sortBy('wholesale', 'finalAmount')">Total Value <span *ngIf="wholesaleSort === 'finalAmount'">{{wholesaleSortDesc ? '▼' : '▲'}}</span></th>
                     <th>Payment Proof</th>
-                    <th>Status</th>
+                    <th style="cursor: pointer" (click)="sortBy('wholesale', 'orderStatus')">Status <span *ngIf="wholesaleSort === 'orderStatus'">{{wholesaleSortDesc ? '▼' : '▲'}}</span></th>
                     <th>Update Status</th>
                     <th>Invoice</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr *ngIf="filteredWholesaleOrders().length === 0">
-                    <td colspan="7" style="text-align: center; padding: 24px; color: var(--text-muted);">
+                  <tr *ngIf="(filteredWholesaleOrders() | searchFilter:wholesaleSearch).length === 0">
+                    <td colspan="8" style="text-align: center; padding: 24px; color: var(--text-muted);">
                       No wholesale portal orders found for the selected filter.
                     </td>
                   </tr>
-                  <tr *ngFor="let o of filteredWholesaleOrders()">
+                  <tr *ngFor="let o of filteredWholesaleOrders() | searchFilter:wholesaleSearch | sort:wholesaleSort:wholesaleSortDesc | paginate: { itemsPerPage: 10, currentPage: wholesalePage, id: 'wholesalePagination' }">
                     <td>
                       <strong>{{ o.invoiceNo }}</strong>
                       <div style="font-size: 0.75rem; color: var(--text-secondary);">{{ o.salesDate | date:'short' }}</div>
@@ -1998,6 +2162,9 @@
                   </tr>
                 </tbody>
               </table>
+            </div>
+            <div style="padding: 15px; text-align: right; border-top: 1px solid var(--border-light);">
+              <pagination-controls id="wholesalePagination" (pageChange)="wholesalePage = $event"></pagination-controls>
             </div>
           </div>
         </div>

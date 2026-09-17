@@ -320,7 +320,20 @@ body {
 
 .avatar-icon { font-size: 16px; }
 .avatar-text { display: flex; flex-direction: column; text-align: left; }
-.avatar-text strong { font-size: 13px; color: #ffffff; }
+.avatar-text strong { 
+  font-size: 13px; 
+  color: #ffffff; 
+  white-space: nowrap; 
+  overflow: hidden; 
+  text-overflow: ellipsis; 
+  max-width: 120px; 
+}
+
+@media (max-width: 768px) {
+  .avatar-text strong {
+    max-width: 80px;
+  }
+}
 
 .tier-tag-pill {
   font-size: 9px;

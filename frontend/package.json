@@ -20,6 +20,7 @@
     "@angular/router": "^15.2.0",
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.8",
+    "ngx-pagination": "^6.0.3",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.12.0"

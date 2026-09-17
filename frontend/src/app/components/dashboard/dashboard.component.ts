@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-dashboard',
@@ -39,6 +40,149 @@ export class DashboardComponent implements OnInit {
   users: any[] = [];
   wholesaleCustomers: any[] = [];
   wholesaleOrders: any[] = [];
+  
+  // Data Table State (Pagination, Sorting, Filtering)
+  salesPage = 1; salesSearch = ''; salesSort = 'salesDate'; salesSortDesc = true;
+  productsPage = 1; productsSearch = ''; productsSort = 'name'; productsSortDesc = false;
+  suppliersPage = 1; suppliersSearch = ''; suppliersSort = 'name'; suppliersSortDesc = false;
+  purchasesPage = 1; purchasesSearch = ''; purchasesSort = 'purchaseDate'; purchasesSortDesc = true;
+  stocksPage = 1; stocksSearch = ''; stocksSort = 'product.name'; stocksSortDesc = false;
+  profitPage = 1; profitSearch = ''; profitSort = 'salesDate'; profitSortDesc = true;
+  wholesalePage = 1; wholesaleSearch = ''; wholesaleSort = 'salesDate'; wholesaleSortDesc = true;
+  usersPage = 1; usersSearch = ''; usersSort = 'username'; usersSortDesc = false;
+  wholesaleCustomersPage = 1; wholesaleCustomersSort = 'shopName'; wholesaleCustomersSortDesc = false;
+  materialsPage = 1; materialsSearch = ''; materialsSort = 'materialName'; materialsSortDesc = false;
+  batchesPage = 1; batchesSearch = ''; batchesSort = 'batchNo'; batchesSortDesc = false;
+  employeesPage = 1; employeesSearch = ''; employeesSort = 'name'; employeesSortDesc = false;
+  expensesPage = 1; expensesSearch = ''; expensesSort = 'date'; expensesSortDesc = true;
+
+  // Batch Selection state
+  selectedIds: { [table: string]: { [id: number]: boolean } } = {
+    'sales': {}, 'products': {}, 'suppliers': {}, 'purchases': {}, 'fabrics': {}, 'batches': {}, 'expenses': {}
+  };
+
+  toggleSelection(table: string, id: number, event: any) {
+    this.selectedIds[table][id] = event.target.checked;
+  }
+
+  isSelected(table: string, id: number): boolean {
+    return !!this.selectedIds[table][id];
+  }
+
+  isAllSelected(table: string, data: any[]): boolean {
+    if (!data || data.length === 0) return false;
+    return data.every(item => this.selectedIds[table][item.id]);
+  }
+
+  toggleAll(table: string, data: any[], event: any) {
+    const checked = event.target.checked;
+    data.forEach(item => {
+      this.selectedIds[table][item.id] = checked;
+    });
+  }
+
+  getSelectedCount(table: string): number {
+    return Object.values(this.selectedIds[table] || {}).filter(v => v).length;
+  }
+
+  async deleteSelectedMultiple(table: string) {
+    const ids = Object.entries(this.selectedIds[table] || {})
+      .filter(([id, isSelected]) => isSelected)
+      .map(([id]) => Number(id));
+
+    if (ids.length === 0) {
+      alert('Please select at least one item to delete.');
+      return;
+    }
+
+    if (!confirm(`Are you sure you want to delete ${ids.length} selected items?`)) {
+      return;
+    }
+
+    this.clearMessages();
+    this.successMessage = `Processing deletion of ${ids.length} items...`;
+    
+    let successCount = 0;
+    let failCount = 0;
+
+    for (const id of ids) {
+      try {
+        switch (table) {
+          case 'products': await firstValueFrom(this.apiService.deleteProduct(id)); break;
+          case 'fabrics': await firstValueFrom(this.apiService.deleteFabric(id)); break;
+          case 'batches': await firstValueFrom(this.apiService.deleteBatch(id)); break;
+          case 'suppliers': await firstValueFrom(this.apiService.deleteSupplier(id)); break;
+          case 'purchases': await firstValueFrom(this.apiService.deletePurchase(id)); break;
+          case 'expenses': await firstValueFrom(this.apiService.deleteExpense(id)); break;
+          case 'sales': await firstValueFrom(this.apiService.deleteSalesOrder(id)); break;
+        }
+        successCount++;
+        this.selectedIds[table][id] = false;
+      } catch (err) {
+        failCount++;
+      }
+    }
+
+    if (failCount === 0) {
+      this.successMessage = `Successfully deleted ${successCount} items.`;
+    } else {
+      this.errorMessage = `Deleted ${successCount} items, but failed to delete ${failCount} items.`;
+    }
+
+    // Refresh respective data
+    switch (table) {
+      case 'products': 
+        this.fetchProducts(); this.fetchStockSummary(); this.fetchDashboardSummary(); 
+        break;
+      case 'fabrics': 
+        this.fetchFabrics(); this.fetchBatches(); this.fetchStockSummary(); this.fetchDashboardSummary(); 
+        break;
+      case 'batches': 
+        this.fetchBatches(); this.fetchStockSummary(); this.fetchDashboardSummary(); 
+        break;
+      case 'suppliers': 
+        this.fetchSuppliers(); this.fetchPurchases(); this.fetchStockSummary(); this.fetchDashboardSummary(); 
+        break;
+      case 'purchases': 
+        this.fetchPurchases(); this.fetchStockSummary(); this.fetchDashboardSummary(); 
+        break;
+      case 'expenses': 
+        this.fetchExpenses(); this.fetchDashboardSummary(); 
+        break;
+      case 'sales': 
+        this.fetchSalesOrders(); this.fetchStockSummary(); this.fetchDashboardSummary(); 
+        break;
+    }
+  }
+
+  sortBy(table: string, field: string) {
+    const sortFieldMap: any = {
+      'sales': { field: 'salesSort', desc: 'salesSortDesc' },
+      'products': { field: 'productsSort', desc: 'productsSortDesc' },
+      'suppliers': { field: 'suppliersSort', desc: 'suppliersSortDesc' },
+      'purchases': { field: 'purchasesSort', desc: 'purchasesSortDesc' },
+      'stocks': { field: 'stocksSort', desc: 'stocksSortDesc' },
+      'profit': { field: 'profitSort', desc: 'profitSortDesc' },
+      'wholesale': { field: 'wholesaleSort', desc: 'wholesaleSortDesc' },
+      'users': { field: 'usersSort', desc: 'usersSortDesc' },
+      'wholesaleCustomers': { field: 'wholesaleCustomersSort', desc: 'wholesaleCustomersSortDesc' },
+      'materials': { field: 'materialsSort', desc: 'materialsSortDesc' },
+      'batches': { field: 'batchesSort', desc: 'batchesSortDesc' },
+      'employees': { field: 'employeesSort', desc: 'employeesSortDesc' },
+      'expenses': { field: 'expensesSort', desc: 'expensesSortDesc' }
+    };
+    
+    const sortState = sortFieldMap[table];
+    if (sortState) {
+      if ((this as any)[sortState.field] === field) {
+        (this as any)[sortState.desc] = !(this as any)[sortState.desc];
+      } else {
+        (this as any)[sortState.field] = field;
+        (this as any)[sortState.desc] = false;
+      }
+    }
+  }
+
   customerSearchQuery = '';
   orderStatusFilter = 'ALL';
   stockSearchQuery = '';
