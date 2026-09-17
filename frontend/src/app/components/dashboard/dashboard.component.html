@@ -724,7 +724,6 @@
                       <button class="btn btn-danger btn-sm" (click)="onDeleteFabric(f.id)">Delete</button>
                     </td>
                   </tr>
-                  </tr>
                   <tr *ngIf="(fabrics | searchFilter:materialsSearch).length === 0">
                     <td colspan="7" class="text-center text-muted pad-30">No fabric inventory recorded.</td>
                   </tr>
@@ -1039,7 +1038,6 @@
                       <button class="btn btn-danger btn-sm" (click)="onDeleteSupplier(s.id)">Delete</button>
                     </td>
                   </tr>
-                  </tr>
                   <tr *ngIf="(suppliers | searchFilter:suppliersSearch).length === 0">
                     <td colspan="6" class="text-center text-muted pad-30">No suppliers registered.</td>
                   </tr>
@@ -1318,7 +1316,6 @@
                       <button class="btn btn-danger btn-sm" (click)="onDeleteExpense(exp.id)">Delete</button>
                     </td>
                   </tr>
-                  </tr>
                   <tr *ngIf="(expenses | searchFilter:expensesSearch).length === 0">
                     <td colspan="7" class="text-center text-muted pad-30">No expenses recorded.</td>
                   </tr>
@@ -1387,7 +1384,6 @@
                   <td *ngIf="currentUser?.role === 'SUPER_ADMIN' || currentUser?.role === 'ADMIN'">
                     <button class="btn btn-danger btn-sm" (click)="onDeleteProduct(s.productId)">Delete</button>
                   </td>
-                </tr>
                 </tr>
                 <tr *ngIf="(stocks | searchFilter:stocksSearch).length === 0">
                   <td [attr.colspan]="(currentUser?.role === 'SUPER_ADMIN' || currentUser?.role === 'ADMIN') ? 9 : 8" class="text-center text-muted pad-30">No inventory records found.</td>
@@ -1610,7 +1606,6 @@
                       <button class="btn btn-danger btn-sm" (click)="onDeleteSalesOrder(order.id)">Delete</button>
                     </div>
                   </td>
-                </tr>
                 </tr>
                 <tr *ngIf="(salesOrders | searchFilter:salesSearch).length === 0">
                   <td colspan="8" class="text-center text-muted pad-30">No sales invoices recorded.</td>
