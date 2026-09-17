@@ -787,7 +787,7 @@ async function submitWholesaleOrder() {
 // =======================================================
 
 function toggleAccountDropdown() {
-  document.getElementById('account-dropdown')?.classList.toggle('open');
+  document.getElementById('account-dropdown')?.classList.toggle('show');
 }
 
 function handleAccountButtonClick() {
