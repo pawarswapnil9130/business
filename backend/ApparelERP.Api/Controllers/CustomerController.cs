@@ -12,6 +12,7 @@ using Microsoft.IdentityModel.Tokens;
 using ApparelERP.Api.Data;
 using ApparelERP.Api.Models;
 using ApparelERP.Api.Models.Dto;
+using ApparelERP.Api.Services;
 
 namespace ApparelERP.Api.Controllers
 {
@@ -21,11 +22,13 @@ namespace ApparelERP.Api.Controllers
     {
         private readonly ApparelDbContext _context;
         private readonly IConfiguration _configuration;
+        private readonly IInventoryService _inventoryService;
 
-        public CustomerController(ApparelDbContext context, IConfiguration configuration)
+        public CustomerController(ApparelDbContext context, IConfiguration configuration, IInventoryService inventoryService)
         {
             _context = context;
             _configuration = configuration;
+            _inventoryService = inventoryService;
         }
 
         // ==========================================
@@ -457,6 +460,12 @@ namespace ApparelERP.Api.Controllers
 
             _context.SalesOrders.Add(salesOrder);
             await _context.SaveChangesAsync();
+
+            // Record stock deductions
+            foreach (var item in salesOrder.Items)
+            {
+                await _inventoryService.RecordStockDeductionAsync(item.ProductId, item.ItemType, item.Quantity, salesOrder.Id);
+            }
 
             return CreatedAtAction(nameof(GetCustomerOrderById), new { id = salesOrder.Id }, MapToCustomerOrderDto(salesOrder));
         }
