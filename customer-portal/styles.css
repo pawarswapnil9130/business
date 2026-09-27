@@ -4,52 +4,52 @@
    ======================================================= */
 
 :root {
-  /* Flipkart Brand Palette */
-  --fk-blue: #2874f0;
-  --fk-blue-dark: #1255cc;
-  --fk-blue-light: #f0f5ff;
-  --fk-yellow: #ff9f00;
-  --fk-yellow-hover: #f39700;
-  --fk-orange: #fb641b;
-  --fk-orange-hover: #e85511;
-  --fk-plus-gold: #ffe500;
-  --fk-green: #388e3c;
-  --fk-green-bg: #eaf7ec;
-  --fk-danger: #ff6161;
+  /* Mercari Inspired Theme */
+  --fk-blue: #E44E2D; /* Mercari Red/Orange Primary */
+  --fk-blue-dark: #C93E20;
+  --fk-blue-light: #FBECEA;
+  --fk-yellow: #4A90E2; /* Mercari Blue Secondary Accent */
+  --fk-yellow-hover: #357ABD;
+  --fk-orange: #E44E2D;
+  --fk-orange-hover: #C93E20;
+  --fk-plus-gold: #FFB74D;
+  --fk-green: #2ECC71;
+  --fk-green-bg: #EAF9F1;
+  --fk-danger: #E74C3C;
 
   /* Surface & Canvas */
-  --bg-page: #f1f3f6;
-  --bg-card: #ffffff;
-  --bg-subtle: #f9fafb;
-  --bg-dark: #172337;
+  --bg-page: #F5F5F5;
+  --bg-card: #FFFFFF;
+  --bg-subtle: #F9F9F9;
+  --bg-dark: #222222;
 
   /* Typography */
-  --text-main: #212121;
-  --text-secondary: #878787;
-  --text-muted: #878787;
-  --text-white: #ffffff;
+  --text-main: #222222;
+  --text-secondary: #777777;
+  --text-muted: #999999;
+  --text-white: #FFFFFF;
 
   /* Borders & Dividers */
-  --border-light: #f0f0f0;
-  --border-subtle: #e0e0e0;
-  --border-focus: #2874f0;
+  --border-light: #EBEBEB;
+  --border-subtle: #E0E0E0;
+  --border-focus: #E44E2D;
 
-  /* Radii */
-  --radius-xs: 2px;
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
+  /* Radii (Highly rounded for Mercari app-like feel) */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
   --radius-pill: 9999px;
 
-  /* Shadows (Flipkart Soft Shadows) */
-  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.08);
-  --shadow-sm: 0 1px 4px 0 rgba(0,0,0,.1);
-  --shadow-card: 0 2px 4px 0 rgba(0,0,0,.08);
-  --shadow-card-hover: 0 3px 16px 0 rgba(0,0,0,.12);
-  --shadow-dropdown: 0 4px 16px 0 rgba(0,0,0,.2);
-  --shadow-drawer: -4px 0 24px rgba(0, 0, 0, 0.25);
+  /* Shadows (Soft elevated shadows) */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
+  --shadow-card: 0 2px 12px rgba(0,0,0,0.08);
+  --shadow-card-hover: 0 8px 24px rgba(0,0,0,0.12);
+  --shadow-dropdown: 0 4px 16px rgba(0,0,0,0.15);
+  --shadow-drawer: -4px 0 24px rgba(0, 0, 0, 0.15);
 
-  --font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 * {
@@ -205,7 +205,7 @@ body {
   display: flex;
   align-items: center;
   background: #ffffff;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   padding: 0 14px;
   height: 38px;
   gap: 10px;
@@ -259,7 +259,7 @@ body {
   color: var(--fk-blue);
   border: 1px solid #dbdbdb;
   padding: 7px 28px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   font-weight: 700;
   font-size: 14px;
   cursor: pointer;
@@ -310,7 +310,7 @@ body {
   font-weight: 700;
   font-size: 14px;
   padding: 6px 10px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   transition: background 0.15s;
 }
 
@@ -341,7 +341,7 @@ body {
   color: #000000;
   font-weight: 900;
   padding: 1px 5px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   letter-spacing: 0.4px;
   display: inline-block;
   margin-top: 1px;
@@ -356,7 +356,7 @@ body {
   right: 0;
   width: 250px;
   background: #ffffff;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   box-shadow: var(--shadow-dropdown);
   padding: 8px 0;
   margin-top: 8px;
@@ -381,7 +381,7 @@ body {
   font-size: 11px;
   background: var(--fk-blue-light);
   padding: 4px 8px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   color: var(--fk-blue);
   font-weight: 700;
 }
@@ -425,7 +425,7 @@ body {
   gap: 6px;
   cursor: pointer;
   padding: 6px 10px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   transition: background 0.15s;
 }
 
@@ -443,7 +443,7 @@ body {
   gap: 10px;
   cursor: pointer;
   padding: 6px 12px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   transition: background 0.15s;
 }
 
@@ -592,7 +592,7 @@ body {
   font-size: 11px;
   font-weight: 900;
   padding: 3px 10px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   letter-spacing: 0.6px;
   margin-bottom: 12px;
   text-transform: uppercase;
@@ -642,7 +642,7 @@ body {
   font-weight: 800;
   font-size: 14px;
   padding: 12px 28px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   box-shadow: 0 2px 4px 0 rgba(0,0,0,.2);
   transition: all 0.15s;
@@ -660,7 +660,7 @@ body {
   font-weight: 800;
   font-size: 14px;
   padding: 12px 24px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   box-shadow: 0 2px 4px rgba(0,0,0,0.15);
   transition: all 0.15s;
@@ -716,7 +716,7 @@ body {
   background: #ffffff;
   border-left: 4px solid var(--fk-yellow);
   padding: 14px 20px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   box-shadow: var(--shadow-sm);
   display: flex;
   justify-content: space-between;
@@ -746,7 +746,7 @@ body {
   border: none;
   font-weight: 700;
   padding: 8px 18px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   font-size: 13px;
   cursor: pointer;
 }
@@ -757,7 +757,7 @@ body {
   color: var(--text-main);
   font-weight: 700;
   padding: 8px 16px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   font-size: 13px;
   cursor: pointer;
 }
@@ -773,7 +773,7 @@ body {
   background: #ffffff;
   border-left: 4px solid var(--fk-green);
   padding: 12px 20px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   box-shadow: var(--shadow-sm);
   display: flex;
   justify-content: space-between;
@@ -791,7 +791,7 @@ body {
   color: var(--fk-green);
   font-weight: 800;
   padding: 2px 6px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   font-size: 11px;
 }
 
@@ -804,7 +804,7 @@ body {
   font-weight: 700;
   font-size: 13px;
   padding: 8px 18px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
 }
 
@@ -815,7 +815,7 @@ body {
   font-weight: 700;
   font-size: 13px;
   padding: 8px 16px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
 }
 
@@ -835,7 +835,7 @@ body {
 .catalog-top-bar {
   background: #ffffff;
   padding: 14px 20px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   margin-bottom: 12px;
   box-shadow: var(--shadow-sm);
   display: flex;
@@ -890,27 +890,29 @@ body {
 /* Product Grid */
 .ecom-products-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
   gap: 12px;
 }
 
 @media (max-width: 580px) {
   .ecom-products-grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
+    gap: 10px;
+    padding: 0 4px;
   }
 }
 
-/* The Authentic Flipkart Product Card */
+/* The Mercari Inspired Product Card */
 .ecom-card {
-  background: #ffffff;
-  border: 1px solid #f0f0f0;
-  border-radius: 2px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  transition: box-shadow 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
   position: relative;
+  box-shadow: var(--shadow-sm);
 }
 
 .ecom-card:hover {
@@ -939,7 +941,7 @@ body {
 }
 
 .ecom-card:hover .ecom-card-img {
-  transform: scale(1.04);
+  transform: scale(1.02);
 }
 
 .card-no-img {
@@ -973,7 +975,7 @@ body {
   font-size: 10.5px;
   font-weight: 800;
   padding: 2px 6px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   box-shadow: 0 1px 3px rgba(0,0,0,0.15);
 }
 
@@ -988,7 +990,7 @@ body {
   font-size: 10px;
   font-weight: 800;
   padding: 2px 6px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   box-shadow: 0 1px 3px rgba(0,0,0,0.12);
 }
 
@@ -1049,7 +1051,7 @@ body {
 .set-size-pill {
   background: var(--bg-page);
   border: 1px solid var(--border-subtle);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   padding: 3px 8px;
   font-size: 11px;
   font-weight: 700;
@@ -1070,7 +1072,7 @@ body {
   color: var(--text-secondary);
   background: #f8fafc;
   padding: 2px 6px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--border-light);
 }
 
@@ -1115,7 +1117,7 @@ body {
   font-weight: 700;
   padding: 8px;
   text-align: center;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   margin-bottom: 10px;
 }
 
@@ -1128,13 +1130,13 @@ body {
 
 .btn-zepto-add {
   width: 100%;
-  background: var(--fk-yellow);
+  background: var(--fk-blue);
   color: #ffffff;
   border: none;
-  font-weight: 800;
-  font-size: 13.5px;
-  padding: 9px;
-  border-radius: 2px;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 10px;
+  border-radius: var(--radius-pill);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -1145,7 +1147,7 @@ body {
 }
 
 .btn-zepto-add:hover {
-  background: var(--fk-yellow-hover);
+  background: var(--fk-blue-dark);
 }
 
 /* Active Stepper on Product Card */
@@ -1155,7 +1157,7 @@ body {
   justify-content: space-between;
   background: #ffffff;
   border: 1.5px solid var(--fk-blue);
-  border-radius: 2px;
+  border-radius: var(--radius-pill);
   overflow: hidden;
   height: 36px;
 }
@@ -1201,7 +1203,7 @@ body {
   font-size: 10px;
   font-weight: 700;
   padding: 4px 2px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   transition: all 0.15s;
   text-align: center;
@@ -1321,7 +1323,7 @@ body {
 .cart-item-card {
   background: #ffffff;
   border: 1px solid var(--border-subtle);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   padding: 12px;
   display: flex;
   gap: 12px;
@@ -1330,7 +1332,7 @@ body {
 .cart-item-thumb {
   width: 64px;
   height: 64px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   object-fit: cover;
   border: 1px solid #f0f0f0;
   flex-shrink: 0;
@@ -1345,7 +1347,7 @@ body {
   align-items: center;
   justify-content: center;
   font-size: 24px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   flex-shrink: 0;
 }
 
@@ -1397,7 +1399,7 @@ body {
   display: flex;
   align-items: center;
   border: 1px solid var(--border-subtle);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   overflow: hidden;
   height: 28px;
 }
@@ -1422,7 +1424,7 @@ body {
 .price-details-card {
   background: #ffffff;
   border: 1px solid var(--border-subtle);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   padding: 14px 16px;
 }
 
@@ -1461,7 +1463,7 @@ body {
   font-weight: 800;
   font-size: 12.5px;
   padding: 8px 12px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   text-align: center;
   margin-top: 8px;
 }
@@ -1480,10 +1482,10 @@ body {
   background: var(--fk-orange);
   color: #ffffff;
   border: none;
-  font-weight: 800;
+  font-weight: 700;
   font-size: 16px;
   height: 48px;
-  border-radius: 2px;
+  border-radius: var(--radius-pill);
   cursor: pointer;
   box-shadow: 0 1px 2px 0 rgba(0,0,0,.2);
   transition: background 0.15s;
@@ -1591,7 +1593,7 @@ body {
   width: 100%;
   padding: 10px 12px;
   border: 1px solid var(--border-subtle);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   font-size: 14px;
   font-family: inherit;
   outline: none;
@@ -1611,7 +1613,7 @@ body {
   font-weight: 800;
   font-size: 15px;
   height: 44px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   box-shadow: 0 1px 2px 0 rgba(0,0,0,.2);
   transition: background 0.15s;
@@ -1629,7 +1631,7 @@ body {
   font-weight: 800;
   font-size: 15px;
   height: 44px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
 }
 
@@ -1665,7 +1667,7 @@ body {
 
 .trust-box {
   padding: 16px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   background: var(--bg-page);
   border: 1px solid var(--border-subtle);
   text-align: center;
@@ -1773,7 +1775,7 @@ body {
   background: #212121;
   color: #ffffff;
   padding: 10px 20px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   font-size: 13px;
   font-weight: 700;
   box-shadow: var(--shadow-dropdown);
@@ -1868,7 +1870,7 @@ body {
 .drawer-item-card {
   background: #ffffff;
   border: 1px solid var(--border-subtle);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   padding: 14px;
   display: flex;
   align-items: center;
@@ -1880,7 +1882,7 @@ body {
   width: 48px;
   height: 48px;
   background: var(--fk-blue-light);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1929,7 +1931,7 @@ body {
   height: 26px;
   border: 1px solid var(--border-subtle);
   background: #ffffff;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   font-weight: 800;
   cursor: pointer;
 }
@@ -1943,7 +1945,7 @@ body {
 .bill-breakdown-card {
   background: #ffffff;
   border: 1px solid var(--border-subtle);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   padding: 14px 16px;
   margin-bottom: 12px;
 }
@@ -1991,7 +1993,7 @@ body {
   width: 100%;
   padding: 8px 12px;
   border: 1px solid var(--border-subtle);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   font-size: 12.5px;
   outline: none;
 }
@@ -2009,7 +2011,7 @@ body {
   font-weight: 800;
   font-size: 15px;
   height: 48px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   box-shadow: 0 1px 2px 0 rgba(0,0,0,.2);
   display: flex;
@@ -2036,7 +2038,7 @@ body {
 .btn-checkout-price {
   background: rgba(0, 0, 0, 0.2);
   padding: 4px 10px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   font-size: 14px;
 }
 
@@ -2115,7 +2117,7 @@ body {
   width: 100%;
   padding: 10px 12px;
   border: 1px solid var(--border-subtle);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   font-size: 14px;
   font-family: inherit;
   outline: none;
@@ -2134,7 +2136,7 @@ body {
   font-weight: 800;
   font-size: 15px;
   height: 44px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   box-shadow: 0 1px 2px 0 rgba(0,0,0,.2);
   transition: background 0.15s;
@@ -2151,7 +2153,7 @@ body {
   font-weight: 800;
   font-size: 15px;
   height: 44px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
 }
 
@@ -2162,7 +2164,7 @@ body {
   font-weight: 700;
   font-size: 13px;
   height: 38px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
 }
 
@@ -2171,7 +2173,7 @@ body {
   border: 1px solid #fecaca;
   color: #dc2626;
   padding: 10px 14px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   font-size: 12.5px;
   margin-bottom: 16px;
   font-weight: 600;
@@ -2182,7 +2184,7 @@ body {
   border: 1px solid #a7f3d0;
   color: var(--fk-green);
   padding: 10px 14px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   font-size: 12.5px;
   margin-bottom: 16px;
   font-weight: 700;
@@ -2200,7 +2202,7 @@ body {
   border: 1px dashed var(--fk-blue);
   color: var(--fk-blue);
   padding: 8px 12px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   font-size: 12px;
   margin-bottom: 16px;
   text-align: center;
@@ -2233,7 +2235,7 @@ body {
 .orders-table-wrap {
   overflow-x: auto;
   border: 1px solid var(--border-subtle);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   margin-top: 16px;
 }
 
@@ -2261,7 +2263,7 @@ body {
 .order-status-badge {
   display: inline-block;
   padding: 3px 8px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   font-size: 11px;
   font-weight: 800;
 }
@@ -2283,7 +2285,7 @@ body {
   color: #ffffff;
   border: none;
   padding: 6px 12px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
