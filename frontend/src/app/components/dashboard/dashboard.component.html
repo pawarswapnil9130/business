@@ -433,9 +433,14 @@
       <!-- 2. PRODUCT MASTER VIEW (ITEMS MASTER) -->
       <!-- ======================================================= -->
       <section *ngIf="currentTab === 'products'" class="tab-pane">
-        <div class="two-column-layout">
+        <div style="margin-bottom: 15px;">
+          <button class="btn btn-primary" (click)="showProductForm = !showProductForm">
+            {{ showProductForm ? '− Hide Item Form' : '+ Add New Item' }}
+          </button>
+        </div>
+        <div class="two-column-layout" [style.display]="showProductForm ? 'grid' : 'block'">
           <!-- Create Product Form -->
-          <div class="panel">
+          <div class="panel" *ngIf="showProductForm">
             <h3>📁 Register New Item / SKU Master</h3>
             <form (ngSubmit)="onSubmitProduct()">
               <div class="form-group">
@@ -612,11 +617,19 @@
       <!-- 3. MANUFACTURING VIEW (PRODUCTION & COST ACCOUNTING) -->
       <!-- ======================================================= -->
       <section *ngIf="currentTab === 'manufacturing'" class="tab-pane">
+        <div style="margin-bottom: 15px; display: flex; gap: 10px;">
+          <button class="btn btn-primary" (click)="showFabricForm = !showFabricForm">
+            {{ showFabricForm ? '− Hide Fabric Voucher' : '+ Add Fabric Purchase' }}
+          </button>
+          <button class="btn btn-secondary" (click)="showSupplierForm = !showSupplierForm">
+            {{ showSupplierForm ? '− Hide Vendor Form' : '+ Quick Add Vendor' }}
+          </button>
+        </div>
         <!-- Part A: Fabric Raw Stock -->
-        <div class="two-column-layout">
-          <div style="display: flex; flex-direction: column; gap: 20px; width: 100%;">
+        <div class="two-column-layout" [style.display]="(showFabricForm || showSupplierForm) ? 'grid' : 'block'">
+          <div style="display: flex; flex-direction: column; gap: 20px; width: 100%;" *ngIf="showFabricForm || showSupplierForm">
             <!-- Buy Raw Fabric Roll -->
-            <div class="panel">
+            <div class="panel" *ngIf="showFabricForm">
               <h3>🧵 Fabric Purchase Voucher</h3>
               <form (ngSubmit)="onSubmitFabric()">
                 <div class="form-group">
@@ -651,7 +664,7 @@
             </div>
 
             <!-- Quick Register Supplier -->
-            <div class="panel">
+            <div class="panel" *ngIf="showSupplierForm">
               <h3>🏢 Quick Add Vendor / Supplier</h3>
               <form (ngSubmit)="onSubmitSupplier()">
                 <div class="form-group">
@@ -739,8 +752,13 @@
         <hr class="separator" />
 
         <!-- Part B: Production Batches -->
-        <div class="two-column-layout">
-          <div class="panel">
+        <div style="margin-bottom: 15px;">
+          <button class="btn btn-success" (click)="showBatchForm = !showBatchForm">
+            {{ showBatchForm ? '− Hide Batch Voucher' : '+ Open New Production Batch' }}
+          </button>
+        </div>
+        <div class="two-column-layout" [style.display]="showBatchForm ? 'grid' : 'block'">
+          <div class="panel" *ngIf="showBatchForm">
             <h3>⚙️ Open Production Batch Voucher</h3>
             <form (ngSubmit)="onSubmitBatch()">
               <div class="form-group">
@@ -970,9 +988,14 @@
       <!-- 4. TRADING MODULE VIEW (PURCHASES & VENDORS) -->
       <!-- ======================================================= -->
       <section *ngIf="currentTab === 'trading'" class="tab-pane">
+        <div style="margin-bottom: 15px;">
+          <button class="btn btn-primary" (click)="showSupplierForm = !showSupplierForm">
+            {{ showSupplierForm ? '− Hide Vendor Form' : '+ Register Vendor' }}
+          </button>
+        </div>
         <!-- Supplier registration & view -->
-        <div class="two-column-layout">
-          <div class="panel">
+        <div class="two-column-layout" [style.display]="showSupplierForm ? 'grid' : 'block'">
+          <div class="panel" *ngIf="showSupplierForm">
             <h3>🏢 Register Vendor / Supplier Master</h3>
             <form (ngSubmit)="onSubmitSupplier()">
               <div class="form-group">
@@ -1053,8 +1076,13 @@
         <hr class="separator" />
 
         <!-- Purchase invoice entry (direct stock ledger bypass) -->
-        <div class="two-column-layout">
-          <div class="panel">
+        <div style="margin-bottom: 15px;">
+          <button class="btn btn-success" (click)="showPurchaseForm = !showPurchaseForm">
+            {{ showPurchaseForm ? '− Hide Purchase Voucher' : '+ Add Inward Purchase' }}
+          </button>
+        </div>
+        <div class="two-column-layout" [style.display]="showPurchaseForm ? 'grid' : 'block'">
+          <div class="panel" *ngIf="showPurchaseForm">
             <h3>📥 Inward Purchase Voucher (Ready-Made)</h3>
             <form (ngSubmit)="onSubmitPurchase()">
               <div class="form-group">
@@ -1189,9 +1217,14 @@
           </div>
         </div>
 
-        <div class="two-column-layout">
+        <div style="margin-bottom: 15px;">
+          <button class="btn btn-primary" (click)="showExpenseForm = !showExpenseForm">
+            {{ showExpenseForm ? '− Hide Expense Voucher' : '+ Record Operating Expense' }}
+          </button>
+        </div>
+        <div class="two-column-layout" [style.display]="showExpenseForm ? 'grid' : 'block'">
           <!-- Record Expense Form -->
-          <div class="panel">
+          <div class="panel" *ngIf="showExpenseForm">
             <h3>📝 Record Operating Expense Voucher</h3>
             <p class="subtitle" style="font-size: 0.8rem; color: var(--text-secondary); margin-top: -6px; margin-bottom: 16px;">
               Log daily operational expenses (rent, fuel, electricity, staff refreshments) to automatically deduct from clear net earnings.
@@ -1687,9 +1720,14 @@
       <!-- 8. ADMIN CONSOLE VIEW (USERS & ACCESS CONTROL) -->
       <!-- ======================================================= -->
       <section *ngIf="currentTab === 'users'" class="tab-pane">
-        <div class="two-column-layout">
+        <div style="margin-bottom: 15px;">
+          <button class="btn btn-primary" (click)="showUserForm = !showUserForm">
+            {{ showUserForm ? '− Hide User Form' : '+ Provision New User' }}
+          </button>
+        </div>
+        <div class="two-column-layout" [style.display]="showUserForm ? 'grid' : 'block'">
           <!-- Onboard User Form -->
-          <div class="panel">
+          <div class="panel" *ngIf="showUserForm">
             <h3>🛡️ Provision New Staff User Account</h3>
             <p class="subtitle" style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 16px;">Directly register and approve a new team member with their role permissions.</p>
             

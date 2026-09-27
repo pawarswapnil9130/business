@@ -15,6 +15,15 @@ export class DashboardComponent implements OnInit {
   currentUser: any = null;
   isMobileMenuOpen = false;
 
+  // UI State toggles for hiding/showing forms
+  showProductForm = false;
+  showFabricForm = false;
+  showSupplierForm = false;
+  showBatchForm = false;
+  showPurchaseForm = false;
+  showExpenseForm = false;
+  showUserForm = false;
+
   toggleMobileMenu() {
     this.isMobileMenuOpen = !this.isMobileMenuOpen;
   }
