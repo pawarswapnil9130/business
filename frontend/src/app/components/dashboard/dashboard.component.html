@@ -566,7 +566,7 @@
                     </td>
                     <td style="width: 70px; text-align: center;">
                       <div *ngIf="p.imageUrl" style="position: relative; display: inline-block;">
-                        <img [src]="p.imageUrl" [alt]="p.name" style="width: 48px; height: 48px; object-fit: cover; border-radius: 6px; border: 1px solid #cbd5e1;" />
+                        <img [src]="getImageUrl(p.imageUrl)" [alt]="p.name" style="width: 48px; height: 48px; object-fit: cover; border-radius: 6px; border: 1px solid #cbd5e1;" />
                       </div>
                       <div *ngIf="!p.imageUrl" style="width: 48px; height: 48px; background: #f1f5f9; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 20px; border: 1px dashed #cbd5e1; margin: 0 auto;">
                         👔
@@ -870,7 +870,7 @@
                     <td><strong>{{ b.batchCode }}</strong></td>
                     <td style="width: 90px; text-align: center;">
                       <div *ngIf="b.product?.imageUrl" style="position: relative; display: inline-block;">
-                        <img [src]="b.product.imageUrl" alt="Batch Photo" style="width: 46px; height: 46px; object-fit: cover; border-radius: 6px; border: 1px solid #cbd5e1;" />
+                        <img [src]="getImageUrl(b.product.imageUrl)" alt="Batch Photo" style="width: 46px; height: 46px; object-fit: cover; border-radius: 6px; border: 1px solid #cbd5e1;" />
                       </div>
                       <div *ngIf="!b.product?.imageUrl" style="width: 46px; height: 46px; background: #f1f5f9; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; font-size: 20px; border: 1px dashed #cbd5e1;">
                         👔

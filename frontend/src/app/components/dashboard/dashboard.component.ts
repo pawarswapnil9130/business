@@ -545,6 +545,12 @@ export class DashboardComponent implements OnInit {
 
   constructor(private apiService: ApiService, private router: Router) {}
 
+  getImageUrl(url: string | null | undefined): string {
+    if (!url) return '';
+    if (url.startsWith('http')) return url;
+    return this.apiService.serverUrl + url;
+  }
+
   ngOnInit() {
     this.loadCompanyProfile();
     this.currentUser = this.apiService.currentUserValue;
@@ -1687,7 +1693,7 @@ export class DashboardComponent implements OnInit {
         name: prod.name,
         size: prod.size,
         color: prod.color,
-        itemType: 'PCS',
+        itemType: this.cartItemType,
         quantity: this.cartQuantity,
         unitPrice: this.cartUnitPrice,
         discount: this.cartDiscount,

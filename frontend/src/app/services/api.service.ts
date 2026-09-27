@@ -34,6 +34,10 @@ export class ApiService {
     return this.baseUrl.replace('/api', '/portal/');
   }
 
+  public get serverUrl() {
+    return this.baseUrl.replace('/api', '');
+  }
+
   private getHeaders(): HttpHeaders {
     let headers = new HttpHeaders({
       'Content-Type': 'application/json'

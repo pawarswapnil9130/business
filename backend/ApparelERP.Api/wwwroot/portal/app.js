@@ -129,7 +129,7 @@ async function loadCatalog() {
       ? { 'Authorization': `Bearer ${state.token}`, 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' } 
       : { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' };
 
-    const res = await fetch(url, { headers });
+    const res = await fetch(url, { headers, cache: 'no-store' });
     if (!res.ok) {
       if (res.status === 401) {
         handleLogout();
@@ -708,6 +708,9 @@ async function confirmPaymentAndPlaceOrder() {
       closeCartDrawer();
       showToast(`Order Placed Successfully! (Invoice #${data.invoiceNo})`);
       
+      // Refresh catalog to sync updated stock
+      loadCatalog();
+      
       // Refresh past orders view if user navigates there
       setTimeout(() => {
         // Assuming there might be a function to refresh orders
@@ -767,6 +770,9 @@ async function submitWholesaleOrder() {
     state.cart = {};
     updateCartBadges();
     closeCartDrawer();
+
+    // Refresh catalog to sync updated stock
+    loadCatalog();
 
     // Show Success Modal
     document.getElementById('success-order-invoice-no').textContent = `Invoice #${data.invoiceNo}`;
