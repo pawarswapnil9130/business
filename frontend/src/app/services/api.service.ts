@@ -30,6 +30,10 @@ export class ApiService {
     return this.currentUserSubject.value;
   }
 
+  public get portalUrl() {
+    return this.baseUrl.replace('/api', '/portal/');
+  }
+
   private getHeaders(): HttpHeaders {
     let headers = new HttpHeaders({
       'Content-Type': 'application/json'

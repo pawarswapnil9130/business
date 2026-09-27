@@ -10,6 +10,11 @@ export class AuthGuard implements CanActivate {
 
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
     if (this.apiService.isAuthenticated()) {
+      if (this.apiService.currentUserValue?.role === 'USER') {
+        window.location.href = this.apiService.portalUrl;
+        return false;
+      }
+
       // Check if route requires role check
       const expectedRole = route.data['role'];
       if (expectedRole && this.apiService.currentUserValue.role !== expectedRole) {

@@ -24,7 +24,11 @@ export class LoginComponent {
   ) {
     // redirect to home if already logged in
     if (this.apiService.isAuthenticated()) {
-      this.router.navigate(['/']);
+      if (this.apiService.currentUserValue?.role === 'USER') {
+        window.location.href = this.apiService.portalUrl;
+      } else {
+        this.router.navigate(['/']);
+      }
     }
     this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
   }
@@ -51,7 +55,11 @@ export class LoginComponent {
     if (this.isLoginMode) {
       this.apiService.signin({ username: this.username, password: this.password }).subscribe({
         next: () => {
-          this.router.navigateByUrl(this.returnUrl);
+          if (this.apiService.currentUserValue?.role === 'USER') {
+            window.location.href = this.apiService.portalUrl;
+          } else {
+            this.router.navigateByUrl(this.returnUrl);
+          }
         },
         error: (err) => {
           this.loading = false;
