@@ -7,35 +7,35 @@
      ========================================== */
   
   /* Canvas & Structural Backgrounds */
-  --bg-primary: #f1f5f9;        /* Slate-100 clean canvas */
-  --bg-secondary: #0f172a;      /* Slate-900 deep enterprise navy */
-  --bg-sidebar-hover: #1e293b;  /* Slate-800 sidebar hover state */
-  --bg-sidebar-active: #2563eb; /* Royal Blue active pill */
+  --bg-primary: #f4f5f8;        /* Zoho clean canvas */
+  --bg-secondary: #ffffff;      /* Zoho white sidebar & header */
+  --bg-sidebar-hover: #f3f5f8;  /* Light hover state */
+  --bg-sidebar-active: #eaf1fb; /* Light blue active pill */
   --bg-card: #ffffff;           /* Crisp pure white */
-  --bg-card-header: #f8fafc;    /* Very light gray-slate header */
-  --bg-input: #f8fafc;          /* Soft light slate input surface */
-  --bg-input-focus: #ffffff;    /* Pure white on focus */
-  --bg-table-header: #f8fafc;   /* Ledger header background */
-  --bg-table-hover: #f1f5f9;    /* Clean hover highlight */
+  --bg-card-header: #f8fafc;    /* Very light gray header */
+  --bg-input: #ffffff;          /* White input surface */
+  --bg-input-focus: #ffffff;    
+  --bg-table-header: #f9f9f9;   /* Ledger header background */
+  --bg-table-hover: #f4f5f8;    /* Clean hover highlight */
 
   /* Borders & Dividers */
-  --border-color: #e2e8f0;      /* Slate-200 standard border */
-  --border-subtle: #f1f5f9;     /* Slate-100 fine divider */
-  --border-input: #cbd5e1;      /* Slate-300 crisp input border */
-  --border-focus: #2563eb;      /* Blue-600 active focus ring */
+  --border-color: #e5e7eb;      /* Zoho standard border */
+  --border-subtle: #f3f4f6;     
+  --border-input: #d1d5db;      
+  --border-focus: #0073e6;      /* Zoho blue focus ring */
 
   /* Primary Brand & Accent */
-  --accent-color: #2563eb;      /* Enterprise Royal Blue */
-  --accent-hover: #1d4ed8;      /* Deep Blue */
-  --accent-glow: rgba(37, 99, 235, 0.15);
-  --accent-light: #eff6ff;      /* Blue-50 */
+  --accent-color: #0073e6;      /* Zoho Blue */
+  --accent-hover: #005bb5;      /* Deep Blue */
+  --accent-glow: rgba(0, 115, 230, 0.15);
+  --accent-light: #eaf1fb;      /* Blue-50 */
 
   /* Typography Colors */
-  --text-primary: #0f172a;      /* Slate-900 high legibility */
-  --text-secondary: #475569;    /* Slate-600 descriptive text */
-  --text-muted: #94a3b8;        /* Slate-400 placeholders / captions */
-  --text-on-dark: #f8fafc;      /* High-contrast text for dark sidebar */
-  --text-on-dark-muted: #94a3b8;/* Muted text for dark sidebar */
+  --text-primary: #222222;      /* High legibility */
+  --text-secondary: #555555;    /* Descriptive text */
+  --text-muted: #888888;        
+  --text-on-dark: #222222;      /* High-contrast text for light sidebar */
+  --text-on-dark-muted: #666666;/* Muted text for light sidebar */
 
   /* Accounting Status Palette */
   --success: #10b981;           /* Emerald-500: Profit / In Stock / Paid */
@@ -490,7 +490,7 @@ textarea {
 .sidebar {
   width: 255px;
   background-color: var(--bg-secondary);
-  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  border-right: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
@@ -500,7 +500,7 @@ textarea {
 
 .sidebar-header {
   padding: 20px 18px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -509,7 +509,7 @@ textarea {
 .sidebar-brand .logo {
   font-size: 1.15rem;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--accent-color);
   letter-spacing: -0.01em;
   display: flex;
   align-items: center;
@@ -543,7 +543,7 @@ textarea {
   display: flex;
   align-items: center;
   padding: 9px 12px;
-  color: #94a3b8;
+  color: var(--text-secondary);
   text-decoration: none;
   border-radius: var(--radius-md);
   font-weight: 500;
@@ -553,13 +553,13 @@ textarea {
 
 .sidebar-nav a:hover:not(.active) {
   background-color: var(--bg-sidebar-hover);
-  color: #f8fafc;
+  color: var(--text-primary);
   padding-left: 14px;
 }
 
 .sidebar-nav a.active {
   background-color: var(--bg-sidebar-active);
-  color: #ffffff;
+  color: var(--accent-color);
   font-weight: 600;
   box-shadow: 0 2px 6px rgba(37, 99, 235, 0.35);
 }
@@ -576,8 +576,8 @@ textarea {
 /* Sidebar User Footer */
 .sidebar-footer {
   padding: 16px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  background-color: rgba(0, 0, 0, 0.2);
+  border-top: 1px solid var(--border-color);
+  background-color: var(--bg-card);
 }
 
 .user-badge {
@@ -590,20 +590,20 @@ textarea {
 .user-avatar {
   width: 34px;
   height: 34px;
-  background-color: #1e293b;
+  background-color: var(--accent-light);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 0.95rem;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: #f8fafc;
+  border: 1px solid var(--border-color);
+  color: var(--accent-color);
 }
 
 .user-info .username {
   font-weight: 600;
   font-size: 0.82rem;
-  color: #ffffff;
+  color: var(--text-primary);
   line-height: 1.2;
 }
 
@@ -1185,7 +1185,7 @@ textarea {
     padding: 0 12px;
     height: 52px;
     background-color: var(--bg-secondary);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid var(--border-color);
     position: sticky;
     top: 0;
     z-index: 100;
@@ -1197,7 +1197,7 @@ textarea {
   .mobile-menu-btn {
     background: none;
     border: none;
-    color: #ffffff;
+    color: var(--text-primary);
     font-size: 1.35rem;
     cursor: pointer;
     padding: 6px;
@@ -1209,7 +1209,7 @@ textarea {
   }
 
   .mobile-menu-btn:hover {
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: var(--bg-sidebar-hover);
   }
 
   .mobile-brand {
@@ -1222,7 +1222,7 @@ textarea {
   .mobile-brand .logo {
     font-size: 1rem;
     font-weight: 700;
-    color: #ffffff;
+    color: var(--accent-color);
     letter-spacing: -0.01em;
     white-space: nowrap;
   }
@@ -1295,8 +1295,8 @@ textarea {
   }
 
   .sidebar-close-btn:hover {
-    color: #ffffff;
-    background-color: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+    background-color: rgba(0, 0, 0, 0.05);
   }
 
   .sidebar-backdrop {
