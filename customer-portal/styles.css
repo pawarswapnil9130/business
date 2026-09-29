@@ -2298,3 +2298,31 @@ body {
   background: var(--fk-blue-dark);
 }
 
+
+/* Mobile Header Fix for Shopkeeper Login visibility */
+@media (max-width: 768px) {
+  .header-container {
+    flex-wrap: wrap;
+    gap: 12px 8px;
+    padding: 10px 12px;
+  }
+  .brand-container {
+    flex: 1;
+  }
+  .header-search-bar {
+    order: 3;
+    flex: 0 0 100%;
+    margin-top: 4px;
+  }
+  .header-actions {
+    flex-shrink: 1;
+  }
+  .btn-nav-login {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+  .btn-nav-apply {
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+}
