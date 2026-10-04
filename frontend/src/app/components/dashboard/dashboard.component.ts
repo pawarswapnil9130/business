@@ -419,6 +419,7 @@ export class DashboardComponent implements OnInit {
     designBrand: '',
     size: '38, 40, 42, 44',
     color: '',
+    costPrice: 0,
     sellingPrice: 0,
     distributorPrice: 0,
     setSize: 4, // 3 pcs or 4 pcs per set
@@ -426,6 +427,8 @@ export class DashboardComponent implements OnInit {
     gstPercent: 12.00,
     imageUrl: ''
   };
+  isEditingProduct = false;
+  editingProductId: number | null = null;
   selectedProductImageFile: File | null = null;
   productImagePreview: string | null = null;
 
@@ -582,12 +585,6 @@ export class DashboardComponent implements OnInit {
         break;
       case 'products':
         this.fetchProducts();
-        break;
-      case 'manufacturing':
-        this.fetchFabrics();
-        this.fetchBatches();
-        this.fetchProducts(); // To select targets for production
-        this.fetchSuppliers(); // Fabric suppliers
         break;
       case 'trading':
         this.fetchSuppliers();
@@ -1382,44 +1379,99 @@ export class DashboardComponent implements OnInit {
   // Products
   onSubmitProduct() {
     this.clearMessages();
-    this.apiService.createProduct(this.newProduct).subscribe({
-      next: (createdProd: any) => {
-        if (this.selectedProductImageFile && createdProd && createdProd.id) {
-          this.apiService.uploadProductImage(createdProd.id, this.selectedProductImageFile).subscribe({
-            next: () => {
-              this.successMessage = 'Product & Photo saved successfully!';
-              this.fetchProducts();
-              this.clearProductImageSelection();
-            },
-            error: () => {
-              this.successMessage = 'Product created, but photo upload failed.';
-              this.fetchProducts();
-            }
-          });
-        } else {
-          this.successMessage = 'Product created successfully!';
-          this.fetchProducts();
-        }
+    if (this.isEditingProduct && this.editingProductId) {
+      this.apiService.updateProduct(this.editingProductId, this.newProduct).subscribe({
+        next: () => {
+          if (this.selectedProductImageFile) {
+            this.apiService.uploadProductImage(this.editingProductId!, this.selectedProductImageFile).subscribe({
+              next: () => {
+                this.successMessage = 'Inward Stock & Photo updated successfully!';
+                this.fetchProducts();
+                this.cancelEditProduct();
+              },
+              error: () => {
+                this.successMessage = 'Inward Stock updated, but photo upload failed.';
+                this.fetchProducts();
+                this.cancelEditProduct();
+              }
+            });
+          } else {
+            this.successMessage = 'Inward Stock updated successfully!';
+            this.fetchProducts();
+            this.cancelEditProduct();
+          }
+        },
+        error: (err) => this.errorMessage = err.error?.message || 'Failed to update item.'
+      });
+    } else {
+      this.apiService.createProduct(this.newProduct).subscribe({
+        next: (createdProd: any) => {
+          if (this.selectedProductImageFile && createdProd && createdProd.id) {
+            this.apiService.uploadProductImage(createdProd.id, this.selectedProductImageFile).subscribe({
+              next: () => {
+                this.successMessage = 'Inward Stock & Photo saved successfully!';
+                this.fetchProducts();
+                this.cancelEditProduct();
+              },
+              error: () => {
+                this.successMessage = 'Inward Stock created, but photo upload failed.';
+                this.fetchProducts();
+                this.cancelEditProduct();
+              }
+            });
+          } else {
+            this.successMessage = 'Inward Stock created successfully!';
+            this.fetchProducts();
+            this.cancelEditProduct();
+          }
+        },
+        error: (err) => this.errorMessage = err.error?.message || 'Failed to create item.'
+      });
+    }
+  }
 
-        // Reset form
-        this.newProduct = {
-          name: '',
-          category: 'Shirts',
-          productType: 'MANUFACTURED',
-          designBrand: '',
-          size: '38, 40, 42, 44',
-          color: '',
-          sellingPrice: 0,
-          distributorPrice: 0,
-          setSize: 4,
-          setRatio: '38, 40, 42, 44',
-          gstPercent: 12.00,
-          imageUrl: ''
-        };
-        this.clearProductImageSelection();
-      },
-      error: (err) => this.errorMessage = err.error?.message || 'Failed to create product.'
-    });
+  onEditProduct(p: any) {
+    this.isEditingProduct = true;
+    this.editingProductId = p.id;
+    this.showProductForm = true;
+    this.newProduct = {
+      name: p.name,
+      category: p.category,
+      productType: p.productType,
+      designBrand: p.designBrand,
+      size: p.size,
+      color: p.color,
+      costPrice: p.costPrice || 0,
+      sellingPrice: p.sellingPrice || 0,
+      distributorPrice: p.distributorPrice || 0,
+      setSize: p.setSize || 4,
+      setRatio: p.setRatio || '',
+      gstPercent: p.gstPercent || 12.00,
+      imageUrl: p.imageUrl || ''
+    };
+    this.clearProductImageSelection();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  cancelEditProduct() {
+    this.isEditingProduct = false;
+    this.editingProductId = null;
+    this.newProduct = {
+      name: '',
+      category: 'Shirts',
+      productType: 'MANUFACTURED',
+      designBrand: '',
+      size: '38, 40, 42, 44',
+      color: '',
+      costPrice: 0,
+      sellingPrice: 0,
+      distributorPrice: 0,
+      setSize: 4,
+      setRatio: '38, 40, 42, 44',
+      gstPercent: 12.00,
+      imageUrl: ''
+    };
+    this.clearProductImageSelection();
   }
 
   onUploadDirectPhoto(productId: number, event: any) {

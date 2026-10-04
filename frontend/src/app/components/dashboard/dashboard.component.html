@@ -32,10 +32,7 @@
         <span class="nav-icon">📊</span> Overview
       </a>
       <a *ngIf="currentUser?.role !== 'EMPLOYEE'" href="javascript:void(0)" [class.active]="currentTab === 'products'" (click)="loadTab('products')">
-        <span class="nav-icon">📁</span> Item Master
-      </a>
-      <a *ngIf="currentUser?.role !== 'EMPLOYEE'" href="javascript:void(0)" [class.active]="currentTab === 'manufacturing'" (click)="loadTab('manufacturing')">
-        <span class="nav-icon">⚙️</span> Production & Costing
+        <span class="nav-icon">📁</span> Inward Stock
       </a>
       <a *ngIf="currentUser?.role !== 'EMPLOYEE'" href="javascript:void(0)" [class.active]="currentTab === 'trading'" (click)="loadTab('trading')">
         <span class="nav-icon">📥</span> Purchases & Vendors
@@ -83,8 +80,7 @@
     <header class="main-header">
       <div class="header-titles">
         <h2 *ngIf="currentTab === 'dashboard'">📊 Financial & Sales Overview</h2>
-        <h2 *ngIf="currentTab === 'products'">📁 Items Master & Price Catalog</h2>
-        <h2 *ngIf="currentTab === 'manufacturing'">⚙️ Production Batches & Cost Accounting</h2>
+        <h2 *ngIf="currentTab === 'products'">📁 Inward Stock</h2>
         <h2 *ngIf="currentTab === 'trading'">📥 Purchase Orders & Supplier Ledger</h2>
         <h2 *ngIf="currentTab === 'expenses'">💸 Business Operating Expenses</h2>
         <h2 *ngIf="currentTab === 'inventory'">📦 Warehouse Stock & Valuation</h2>
@@ -94,8 +90,7 @@
         <h2 *ngIf="currentTab === 'settings'">⚙️ Store Profile & Bank Settings</h2>
         <p class="header-subtitle">
           <span *ngIf="currentTab === 'dashboard'">Real-time summary of sales revenue, clear net earnings, stock warnings, and interactive monthly drilldowns.</span>
-          <span *ngIf="currentTab === 'products'">Register and manage item specifications, sizes, colors, pricing structures, and GST rates.</span>
-          <span *ngIf="currentTab === 'manufacturing'">Log fabric purchases, track tailoring labor costs, overheads, and compute finished cost per unit.</span>
+          <span *ngIf="currentTab === 'products'">Register and manage inward stock, our price, selling price, distributor price, and item types.</span>
           <span *ngIf="currentTab === 'trading'">Manage external suppliers and record ready-made purchase vouchers into stock.</span>
           <span *ngIf="currentTab === 'expenses'">Track shop rent, electricity bills, employee tea/snacks, transport fuel, and overhead expenses.</span>
           <span *ngIf="currentTab === 'inventory'">Real-time stock ledger with valuation, current on-hand pieces, and status thresholds.</span>
@@ -435,13 +430,13 @@
       <section *ngIf="currentTab === 'products'" class="tab-pane">
         <div style="margin-bottom: 15px;">
           <button class="btn btn-primary" (click)="showProductForm = !showProductForm">
-            {{ showProductForm ? '− Hide Item Form' : '+ Add New Item' }}
+            {{ showProductForm ? '− Hide Inward Stock Form' : '+ Add New Inward Stock' }}
           </button>
         </div>
         <div class="two-column-layout" [style.display]="showProductForm ? 'grid' : 'block'">
           <!-- Create Product Form -->
           <div class="panel" *ngIf="showProductForm">
-            <h3>📁 Register New Item / SKU Master</h3>
+            <h3>📁 {{ isEditingProduct ? 'Edit' : 'Register New' }} Inward Stock</h3>
             <form (ngSubmit)="onSubmitProduct()">
               <div class="form-group">
                 <label>Item Name / Description</label>
@@ -454,10 +449,10 @@
                   <input type="text" name="category" [(ngModel)]="newProduct.category" placeholder="e.g. Shirts, Trousers, Blazers" required />
                 </div>
                 <div class="form-group">
-                  <label>Sourcing Type</label>
+                  <label>Item Type</label>
                   <select name="productType" [(ngModel)]="newProduct.productType" required>
-                    <option value="MANUFACTURED">In-House Manufacturing</option>
-                    <option value="TRADED">Ready-Made Trading (Purchased)</option>
+                    <option value="MANUFACTURED">Self Made</option>
+                    <option value="TRADED">Traded</option>
                   </select>
                 </div>
               </div>
@@ -497,11 +492,15 @@
 
               <div class="form-row">
                 <div class="form-group">
-                  <label>Regular Wholesale Rate / Pc (₹)</label>
+                  <label>Our Price / Cost (₹)</label>
+                  <input type="number" name="costPrice" [(ngModel)]="newProduct.costPrice" required min="0" placeholder="e.g. 200" />
+                </div>
+                <div class="form-group">
+                  <label>Selling Price (₹)</label>
                   <input type="number" name="sellingPrice" [(ngModel)]="newProduct.sellingPrice" required min="1" placeholder="e.g. 325" />
                 </div>
                 <div class="form-group">
-                  <label>Distributor Bulk Rate / Pc (₹)</label>
+                  <label>Distributor Price (₹)</label>
                   <input type="number" name="distributorPrice" [(ngModel)]="newProduct.distributorPrice" min="0" placeholder="e.g. 300 (Optional)" />
                 </div>
                 <div class="form-group">
@@ -523,14 +522,17 @@
                 </div>
               </div>
 
-              <button type="submit" class="btn btn-primary btn-block">Save Item to Master</button>
+              <div style="display: flex; gap: 10px;">
+                <button type="submit" class="btn btn-primary" style="flex: 1;">{{ isEditingProduct ? 'Update Inward Stock' : 'Save Inward Stock' }}</button>
+                <button *ngIf="isEditingProduct" type="button" class="btn btn-secondary" (click)="cancelEditProduct()" style="flex: 1;">Cancel</button>
+              </div>
             </form>
           </div>
 
           <!-- Products List -->
           <div class="panel">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-              <h3 style="margin: 0;">📁 Items Master & Price Catalog</h3>
+              <h3 style="margin: 0;">📁 Inward Stock List</h3>
               <div style="display: flex; gap: 10px; align-items: center;">
                 <input type="text" class="input" placeholder="Search Items..." [(ngModel)]="productsSearch" style="max-width: 250px;">
                 <button *ngIf="getSelectedCount('products') > 0" class="btn btn-danger btn-sm" (click)="deleteSelectedMultiple('products')">
@@ -578,7 +580,7 @@
                     </td>
                     <td>
                       <span class="badge" [class.badge-primary]="p.productType === 'MANUFACTURED'" [class.badge-info]="p.productType === 'TRADED'">
-                        {{ p.productType === 'MANUFACTURED' ? 'MFG' : 'TRADED' }}
+                        {{ p.productType === 'MANUFACTURED' ? 'Self Made' : 'Traded' }}
                       </span>
                     </td>
                     <td><strong>{{ p.name }}</strong><br/><small class="text-muted">{{ p.designBrand }}</small></td>
@@ -596,7 +598,8 @@
                         ⭐ Dist: ₹{{ p.distributorPrice | number:'1.2-2' }}
                       </div>
                     </td>
-                    <td>
+                    <td style="display: flex; gap: 5px;">
+                      <button class="btn btn-primary btn-sm" (click)="onEditProduct(p)">Edit</button>
                       <button class="btn btn-danger btn-sm" (click)="onDeleteProduct(p.id)">Delete</button>
                     </td>
                   </tr>
