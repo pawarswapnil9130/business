@@ -24,7 +24,18 @@ namespace ApparelERP.Api.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Product>>> GetProducts()
         {
-            return await _context.Products.ToListAsync();
+            var products = await _context.Products.ToListAsync();
+            
+            var stockTotals = await _context.StockLedger
+                .GroupBy(sl => sl.ProductId)
+                .Select(g => new { ProductId = g.Key, Total = g.Sum(sl => sl.QuantityChange) })
+                .ToDictionaryAsync(x => x.ProductId, x => x.Total);
+                
+            foreach(var p in products)
+            {
+                p.CurrentStock = stockTotals.ContainsKey(p.Id) ? stockTotals[p.Id] : 0;
+            }
+            return products;
         }
 
         [HttpGet("{id}")]
@@ -47,6 +58,17 @@ namespace ApparelERP.Api.Controllers
             _context.Products.Add(product);
             await _context.SaveChangesAsync();
 
+            if (product.CurrentStock > 0)
+            {
+                _context.StockLedger.Add(new StockLedger
+                {
+                    ProductId = product.Id,
+                    QuantityChange = product.CurrentStock,
+                    TransactionType = "ADJUSTMENT"
+                });
+                await _context.SaveChangesAsync();
+            }
+
             return CreatedAtAction(nameof(GetProduct), new { id = product.Id }, product);
         }
 
@@ -63,6 +85,22 @@ namespace ApparelERP.Api.Controllers
             try
             {
                 await _context.SaveChangesAsync();
+
+                var currentActualStock = await _context.StockLedger
+                    .Where(sl => sl.ProductId == id)
+                    .SumAsync(sl => sl.QuantityChange);
+
+                var diff = product.CurrentStock - currentActualStock;
+                if (diff != 0)
+                {
+                    _context.StockLedger.Add(new StockLedger
+                    {
+                        ProductId = id,
+                        QuantityChange = diff,
+                        TransactionType = "ADJUSTMENT"
+                    });
+                    await _context.SaveChangesAsync();
+                }
             }
             catch (DbUpdateConcurrencyException)
             {

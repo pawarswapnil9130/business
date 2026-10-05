@@ -67,5 +67,8 @@ namespace ApparelERP.Api.Models
 
         [Column("created_at")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        [NotMapped]
+        public int CurrentStock { get; set; }
     }
 }

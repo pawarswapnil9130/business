@@ -507,6 +507,10 @@
                   <label>GST Slab (%)</label>
                   <input type="number" name="gstPercent" [(ngModel)]="newProduct.gstPercent" required min="0" />
                 </div>
+                <div class="form-group">
+                  <label>Current Stock (Qty)</label>
+                  <input type="number" name="currentStock" [(ngModel)]="newProduct.currentStock" required min="0" placeholder="e.g. 50" />
+                </div>
               </div>
 
               <!-- Product Photo Upload -->
@@ -554,6 +558,7 @@
                     <th style="cursor: pointer" (click)="sortBy('products', 'name')">Item Description <span *ngIf="productsSort === 'name'">{{productsSortDesc ? '▼' : '▲'}}</span></th>
                     <th style="cursor: pointer" (click)="sortBy('products', 'category')">Category <span *ngIf="productsSort === 'category'">{{productsSortDesc ? '▼' : '▲'}}</span></th>
                     <th style="cursor: pointer" (click)="sortBy('products', 'color')">Variant <span *ngIf="productsSort === 'color'">{{productsSortDesc ? '▼' : '▲'}}</span></th>
+                    <th style="cursor: pointer" (click)="sortBy('products', 'currentStock')">Stock <span *ngIf="productsSort === 'currentStock'">{{productsSortDesc ? '▼' : '▲'}}</span></th>
                     <th style="cursor: pointer" (click)="sortBy('products', 'costPrice')">Cost Basis <span *ngIf="productsSort === 'costPrice'">{{productsSortDesc ? '▼' : '▲'}}</span></th>
                     <th style="cursor: pointer" (click)="sortBy('products', 'sellingPrice')">Selling / Wholesale Rates <span *ngIf="productsSort === 'sellingPrice'">{{productsSortDesc ? '▼' : '▲'}}</span></th>
                     <th>Action</th>
@@ -591,6 +596,9 @@
                         📦 Set of {{ p.setSize || 4 }} ({{ p.setRatio || p.size }})
                       </span>
                     </td>
+                    <td>
+                      <strong style="font-size: 1.1em;" [style.color]="(p.currentStock || 0) <= 0 ? '#ef4444' : '#10b981'">{{ p.currentStock || 0 }}</strong>
+                    </td>
                     <td>₹{{ p.costPrice | number:'1.2-2' }}</td>
                     <td>
                       <strong>₹{{ p.sellingPrice | number:'1.2-2' }}</strong> <small class="text-muted">({{ p.gstPercent }}% GST)</small>
@@ -604,7 +612,7 @@
                     </td>
                   </tr>
                   <tr *ngIf="(products | searchFilter:productsSearch).length === 0">
-                    <td colspan="9" class="text-center text-muted pad-30">No items recorded in catalog.</td>
+                    <td colspan="10" class="text-center text-muted pad-30">No items recorded in catalog.</td>
                   </tr>
                 </tbody>
               </table>

@@ -422,6 +422,7 @@ export class DashboardComponent implements OnInit {
     costPrice: 0,
     sellingPrice: 0,
     distributorPrice: 0,
+    currentStock: 0,
     setSize: 4, // 3 pcs or 4 pcs per set
     setRatio: '38, 40, 42, 44',
     gstPercent: 12.00,
@@ -1444,6 +1445,7 @@ export class DashboardComponent implements OnInit {
       costPrice: p.costPrice || 0,
       sellingPrice: p.sellingPrice || 0,
       distributorPrice: p.distributorPrice || 0,
+      currentStock: p.currentStock || 0,
       setSize: p.setSize || 4,
       setRatio: p.setRatio || '',
       gstPercent: p.gstPercent || 12.00,
@@ -1466,6 +1468,7 @@ export class DashboardComponent implements OnInit {
       costPrice: 0,
       sellingPrice: 0,
       distributorPrice: 0,
+      currentStock: 0,
       setSize: 4,
       setRatio: '38, 40, 42, 44',
       gstPercent: 12.00,
