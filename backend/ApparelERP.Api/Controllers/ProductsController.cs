@@ -26,7 +26,7 @@ namespace ApparelERP.Api.Controllers
         {
             var products = await _context.Products.ToListAsync();
             
-            var stockTotals = await _context.StockLedger
+            var stockTotals = await _context.StockLedgerEntries
                 .GroupBy(sl => sl.ProductId)
                 .Select(g => new { ProductId = g.Key, Total = g.Sum(sl => sl.QuantityChange) })
                 .ToDictionaryAsync(x => x.ProductId, x => x.Total);
@@ -60,7 +60,7 @@ namespace ApparelERP.Api.Controllers
 
             if (product.CurrentStock > 0)
             {
-                _context.StockLedger.Add(new StockLedger
+                _context.StockLedgerEntries.Add(new StockLedger
                 {
                     ProductId = product.Id,
                     QuantityChange = product.CurrentStock,
@@ -75,9 +75,14 @@ namespace ApparelERP.Api.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateProduct(int id, Product product)
         {
+            if (product.Id == 0)
+            {
+                product.Id = id;
+            }
+
             if (id != product.Id)
             {
-                return BadRequest();
+                return BadRequest(new { message = "ID mismatch in payload." });
             }
 
             _context.Entry(product).State = EntityState.Modified;
@@ -86,14 +91,14 @@ namespace ApparelERP.Api.Controllers
             {
                 await _context.SaveChangesAsync();
 
-                var currentActualStock = await _context.StockLedger
+                var currentActualStock = await _context.StockLedgerEntries
                     .Where(sl => sl.ProductId == id)
                     .SumAsync(sl => sl.QuantityChange);
 
                 var diff = product.CurrentStock - currentActualStock;
                 if (diff != 0)
                 {
-                    _context.StockLedger.Add(new StockLedger
+                    _context.StockLedgerEntries.Add(new StockLedger
                     {
                         ProductId = id,
                         QuantityChange = diff,

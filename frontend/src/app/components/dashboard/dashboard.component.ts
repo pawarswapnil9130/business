@@ -52,7 +52,7 @@ export class DashboardComponent implements OnInit {
   
   // Data Table State (Pagination, Sorting, Filtering)
   salesPage = 1; salesSearch = ''; salesSort = 'salesDate'; salesSortDesc = true;
-  productsPage = 1; productsSearch = ''; productsSort = 'name'; productsSortDesc = false;
+  productsPage = 1; productsSearch = ''; productsSort = 'id'; productsSortDesc = true;
   suppliersPage = 1; suppliersSearch = ''; suppliersSort = 'name'; suppliersSortDesc = false;
   purchasesPage = 1; purchasesSearch = ''; purchasesSort = 'purchaseDate'; purchasesSortDesc = true;
   stocksPage = 1; stocksSearch = ''; stocksSort = 'product.name'; stocksSortDesc = false;
