@@ -15,10 +15,12 @@ namespace ApparelERP.Api.Controllers
     public class ProductsController : ControllerBase
     {
         private readonly ApparelDbContext _context;
+        private readonly Microsoft.Extensions.Configuration.IConfiguration _configuration;
 
-        public ProductsController(ApparelDbContext context)
+        public ProductsController(ApparelDbContext context, Microsoft.Extensions.Configuration.IConfiguration configuration)
         {
             _context = context;
+            _configuration = configuration;
         }
 
         [HttpGet]
@@ -165,26 +167,37 @@ namespace ApparelERP.Api.Controllers
                 return BadRequest(new { message = "Only JPG, PNG, WEBP, or GIF image formats are supported." });
             }
 
-            var webRoot = System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), "wwwroot");
-            var uploadsDir = System.IO.Path.Combine(webRoot, "uploads", "products");
-            if (!System.IO.Directory.Exists(uploadsDir))
+            // Cloudinary Upload
+            var cloudName = _configuration["Cloudinary:CloudName"];
+            var apiKey = _configuration["Cloudinary:ApiKey"];
+            var apiSecret = _configuration["Cloudinary:ApiSecret"];
+
+            if (string.IsNullOrEmpty(cloudName) || string.IsNullOrEmpty(apiKey) || string.IsNullOrEmpty(apiSecret))
             {
-                System.IO.Directory.CreateDirectory(uploadsDir);
+                return StatusCode(500, new { message = "Cloudinary configuration is missing on the server." });
             }
 
-            var fileName = $"prod_{id}_{System.DateTime.UtcNow.Ticks}{ext}";
-            var filePath = System.IO.Path.Combine(uploadsDir, fileName);
+            var account = new CloudinaryDotNet.Account(cloudName, apiKey, apiSecret);
+            var cloudinary = new CloudinaryDotNet.Cloudinary(account);
 
-            using (var stream = new System.IO.FileStream(filePath, System.IO.FileMode.Create))
+            var uploadParams = new CloudinaryDotNet.Actions.ImageUploadParams()
             {
-                await file.CopyToAsync(stream);
+                File = new CloudinaryDotNet.FileDescription(file.FileName, file.OpenReadStream()),
+                Folder = "casa_apparel/products",
+                PublicId = $"prod_{id}_{System.DateTime.UtcNow.Ticks}"
+            };
+
+            var uploadResult = await cloudinary.UploadAsync(uploadParams);
+
+            if (uploadResult.Error != null)
+            {
+                return BadRequest(new { message = $"Image upload failed: {uploadResult.Error.Message}" });
             }
 
-            var relativeUrl = $"/uploads/products/{fileName}";
-            product.ImageUrl = relativeUrl;
+            product.ImageUrl = uploadResult.SecureUrl.ToString();
             await _context.SaveChangesAsync();
 
-            return Ok(new { message = "Product image uploaded successfully!", imageUrl = relativeUrl });
+            return Ok(new { message = "Product image uploaded successfully!", imageUrl = product.ImageUrl });
         }
 
         private bool ProductExists(int id)
