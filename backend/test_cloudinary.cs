@@ -6,7 +6,7 @@ class Program
 {
     static void Main()
     {
-        var account = new Account("Root", "434173469856813", "mSfTZPa4xV_wNMXxnFOl61iPBos");
+        var account = new Account("xl1sfpmv", "434173469856813", "mSfTZPa4xV_wNMXxnFOl61iPBos");
         var cloudinary = new Cloudinary(account);
         try {
             var result = cloudinary.GetResource("test");

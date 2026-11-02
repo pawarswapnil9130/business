@@ -168,17 +168,26 @@ namespace ApparelERP.Api.Controllers
             }
 
             // Cloudinary Upload
+            var cloudinaryUrl = _configuration["CLOUDINARY_URL"] ?? _configuration["Cloudinary:Url"];
             var cloudName = _configuration["Cloudinary:CloudName"];
             var apiKey = _configuration["Cloudinary:ApiKey"];
             var apiSecret = _configuration["Cloudinary:ApiSecret"];
 
-            if (string.IsNullOrEmpty(cloudName) || string.IsNullOrEmpty(apiKey) || string.IsNullOrEmpty(apiSecret))
-            {
-                return StatusCode(500, new { message = "Cloudinary configuration is missing on the server." });
-            }
+            CloudinaryDotNet.Cloudinary cloudinary;
 
-            var account = new CloudinaryDotNet.Account(cloudName, apiKey, apiSecret);
-            var cloudinary = new CloudinaryDotNet.Cloudinary(account);
+            if (!string.IsNullOrEmpty(cloudinaryUrl))
+            {
+                cloudinary = new CloudinaryDotNet.Cloudinary(cloudinaryUrl);
+            }
+            else if (!string.IsNullOrEmpty(cloudName) && !string.IsNullOrEmpty(apiKey) && !string.IsNullOrEmpty(apiSecret))
+            {
+                var account = new CloudinaryDotNet.Account(cloudName, apiKey, apiSecret);
+                cloudinary = new CloudinaryDotNet.Cloudinary(account);
+            }
+            else
+            {
+                return StatusCode(500, new { message = "Cloudinary configuration is missing on the server. Please provide CLOUDINARY_URL or Cloudinary:CloudName, ApiKey, and ApiSecret." });
+            }
 
             var uploadParams = new CloudinaryDotNet.Actions.ImageUploadParams()
             {

@@ -62,7 +62,7 @@ namespace ApparelERP.Api.Controllers
                     SetSize = setSize,
                     SetRatio = !string.IsNullOrWhiteSpace(p.SetRatio) ? p.SetRatio : "38, 40, 42, 44",
                     ImageUrl = p.ImageUrl,
-                    AvailableSets = availableSets
+                    Available = availableSets > 0
                 };
             }).ToList();
 

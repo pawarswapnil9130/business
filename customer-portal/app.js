@@ -213,7 +213,7 @@ function renderProductsGrid() {
     // Available full sets
     const availableStock = p.availableStock !== undefined ? p.availableStock : (p.availableSets ? p.availableSets * setSize : 0);
     const maxSets = p.availableSets !== undefined ? p.availableSets : Math.floor(availableStock / setSize);
-    const isAvailable = maxSets > 0;
+    const isAvailable = p.available !== undefined ? p.available : maxSets > 0;
 
     // Realistic MRP for wholesale discount representation
     const unitRate = p.price ? Number(p.price) : 325;
@@ -221,9 +221,15 @@ function renderProductsGrid() {
     const mrp = Math.round(unitRate * 2.4);
     const discountPercent = Math.round(((mrp - unitRate) / mrp) * 100);
 
-    const stockBadge = isAvailable
-      ? `<span class="stock-pill stock-in">⚡ ${maxSets} ${maxSets === 1 ? 'Set' : 'Sets'} In Stock (${maxSets * setSize} pcs)</span>`
-      : '<span class="stock-pill stock-out">Out of Stock</span>';
+    // Only show exact stock count if user is registered and logged in
+    let stockBadge = '';
+    if (isLoggedIn) {
+      stockBadge = isAvailable
+        ? `<span class="stock-pill stock-in">⚡ ${maxSets} ${maxSets === 1 ? 'Set' : 'Sets'} In Stock (${maxSets * setSize} pcs)</span>`
+        : '<span class="stock-pill stock-out">Out of Stock</span>';
+    } else if (!isAvailable) {
+      stockBadge = '<span class="stock-pill stock-out">Out of Stock</span>';
+    }
 
     let priceSectionHtml = '';
     let actionSectionHtml = '';
@@ -288,9 +294,13 @@ function renderProductsGrid() {
         </div>
       `;
 
-      actionSectionHtml = `
+      actionSectionHtml = isAvailable ? `
         <button class="btn-zepto-add" onclick="openLoginModal()">
           🔑 Login to View Rate
+        </button>
+      ` : `
+        <button class="btn-zepto-add" disabled style="opacity: 0.5; border-color: #cbd5e1; color: #94a3b8; background: #f1f5f9;">
+          Out of Stock
         </button>
       `;
     }

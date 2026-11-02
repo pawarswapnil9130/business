@@ -290,8 +290,7 @@ namespace ApparelERP.Api.Models.Dto
         public int SetSize { get; set; } = 4;
         public string? SetRatio { get; set; } = "38, 40, 42, 44";
         public string? ImageUrl { get; set; }
-        public int AvailableSets { get; set; }
-        public bool Available => AvailableSets > 0;
+        public bool Available { get; set; }
     }
 
     public class CustomerOrderCreateDto
