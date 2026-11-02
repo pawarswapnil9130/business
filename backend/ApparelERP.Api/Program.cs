@@ -187,7 +187,9 @@ using (var scope = app.Services.CreateScope())
                 dbContext.Database.ExecuteSqlRaw("ALTER TABLE sales_orders ADD COLUMN IF NOT EXISTS order_status VARCHAR(50) DEFAULT 'COMPLETED';");
                 dbContext.Database.ExecuteSqlRaw("ALTER TABLE sales_orders ADD COLUMN IF NOT EXISTS order_source VARCHAR(50) DEFAULT 'POS_DESK';");
 
-                Console.WriteLine("[Startup Db Helper] Ensuring vw_stock_summary contains image_url...");
+                Console.WriteLine("[Startup Db Helper] Ensuring products table has barcode column and vw_stock_summary has barcode & image_url...");
+                dbContext.Database.ExecuteSqlRaw("ALTER TABLE products ADD COLUMN IF NOT EXISTS barcode VARCHAR(100);");
+                dbContext.Database.ExecuteSqlRaw("UPDATE products SET barcode = 'CASA-PROD-' || id WHERE barcode IS NULL OR barcode = '';");
                 dbContext.Database.ExecuteSqlRaw(@"
                     DROP VIEW IF EXISTS vw_stock_summary;
                     CREATE VIEW vw_stock_summary AS
@@ -202,10 +204,11 @@ using (var scope = app.Services.CreateScope())
                         p.cost_price,
                         p.selling_price,
                         p.image_url,
+                        p.barcode,
                         COALESCE(SUM(sl.quantity_change), 0) AS current_stock
                     FROM products p
                     LEFT JOIN stock_ledger sl ON p.id = sl.product_id
-                    GROUP BY p.id, p.name, p.category, p.product_type, p.design_brand, p.size, p.color, p.cost_price, p.selling_price, p.image_url;
+                    GROUP BY p.id, p.name, p.category, p.product_type, p.design_brand, p.size, p.color, p.cost_price, p.selling_price, p.image_url, p.barcode;
                 ");
 
                 Console.WriteLine("[Startup Db Helper] Constraints and wholesale tables adjusted successfully.");

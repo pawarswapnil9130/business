@@ -123,6 +123,10 @@ export class ApiService {
     return this.http.delete<any>(`${this.baseUrl}/products/${id}`, { headers: this.getHeaders() });
   }
 
+  getProductByBarcode(barcode: string): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/products/by-barcode/${encodeURIComponent(barcode)}`, { headers: this.getHeaders() });
+  }
+
   // ==========================================
   // MANUFACTURING (FABRIC & BATCHES)
   // ==========================================

@@ -85,6 +85,9 @@ namespace ApparelERP.Api.Models.Dto
         [Column("image_url")]
         public string? ImageUrl { get; set; }
 
+        [Column("barcode")]
+        public string? Barcode { get; set; }
+
         [Column("current_stock")]
         public int CurrentStock { get; set; }
     }

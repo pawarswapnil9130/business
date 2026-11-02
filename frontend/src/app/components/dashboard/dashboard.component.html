@@ -457,9 +457,15 @@
                 </div>
               </div>
 
-              <div class="form-group">
-                <label>Brand / Design Tag (Optional)</label>
-                <input type="text" name="designBrand" [(ngModel)]="newProduct.designBrand" placeholder="e.g. IndigoCo, ClassicFit" />
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Brand / Design Tag (Optional)</label>
+                  <input type="text" name="designBrand" [(ngModel)]="newProduct.designBrand" placeholder="e.g. IndigoCo, ClassicFit" />
+                </div>
+                <div class="form-group">
+                  <label>Barcode / SKU Tag (Optional - Auto-generated if blank)</label>
+                  <input type="text" name="barcode" [(ngModel)]="newProduct.barcode" placeholder="e.g. CASA-PROD-101 or Supplier Barcode" />
+                </div>
               </div>
 
               <div class="form-row">
@@ -588,7 +594,13 @@
                         {{ p.productType === 'MANUFACTURED' ? 'Self Made' : 'Traded' }}
                       </span>
                     </td>
-                    <td><strong>{{ p.name }}</strong><br/><small class="text-muted">{{ p.designBrand }}</small></td>
+                    <td>
+                      <strong>{{ p.name }}</strong><br/>
+                      <small class="text-muted">{{ p.designBrand }}</small>
+                      <div *ngIf="p.barcode" class="barcode-pill" style="margin-top: 3px;">
+                        <span>🏷️</span> {{ p.barcode }}
+                      </div>
+                    </td>
                     <td>{{ p.category }}</td>
                     <td>
                       <div><strong>{{ p.color }}</strong></div>
@@ -1476,93 +1488,176 @@
 
             <hr class="separator" />
 
-            <div class="form-title">
-              <h4>Add Billing Line Item</h4>
+            <!-- POS Mode Selector: Barcode Scanner vs Manual Selection -->
+            <div class="pos-mode-selector">
+              <button 
+                type="button" 
+                class="pos-mode-tab" 
+                [class.active]="posBillingMode === 'BARCODE'" 
+                (click)="setPosBillingMode('BARCODE')"
+              >
+                <span>⚡ Barcode Scanner Mode</span>
+                <span class="mode-badge">Fast POS</span>
+              </button>
+              <button 
+                type="button" 
+                class="pos-mode-tab" 
+                [class.active]="posBillingMode === 'MANUAL'" 
+                (click)="setPosBillingMode('MANUAL')"
+              >
+                <span>📝 Manual Item Selection</span>
+              </button>
             </div>
 
-            <div class="form-group">
-              <label>Select Item Master (Searchable)</label>
-              
-              <!-- Searchable Select Input Component -->
-              <div class="searchable-select-wrap">
-                <div class="searchable-input-box" (click)="toggleItemDropdown()">
-                  <span class="searchable-search-icon">🔍</span>
-                  <input 
-                    type="text" 
-                    [(ngModel)]="itemSearchQuery" 
-                    (focus)="isItemDropdownOpen = true"
-                    [placeholder]="selectedProduct ? ('Selected: ' + selectedProduct.name + ' (' + selectedProduct.size + '/' + selectedProduct.color + ')') : 'Type to search item name, size, color, brand...'"
-                  />
-                  <button 
-                    *ngIf="selectedProduct || itemSearchQuery" 
-                    type="button" 
-                    class="searchable-clear-btn" 
-                    (click)="clearSelectedProduct(); $event.stopPropagation();" 
-                    title="Clear item selection"
-                  >✕</button>
-                </div>
-
-                <!-- Dropdown popup list -->
-                <div *ngIf="isItemDropdownOpen" class="searchable-dropdown-list">
-                  <div 
-                    *ngFor="let p of filteredProducts" 
-                    class="searchable-option-item"
-                    [class.selected]="cartProductId === p.id"
-                    (click)="selectProduct(p)"
-                  >
-                    <div>
-                      <span class="badge" [class.badge-primary]="p.productType === 'MANUFACTURED'" [class.badge-info]="p.productType === 'TRADED'" style="font-size: 0.7rem; margin-right: 6px;">
-                        {{ p.productType === 'MANUFACTURED' ? 'MFG' : 'TRADED' }}
-                      </span>
-                      <strong>{{ p.name }}</strong>
-                      <small class="text-muted" style="margin-left: 6px;">({{ p.size }} / {{ p.color }})</small>
-                      <span *ngIf="p.designBrand" class="text-muted" style="font-size: 0.75rem; margin-left: 6px;">- {{ p.designBrand }}</span>
-                    </div>
-                    <div style="font-weight: 600; color: var(--primary); font-size: 0.88rem;">
-                      ₹{{ p.sellingPrice }}
-                    </div>
-                  </div>
-
-                  <div *ngIf="filteredProducts.length === 0" class="searchable-empty">
-                    No matching items found for "{{ itemSearchQuery }}"
-                  </div>
+            <!-- 1. BARCODE SCANNER INTERFACE -->
+            <div *ngIf="posBillingMode === 'BARCODE'" class="barcode-scan-container">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <label style="margin: 0; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 6px;">
+                  <span>🏷️ Scan Barcode / SKU Code</span>
+                </label>
+                <div class="scanner-status-bar" style="margin: 0;">
+                  <span class="status-indicator-dot online"></span>
+                  <span>Scanner Ready (Press Enter to Add)</span>
                 </div>
               </div>
 
-              <!-- Selected Product Chip summary -->
-              <div *ngIf="selectedProduct" class="selected-item-pill">
+              <div class="barcode-input-wrapper">
+                <span class="barcode-icon">║▌║█║</span>
+                <input 
+                  #barcodeInputRef
+                  type="text" 
+                  class="barcode-input"
+                  [(ngModel)]="barcodeInput" 
+                  (keydown.enter)="onBarcodeScanned()"
+                  placeholder="Scan item barcode with laser gun or type code..."
+                  autofocus
+                />
+                <button 
+                  type="button" 
+                  class="btn btn-primary" 
+                  style="white-space: nowrap; padding: 10px 18px; font-weight: 600;"
+                  (click)="onBarcodeScanned()"
+                >
+                  ➕ Scan / Add
+                </button>
+              </div>
+
+              <!-- Live Audio / Visual Scan Feedback -->
+              <div *ngIf="scanFeedbackMessage" 
+                   class="scan-feedback-banner" 
+                   [class.success]="scanFeedbackSuccess" 
+                   [class.error]="!scanFeedbackSuccess">
+                <span style="font-size: 1.2rem;">{{ scanFeedbackSuccess ? '✅' : '⚠️' }}</span>
                 <div>
-                  <span class="badge" [class.badge-primary]="selectedProduct.productType === 'MANUFACTURED'" [class.badge-info]="selectedProduct.productType === 'TRADED'">
-                    {{ selectedProduct.productType === 'MANUFACTURED' ? 'MFG' : 'TRADED' }}
-                  </span>
-                  <strong style="margin-left: 6px;">{{ selectedProduct.name }}</strong>
-                  <span class="text-muted" style="margin-left: 6px;">Size: {{ selectedProduct.size }} | Color: {{ selectedProduct.color }}</span>
+                  <strong>{{ scanFeedbackMessage }}</strong>
+                  <div *ngIf="scanFeedbackSuccess && lastScannedItem" class="feedback-sub">
+                    Price: ₹{{ lastScannedItem.sellingPrice }} | Size: {{ lastScannedItem.size }} | Color: {{ lastScannedItem.color }}
+                  </div>
                 </div>
-                <div style="display: flex; align-items: center; gap: 8px;">
-                  <span style="font-weight: 600; color: var(--primary);">₹{{ selectedProduct.sellingPrice }}</span>
-                  <button type="button" class="btn btn-sm btn-secondary" style="padding: 2px 6px; font-size: 0.75rem;" (click)="clearSelectedProduct()">Change</button>
-                </div>
+              </div>
+
+              <div style="margin-top: 10px; font-size: 0.78rem; color: #64748b; display: flex; align-items: center; justify-content: space-between;">
+                <span>💡 Tip: Standard laser barcode guns automatically type the code and press Enter to instantly add 1 pc to cart.</span>
+                <button type="button" class="btn btn-sm btn-link" style="padding: 0; font-size: 0.78rem;" (click)="focusBarcodeInput()">🎯 Focus Scanner</button>
               </div>
             </div>
 
-            <div class="form-row">
-              <div class="form-group">
-                <label>Billing Quantity (Pcs)</label>
-                <input type="number" [(ngModel)]="cartQuantity" min="1" />
-              </div>
-              
-              <div class="form-group">
-                <label>Unit Selling Price (₹)</label>
-                <input type="number" [(ngModel)]="cartUnitPrice" min="1" />
+            <!-- 2. MANUAL ITEM SELECTION FORM -->
+            <div *ngIf="posBillingMode === 'MANUAL'">
+              <div class="form-title">
+                <h4>Add Billing Line Item</h4>
               </div>
 
               <div class="form-group">
-                <label>Discount Value (₹)</label>
-                <input type="number" [(ngModel)]="cartDiscount" min="0" />
+                <label>Select Item Master (Searchable)</label>
+                
+                <!-- Searchable Select Input Component -->
+                <div class="searchable-select-wrap">
+                  <div class="searchable-input-box" (click)="toggleItemDropdown()">
+                    <span class="searchable-search-icon">🔍</span>
+                    <input 
+                      type="text" 
+                      [(ngModel)]="itemSearchQuery" 
+                      (focus)="isItemDropdownOpen = true"
+                      [placeholder]="selectedProduct ? ('Selected: ' + selectedProduct.name + ' (' + selectedProduct.size + '/' + selectedProduct.color + ')') : 'Type to search item name, size, color, brand...'"
+                    />
+                    <button 
+                      *ngIf="selectedProduct || itemSearchQuery" 
+                      type="button" 
+                      class="searchable-clear-btn" 
+                      (click)="clearSelectedProduct(); $event.stopPropagation();" 
+                      title="Clear item selection"
+                    >✕</button>
+                  </div>
+
+                  <!-- Dropdown popup list -->
+                  <div *ngIf="isItemDropdownOpen" class="searchable-dropdown-list">
+                    <div 
+                      *ngFor="let p of filteredProducts" 
+                      class="searchable-option-item"
+                      [class.selected]="cartProductId === p.id"
+                      (click)="selectProduct(p)"
+                    >
+                      <div>
+                        <span class="badge" [class.badge-primary]="p.productType === 'MANUFACTURED'" [class.badge-info]="p.productType === 'TRADED'" style="font-size: 0.7rem; margin-right: 6px;">
+                          {{ p.productType === 'MANUFACTURED' ? 'MFG' : 'TRADED' }}
+                        </span>
+                        <strong>{{ p.name }}</strong>
+                        <small class="text-muted" style="margin-left: 6px;">({{ p.size }} / {{ p.color }})</small>
+                        <span *ngIf="p.designBrand" class="text-muted" style="font-size: 0.75rem; margin-left: 6px;">- {{ p.designBrand }}</span>
+                        <div *ngIf="p.barcode" class="barcode-pill" style="margin-top: 2px;">
+                          <span>🏷️</span> {{ p.barcode }}
+                        </div>
+                      </div>
+                      <div style="font-weight: 600; color: var(--primary); font-size: 0.88rem;">
+                        ₹{{ p.sellingPrice }}
+                      </div>
+                    </div>
+
+                    <div *ngIf="filteredProducts.length === 0" class="searchable-empty">
+                      No matching items found for "{{ itemSearchQuery }}"
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Selected Product Chip summary -->
+                <div *ngIf="selectedProduct" class="selected-item-pill">
+                  <div>
+                    <span class="badge" [class.badge-primary]="selectedProduct.productType === 'MANUFACTURED'" [class.badge-info]="selectedProduct.productType === 'TRADED'">
+                      {{ selectedProduct.productType === 'MANUFACTURED' ? 'MFG' : 'TRADED' }}
+                    </span>
+                    <strong style="margin-left: 6px;">{{ selectedProduct.name }}</strong>
+                    <span class="text-muted" style="margin-left: 6px;">Size: {{ selectedProduct.size }} | Color: {{ selectedProduct.color }}</span>
+                    <div *ngIf="selectedProduct.barcode" class="barcode-pill" style="margin-left: 6px;">
+                      <span>🏷️</span> {{ selectedProduct.barcode }}
+                    </div>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-weight: 600; color: var(--primary);">₹{{ selectedProduct.sellingPrice }}</span>
+                    <button type="button" class="btn btn-sm btn-secondary" style="padding: 2px 6px; font-size: 0.75rem;" (click)="clearSelectedProduct()">Change</button>
+                  </div>
+                </div>
               </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Billing Quantity (Pcs)</label>
+                  <input type="number" [(ngModel)]="cartQuantity" min="1" />
+                </div>
+                
+                <div class="form-group">
+                  <label>Unit Selling Price (₹)</label>
+                  <input type="number" [(ngModel)]="cartUnitPrice" min="1" />
+                </div>
+
+                <div class="form-group">
+                  <label>Discount Value (₹)</label>
+                  <input type="number" [(ngModel)]="cartDiscount" min="0" />
+                </div>
+              </div>
+
+              <button type="button" class="btn btn-secondary btn-block" (click)="addToCart()">+ Add Item to Cart</button>
             </div>
-
-            <button type="button" class="btn btn-secondary btn-block" (click)="addToCart()">+ Add Item to Cart</button>
           </div>
 
           <!-- Cart Review & Checkout -->
@@ -1583,13 +1678,25 @@
                 </thead>
                 <tbody>
                   <tr *ngFor="let item of salesCart; let i = index">
-                    <td><strong>{{ item.name }}</strong><br/><small class="text-muted">{{ item.size }}/{{ item.color }}</small></td>
-                    <td>{{ item.quantity }}</td>
+                    <td>
+                      <strong>{{ item.name }}</strong>
+                      <div class="text-muted" style="font-size: 0.78rem;">{{ item.size }} / {{ item.color }}</div>
+                      <div *ngIf="item.barcode" class="barcode-pill">
+                        <span>🏷️</span> {{ item.barcode }}
+                      </div>
+                    </td>
+                    <td>
+                      <div class="qty-stepper">
+                        <button type="button" class="qty-btn" (click)="updateCartQty(item, -1)" title="Decrease Qty">-</button>
+                        <strong style="min-width: 22px; text-align: center;">{{ item.quantity }}</strong>
+                        <button type="button" class="qty-btn" (click)="updateCartQty(item, 1)" title="Increase Qty">+</button>
+                      </div>
+                    </td>
                     <td>₹{{ item.unitPrice }}</td>
                     <td>₹{{ item.discount }}</td>
                     <td><strong>₹{{ item.subTotal | number:'1.2-2' }}</strong></td>
                     <td>
-                      <button class="btn btn-danger btn-sm" (click)="removeFromCart(i)">&times;</button>
+                      <button class="btn btn-danger btn-sm" (click)="removeFromCart(i)" title="Remove item">&times;</button>
                     </td>
                   </tr>
                   <tr *ngIf="salesCart.length === 0">

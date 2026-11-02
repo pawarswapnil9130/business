@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import jsPDF from 'jspdf';
@@ -160,6 +160,7 @@ export class DashboardComponent implements OnInit {
         break;
       case 'sales': 
         this.fetchSalesOrders(); this.fetchStockSummary(); this.fetchDashboardSummary(); 
+        setTimeout(() => this.focusBarcodeInput(), 200);
         break;
     }
   }
@@ -426,7 +427,8 @@ export class DashboardComponent implements OnInit {
     setSize: 4, // 3 pcs or 4 pcs per set
     setRatio: '38, 40, 42, 44',
     gstPercent: 12.00,
-    imageUrl: ''
+    imageUrl: '',
+    barcode: ''
   };
   isEditingProduct = false;
   editingProductId: number | null = null;
@@ -547,6 +549,14 @@ export class DashboardComponent implements OnInit {
   cartUnitPrice = 0;
   cartDiscount = 0;
 
+  // POS Billing Mode & Barcode Scanner State
+  posBillingMode: 'BARCODE' | 'MANUAL' = 'BARCODE';
+  barcodeInput: string = '';
+  scanFeedbackMessage: string = '';
+  scanFeedbackSuccess: boolean = true;
+  lastScannedItem: any = null;
+  @ViewChild('barcodeInputRef') barcodeInputRef!: ElementRef;
+
   constructor(private apiService: ApiService, private router: Router) {}
 
   getImageUrl(url: string | null | undefined): string {
@@ -599,6 +609,7 @@ export class DashboardComponent implements OnInit {
         this.fetchProducts();
         this.fetchStockSummary(); // To check stock balances on checkout
         this.fetchSalesOrders();
+        setTimeout(() => this.focusBarcodeInput(), 200);
         break;
       case 'expenses':
         this.fetchExpenses();
@@ -1449,7 +1460,8 @@ export class DashboardComponent implements OnInit {
       setSize: p.setSize || 4,
       setRatio: p.setRatio || '',
       gstPercent: p.gstPercent || 12.00,
-      imageUrl: p.imageUrl || ''
+      imageUrl: p.imageUrl || '',
+      barcode: p.barcode || ''
     };
     this.clearProductImageSelection();
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1472,7 +1484,8 @@ export class DashboardComponent implements OnInit {
       setSize: 4,
       setRatio: '38, 40, 42, 44',
       gstPercent: 12.00,
-      imageUrl: ''
+      imageUrl: '',
+      barcode: ''
     };
     this.clearProductImageSelection();
   }
@@ -1717,8 +1730,137 @@ export class DashboardComponent implements OnInit {
   }
 
   // ==========================================
-  // SALES SHOPPING CART
+  // SALES SHOPPING CART & POS BARCODE SCANNING
   // ==========================================
+
+  setPosBillingMode(mode: 'BARCODE' | 'MANUAL') {
+    this.posBillingMode = mode;
+    if (mode === 'BARCODE') {
+      setTimeout(() => this.focusBarcodeInput(), 100);
+    }
+  }
+
+  focusBarcodeInput() {
+    if (this.currentTab === 'sales' && this.posBillingMode === 'BARCODE' && this.barcodeInputRef?.nativeElement) {
+      this.barcodeInputRef.nativeElement.focus();
+    }
+  }
+
+  playScanSound(success = true) {
+    try {
+      const AudioCtx = (window as any).AudioContext || (window as any).webkitAudioContext;
+      if (!AudioCtx) return;
+      const audioCtx = new AudioCtx();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      if (success) {
+        osc.frequency.setValueAtTime(1400, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(1800, audioCtx.currentTime + 0.12);
+        gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.12);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.12);
+      } else {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.25);
+      }
+    } catch (e) {
+      // AudioContext unavailable or restricted
+    }
+  }
+
+  onBarcodeScanned() {
+    const rawCode = (this.barcodeInput || '').trim();
+    if (!rawCode) return;
+
+    this.barcodeInput = '';
+
+    // First check local products cache for instant sub-millisecond response
+    const normalized = rawCode.toLowerCase();
+    const product = this.products.find(p => 
+      (p.barcode && p.barcode.toLowerCase() === normalized) ||
+      (p.id && String(p.id) === rawCode) ||
+      (p.name && p.name.toLowerCase() === normalized)
+    );
+
+    if (product) {
+      this.addProductToSalesCart(product, 1);
+      this.lastScannedItem = product;
+      this.scanFeedbackMessage = `Scanned: ${product.name} (${product.size}/${product.color}) - Added to Cart!`;
+      this.scanFeedbackSuccess = true;
+      this.playScanSound(true);
+      setTimeout(() => { if (this.scanFeedbackMessage.startsWith('Scanned:')) this.scanFeedbackMessage = ''; }, 3500);
+      this.focusBarcodeInput();
+    } else {
+      // Fallback query to server API
+      this.apiService.getProductByBarcode(rawCode).subscribe({
+        next: (prod) => {
+          if (prod) {
+            this.addProductToSalesCart(prod, 1);
+            this.lastScannedItem = prod;
+            this.scanFeedbackMessage = `Scanned: ${prod.name} (${prod.size}/${prod.color}) - Added to Cart!`;
+            this.scanFeedbackSuccess = true;
+            this.playScanSound(true);
+            setTimeout(() => { if (this.scanFeedbackMessage.startsWith('Scanned:')) this.scanFeedbackMessage = ''; }, 3500);
+          } else {
+            this.scanFeedbackMessage = `Barcode "${rawCode}" not found in inventory!`;
+            this.scanFeedbackSuccess = false;
+            this.playScanSound(false);
+          }
+          this.focusBarcodeInput();
+        },
+        error: () => {
+          this.scanFeedbackMessage = `Barcode "${rawCode}" not found in inventory!`;
+          this.scanFeedbackSuccess = false;
+          this.playScanSound(false);
+          this.focusBarcodeInput();
+        }
+      });
+    }
+  }
+
+  addProductToSalesCart(prod: any, qty = 1) {
+    const existing = this.salesCart.find(c => c.productId === prod.id);
+    if (existing) {
+      existing.quantity += qty;
+      this.recalculateCartLine(existing);
+    } else {
+      const cartItem = {
+        productId: prod.id,
+        name: prod.name,
+        size: prod.size,
+        color: prod.color,
+        barcode: prod.barcode || `CASA-PROD-${prod.id}`,
+        itemType: prod.productType === 'TRADED' ? 'TRADED' : 'MANUFACTURED',
+        quantity: qty,
+        unitPrice: prod.sellingPrice || 0,
+        discount: 0,
+        gstPercent: prod.gstPercent || 12.0,
+        subTotal: 0
+      };
+      this.recalculateCartLine(cartItem);
+      this.salesCart.push(cartItem);
+    }
+  }
+
+  updateCartQty(item: any, delta: number) {
+    const newQty = item.quantity + delta;
+    if (newQty <= 0) {
+      const idx = this.salesCart.indexOf(item);
+      if (idx !== -1) {
+        this.removeFromCart(idx);
+      }
+    } else {
+      item.quantity = newQty;
+      this.recalculateCartLine(item);
+    }
+  }
 
   onCartProductChange() {
     if (this.cartProductId) {
@@ -1749,6 +1891,7 @@ export class DashboardComponent implements OnInit {
         name: prod.name,
         size: prod.size,
         color: prod.color,
+        barcode: prod.barcode || `CASA-PROD-${prod.id}`,
         itemType: this.cartItemType,
         quantity: this.cartQuantity,
         unitPrice: this.cartUnitPrice,

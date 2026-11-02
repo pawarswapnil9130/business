@@ -55,6 +55,10 @@ namespace ApparelERP.Api.Models
         [Column("image_url")]
         public string? ImageUrl { get; set; }
 
+        [Column("barcode")]
+        [MaxLength(100)]
+        public string? Barcode { get; set; }
+
         [Column("set_size")]
         public int SetSize { get; set; } = 4; // Set size (e.g. 3 pcs or 4 pcs per ratio bundle)
 

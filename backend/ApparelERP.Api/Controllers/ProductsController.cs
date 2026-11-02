@@ -53,12 +53,50 @@ namespace ApparelERP.Api.Controllers
             return product;
         }
 
+        [HttpGet("by-barcode/{code}")]
+        public async Task<ActionResult<Product>> GetProductByBarcode(string code)
+        {
+            if (string.IsNullOrWhiteSpace(code))
+            {
+                return BadRequest(new { message = "Barcode cannot be empty." });
+            }
+
+            var clean = code.Trim();
+            var product = await _context.Products.FirstOrDefaultAsync(p =>
+                (p.Barcode != null && p.Barcode.ToLower() == clean.ToLower()) ||
+                p.Id.ToString() == clean ||
+                ($"CASA-PROD-{p.Id}").ToLower() == clean.ToLower()
+            );
+
+            if (product == null)
+            {
+                return NotFound(new { message = $"No product found for barcode '{code}'" });
+            }
+
+            var stock = await _context.StockLedgerEntries
+                .Where(sl => sl.ProductId == product.Id)
+                .SumAsync(sl => (int?)sl.QuantityChange) ?? 0;
+            product.CurrentStock = stock;
+
+            return product;
+        }
+
         [HttpPost]
         public async Task<ActionResult<Product>> CreateProduct(Product product)
         {
             product.CreatedAt = System.DateTime.UtcNow;
-            _context.Products.Add(product);
-            await _context.SaveChangesAsync();
+            if (string.IsNullOrWhiteSpace(product.Barcode))
+            {
+                _context.Products.Add(product);
+                await _context.SaveChangesAsync();
+                product.Barcode = $"CASA-PROD-{product.Id}";
+                await _context.SaveChangesAsync();
+            }
+            else
+            {
+                _context.Products.Add(product);
+                await _context.SaveChangesAsync();
+            }
 
             if (product.CurrentStock > 0)
             {
