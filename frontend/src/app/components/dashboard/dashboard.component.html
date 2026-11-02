@@ -1396,6 +1396,7 @@
             <table class="table">
               <thead>
                 <tr>
+                  <th style="cursor: pointer; width: 70px; text-align: center;" (click)="sortBy('stocks', 'imageUrl')">Photo <span *ngIf="stocksSort === 'imageUrl'">{{stocksSortDesc ? '▼' : '▲'}}</span></th>
                   <th style="cursor: pointer" (click)="sortBy('stocks', 'productType')">Sourcing Type <span *ngIf="stocksSort === 'productType'">{{stocksSortDesc ? '▼' : '▲'}}</span></th>
                   <th style="cursor: pointer" (click)="sortBy('stocks', 'category')">Category <span *ngIf="stocksSort === 'category'">{{stocksSortDesc ? '▼' : '▲'}}</span></th>
                   <th style="cursor: pointer" (click)="sortBy('stocks', 'productName')">Item Description <span *ngIf="stocksSort === 'productName'">{{stocksSortDesc ? '▼' : '▲'}}</span></th>
@@ -1409,6 +1410,18 @@
               </thead>
               <tbody>
                 <tr *ngFor="let s of stocks | searchFilter:stocksSearch | sort:stocksSort:stocksSortDesc | paginate: { itemsPerPage: 10, currentPage: stocksPage, id: 'stocksPagination' }">
+                  <td style="width: 70px; text-align: center;">
+                    <div *ngIf="s.imageUrl" style="position: relative; display: inline-block;">
+                      <img [src]="getImageUrl(s.imageUrl)" [alt]="s.productName" style="width: 48px; height: 48px; object-fit: cover; border-radius: 6px; border: 1px solid #cbd5e1;" />
+                    </div>
+                    <div *ngIf="!s.imageUrl" style="width: 48px; height: 48px; background: #f1f5f9; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 20px; border: 1px dashed #cbd5e1; margin: 0 auto;">
+                      👔
+                    </div>
+                    <label style="display: block; font-size: 10px; color: #2563eb; cursor: pointer; margin-top: 2px; font-weight: 600;">
+                      <span>📷 {{ s.imageUrl ? 'Change' : 'Upload' }}</span>
+                      <input type="file" (change)="onUploadDirectPhoto(s.productId, $event)" accept="image/*" style="display: none;" />
+                    </label>
+                  </td>
                   <td>
                     <span class="badge" [class.badge-primary]="s.productType === 'MANUFACTURED'" [class.badge-info]="s.productType === 'TRADED'">
                       {{ s.productType === 'MANUFACTURED' ? 'MANUFACTURED' : 'TRADED' }}
@@ -1430,7 +1443,7 @@
                   </td>
                 </tr>
                 <tr *ngIf="(stocks | searchFilter:stocksSearch).length === 0">
-                  <td [attr.colspan]="(currentUser?.role === 'SUPER_ADMIN' || currentUser?.role === 'ADMIN') ? 9 : 8" class="text-center text-muted pad-30">No inventory records found.</td>
+                  <td [attr.colspan]="(currentUser?.role === 'SUPER_ADMIN' || currentUser?.role === 'ADMIN') ? 10 : 9" class="text-center text-muted pad-30">No inventory records found.</td>
                 </tr>
               </tbody>
             </table>

@@ -145,10 +145,11 @@ SELECT
     p.color,
     p.cost_price,
     p.selling_price,
+    p.image_url,
     COALESCE(SUM(sl.quantity_change), 0) AS current_stock
 FROM products p
 LEFT JOIN stock_ledger sl ON p.id = sl.product_id
-GROUP BY p.id, p.name, p.category, p.product_type, p.design_brand, p.size, p.color, p.cost_price, p.selling_price;
+GROUP BY p.id, p.name, p.category, p.product_type, p.design_brand, p.size, p.color, p.cost_price, p.selling_price, p.image_url;
 
 -- B. Profit Dashboard View
 CREATE OR REPLACE VIEW vw_profit_report AS

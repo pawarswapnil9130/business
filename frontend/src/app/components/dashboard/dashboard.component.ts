@@ -55,7 +55,7 @@ export class DashboardComponent implements OnInit {
   productsPage = 1; productsSearch = ''; productsSort = 'id'; productsSortDesc = true;
   suppliersPage = 1; suppliersSearch = ''; suppliersSort = 'name'; suppliersSortDesc = false;
   purchasesPage = 1; purchasesSearch = ''; purchasesSort = 'purchaseDate'; purchasesSortDesc = true;
-  stocksPage = 1; stocksSearch = ''; stocksSort = 'product.name'; stocksSortDesc = false;
+  stocksPage = 1; stocksSearch = ''; stocksSort = 'productName'; stocksSortDesc = false;
   profitPage = 1; profitSearch = ''; profitSort = 'salesDate'; profitSortDesc = true;
   wholesalePage = 1; wholesaleSearch = ''; wholesaleSort = 'salesDate'; wholesaleSortDesc = true;
   usersPage = 1; usersSearch = ''; usersSort = 'username'; usersSortDesc = false;
@@ -1485,6 +1485,7 @@ export class DashboardComponent implements OnInit {
         next: () => {
           this.successMessage = 'Product photo updated successfully!';
           this.fetchProducts();
+          this.fetchStockSummary();
           setTimeout(() => this.successMessage = '', 3000);
         },
         error: (err) => {

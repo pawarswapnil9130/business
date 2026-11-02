@@ -82,6 +82,9 @@ namespace ApparelERP.Api.Models.Dto
         [Column("selling_price")]
         public decimal SellingPrice { get; set; }
 
+        [Column("image_url")]
+        public string? ImageUrl { get; set; }
+
         [Column("current_stock")]
         public int CurrentStock { get; set; }
     }
