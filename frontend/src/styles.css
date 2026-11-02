@@ -1908,4 +1908,165 @@ textarea {
   padding: 1px 6px;
   border-radius: 4px;
   margin-top: 2px;
-}
+}
+
+/* ==========================================
+   THERMAL BARCODE LABEL GENERATOR & PREVIEW
+   ========================================== */
+.barcode-modal-body {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 20px;
+  align-items: start;
+}
+
+@media (max-width: 680px) {
+  .barcode-modal-body {
+    grid-template-columns: 1fr;
+  }
+}
+
+.preset-chip-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.preset-chip {
+  background: var(--bg-hover);
+  border: 1px solid var(--border-color);
+  padding: 5px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.preset-chip:hover {
+  background: #eff6ff;
+  border-color: #2563eb;
+  color: #2563eb;
+}
+
+.preset-chip.active {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #ffffff;
+}
+
+.thermal-liner-preview {
+  background: linear-gradient(180deg, #fef9c3 0%, #fef08a 100%);
+  border: 1px solid #fde047;
+  border-radius: 10px;
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
+}
+
+.thermal-sticker {
+  background: #ffffff;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12), 0 1px 3px rgba(0, 0, 0, 0.08);
+  padding: 8px 12px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  text-align: center;
+  color: #000000;
+  transition: all 0.2s ease;
+  user-select: none;
+  border: 1px solid #e2e8f0;
+}
+
+.thermal-sticker.size-50x25 {
+  width: 220px;
+  min-height: 110px;
+}
+
+.thermal-sticker.size-50x38 {
+  width: 220px;
+  min-height: 160px;
+}
+
+.thermal-sticker.size-38x25 {
+  width: 175px;
+  min-height: 110px;
+}
+
+.thermal-sticker.size-80mm {
+  width: 260px;
+  min-height: 135px;
+}
+
+.sticker-store {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  line-height: 1.1;
+  width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sticker-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  line-height: 1.1;
+  margin-top: 2px;
+  width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sticker-meta {
+  font-size: 0.62rem;
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+  margin-top: 2px;
+  color: #333333;
+}
+
+.sticker-barcode-box {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 3px 0;
+}
+
+.sticker-barcode-box svg {
+  max-width: 100%;
+  height: 38px;
+}
+
+.sticker-footer {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  line-height: 1;
+}
+
+.sticker-mrp {
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.sticker-tax {
+  font-size: 0.55rem;
+  color: #4b5563;
+}
+

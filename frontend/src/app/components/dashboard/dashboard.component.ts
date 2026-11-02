@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import * as JsBarcode from 'jsbarcode';
 import { firstValueFrom } from 'rxjs';
 
 @Component({
@@ -556,6 +557,17 @@ export class DashboardComponent implements OnInit {
   scanFeedbackSuccess: boolean = true;
   lastScannedItem: any = null;
   @ViewChild('barcodeInputRef') barcodeInputRef!: ElementRef;
+
+  // Thermal Barcode Label Generator State
+  showBarcodeModal = false;
+  barcodeModalProduct: any = null;
+  barcodeModalProducts: any[] = [];
+  barcodePrintQty = 1;
+  barcodeLabelSize: '50x25' | '50x38' | '38x25' | '80mm' = '50x25';
+  barcodeIncludeStore = true;
+  barcodeIncludeBrand = true;
+  barcodeIncludePrice = true;
+  barcodeIncludeSize = true;
 
   constructor(private apiService: ApiService, private router: Router) {}
 
@@ -1860,6 +1872,336 @@ export class DashboardComponent implements OnInit {
       item.quantity = newQty;
       this.recalculateCartLine(item);
     }
+  }
+
+  // ==========================================
+  // THERMAL BARCODE LABEL GENERATOR & PRINTING
+  // ==========================================
+
+  openBarcodeModal(product: any, defaultQty?: number) {
+    this.barcodeModalProduct = product;
+    this.barcodeModalProducts = [product];
+    this.barcodePrintQty = defaultQty || product.setSize || 1;
+    this.showBarcodeModal = true;
+    setTimeout(() => this.renderBarcodePreview(), 60);
+  }
+
+  openBulkBarcodeModal() {
+    const ids = Object.entries(this.selectedIds['products'] || {})
+      .filter(([id, isSelected]) => isSelected)
+      .map(([id]) => Number(id));
+    this.barcodeModalProducts = this.products.filter(p => ids.includes(p.id));
+    if (this.barcodeModalProducts.length === 0) {
+      alert('Please select at least one item using the checkboxes to print barcode stickers.');
+      return;
+    }
+    this.barcodeModalProduct = this.barcodeModalProducts[0];
+    this.barcodePrintQty = 1;
+    this.showBarcodeModal = true;
+    setTimeout(() => this.renderBarcodePreview(), 60);
+  }
+
+  closeBarcodeModal() {
+    this.showBarcodeModal = false;
+    this.barcodeModalProduct = null;
+    this.barcodeModalProducts = [];
+  }
+
+  setBarcodeLabelSize(size: '50x25' | '50x38' | '38x25' | '80mm') {
+    this.barcodeLabelSize = size;
+    setTimeout(() => this.renderBarcodePreview(), 30);
+  }
+
+  adjustBarcodeQty(delta: number) {
+    this.barcodePrintQty = Math.max(1, (this.barcodePrintQty || 1) + delta);
+  }
+
+  setBarcodeQty(qty: number) {
+    this.barcodePrintQty = Math.max(1, qty);
+  }
+
+  renderBarcodePreview() {
+    if (!this.barcodeModalProduct) return;
+    const code = this.barcodeModalProduct.barcode || `CASA-PROD-${this.barcodeModalProduct.id}`;
+    try {
+      JsBarcode('#thermal-preview-svg', code, {
+        format: 'CODE128',
+        width: this.barcodeLabelSize === '38x25' ? 1.4 : 1.7,
+        height: this.barcodeLabelSize === '50x38' ? 44 : 36,
+        displayValue: true,
+        fontSize: 10,
+        font: 'monospace',
+        fontOptions: 'bold',
+        textMargin: 2,
+        margin: 2
+      });
+    } catch (err) {
+      console.warn('Barcode preview render error:', err);
+    }
+  }
+
+  printThermalLabels() {
+    const productsToPrint = this.barcodeModalProducts && this.barcodeModalProducts.length > 0 
+      ? this.barcodeModalProducts 
+      : (this.barcodeModalProduct ? [this.barcodeModalProduct] : []);
+
+    if (productsToPrint.length === 0) return;
+
+    const storeName = this.companyProfile.name || 'CASA ENTERPRISES';
+    const copiesPerItem = Math.max(1, this.barcodePrintQty || 1);
+
+    // Dimension map in mm
+    let widthMm = '50mm';
+    let heightMm = '25mm';
+    if (this.barcodeLabelSize === '50x38') {
+      widthMm = '50mm'; heightMm = '38mm';
+    } else if (this.barcodeLabelSize === '38x25') {
+      widthMm = '38mm'; heightMm = '25mm';
+    } else if (this.barcodeLabelSize === '80mm') {
+      widthMm = '76mm'; heightMm = '40mm';
+    }
+
+    let labelsHtml = '';
+
+    for (const prod of productsToPrint) {
+      const code = prod.barcode || `CASA-PROD-${prod.id}`;
+      const brand = prod.designBrand || '';
+      const size = prod.size || '';
+      const color = prod.color || '';
+      const price = prod.sellingPrice || 0;
+
+      // Render barcode to canvas for instant 100% self-contained image in print window
+      const canvas = document.createElement('canvas');
+      try {
+        JsBarcode(canvas, code, {
+          format: 'CODE128',
+          width: 2,
+          height: 44,
+          displayValue: true,
+          font: 'monospace',
+          fontOptions: 'bold',
+          fontSize: 12,
+          margin: 2
+        });
+      } catch (e) {
+        console.error('Barcode error', e);
+      }
+      const barcodeImg = canvas.toDataURL('image/png');
+
+      for (let i = 0; i < copiesPerItem; i++) {
+        labelsHtml += `
+          <div class="thermal-label-card">
+            ${this.barcodeIncludeStore ? `<div class="label-header">${storeName}</div>` : ''}
+            <div class="label-title">${prod.name || 'Garment Item'}</div>
+            ${(this.barcodeIncludeBrand && brand) || (this.barcodeIncludeSize && (size || color)) ? `
+              <div class="label-meta">
+                ${this.barcodeIncludeBrand && brand ? `<span>${brand}</span>` : ''}
+                ${this.barcodeIncludeSize && size ? `<span>Size: ${size}</span>` : ''}
+                ${this.barcodeIncludeSize && color ? `<span>${color}</span>` : ''}
+              </div>
+            ` : ''}
+            <div class="label-barcode-wrap">
+              <img src="${barcodeImg}" class="barcode-image" alt="${code}" />
+            </div>
+            ${this.barcodeIncludePrice ? `
+              <div class="label-footer">
+                <span class="label-mrp">MRP: <strong>₹${price}</strong></span>
+                <span class="label-tax">(Incl. all taxes)</span>
+              </div>
+            ` : ''}
+          </div>
+        `;
+      }
+    }
+
+    const printWin = window.open('', '_blank', 'width=600,height=700');
+    if (!printWin) {
+      alert('Please allow popups to open the thermal print dialog.');
+      return;
+    }
+
+    printWin.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Thermal Barcode Labels</title>
+          <style>
+            @page {
+              size: ${widthMm} ${heightMm};
+              margin: 0mm;
+            }
+            * {
+              box-sizing: border-box;
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
+            }
+            html, body {
+              margin: 0;
+              padding: 0;
+              background: #ffffff;
+              font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+              color: #000000;
+            }
+            .thermal-label-card {
+              width: ${widthMm};
+              height: ${heightMm};
+              padding: 1.5mm 2.5mm;
+              margin: 0 auto;
+              display: flex;
+              flex-direction: column;
+              justify-content: space-between;
+              align-items: center;
+              text-align: center;
+              page-break-after: always;
+              break-after: page;
+              overflow: hidden;
+              border-bottom: 1px dashed #cbd5e1;
+            }
+            @media print {
+              .thermal-label-card {
+                border-bottom: none;
+              }
+            }
+            .label-header {
+              font-size: 7.5pt;
+              font-weight: 800;
+              letter-spacing: 0.5px;
+              text-transform: uppercase;
+              line-height: 1.1;
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              width: 100%;
+            }
+            .label-title {
+              font-size: 7pt;
+              font-weight: 700;
+              line-height: 1.1;
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              width: 100%;
+            }
+            .label-meta {
+              display: flex;
+              justify-content: center;
+              gap: 4px;
+              font-size: 6pt;
+              line-height: 1;
+              white-space: nowrap;
+            }
+            .label-barcode-wrap {
+              width: 100%;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              margin: 1px 0;
+            }
+            .barcode-image {
+              max-width: 98%;
+              height: 38px;
+              object-fit: contain;
+            }
+            .label-footer {
+              display: flex;
+              justify-content: center;
+              align-items: baseline;
+              gap: 4px;
+              width: 100%;
+              line-height: 1;
+            }
+            .label-mrp {
+              font-size: 8pt;
+              font-weight: 800;
+            }
+            .label-tax {
+              font-size: 5.5pt;
+              color: #333;
+            }
+          </style>
+        </head>
+        <body>
+          ${labelsHtml}
+          <script>
+            window.onload = function() {
+              setTimeout(function() {
+                window.print();
+              }, 250);
+            };
+          </script>
+        </body>
+      </html>
+    `);
+    printWin.document.close();
+  }
+
+  downloadBarcodePdf() {
+    const productsToPrint = this.barcodeModalProducts && this.barcodeModalProducts.length > 0 
+      ? this.barcodeModalProducts 
+      : (this.barcodeModalProduct ? [this.barcodeModalProduct] : []);
+
+    if (productsToPrint.length === 0) return;
+
+    const storeName = this.companyProfile.name || 'CASA ENTERPRISES';
+    const copiesPerItem = Math.max(1, this.barcodePrintQty || 1);
+
+    // 50mm x 25mm in landscape orientation
+    const doc = new jsPDF({
+      orientation: 'landscape',
+      unit: 'mm',
+      format: [50, 25]
+    });
+
+    let isFirstPage = true;
+
+    for (const prod of productsToPrint) {
+      const code = prod.barcode || `CASA-PROD-${prod.id}`;
+      const price = prod.sellingPrice || 0;
+
+      const canvas = document.createElement('canvas');
+      try {
+        JsBarcode(canvas, code, {
+          format: 'CODE128',
+          width: 2,
+          height: 44,
+          displayValue: true,
+          font: 'monospace',
+          fontOptions: 'bold',
+          fontSize: 11,
+          margin: 2
+        });
+      } catch (e) {
+        console.error('Barcode error', e);
+      }
+      const barcodeImg = canvas.toDataURL('image/png');
+
+      for (let i = 0; i < copiesPerItem; i++) {
+        if (!isFirstPage) {
+          doc.addPage([50, 25], 'landscape');
+        }
+        isFirstPage = false;
+
+        if (this.barcodeIncludeStore) {
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(6.5);
+          doc.text(storeName.substring(0, 28), 25, 3.5, { align: 'center' });
+        }
+
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(6);
+        doc.text((prod.name || 'Shirt').substring(0, 32), 25, 6.5, { align: 'center' });
+
+        doc.addImage(barcodeImg, 'PNG', 3, 7.5, 44, 12);
+
+        if (this.barcodeIncludePrice) {
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(7.5);
+          doc.text(`MRP: Rs. ${price} (Incl. taxes)`, 25, 22.5, { align: 'center' });
+        }
+      }
+    }
+
+    doc.save(`Thermal_Barcodes_${productsToPrint.length}_items.pdf`);
   }
 
   onCartProductChange() {

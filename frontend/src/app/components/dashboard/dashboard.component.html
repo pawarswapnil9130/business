@@ -545,6 +545,9 @@
               <h3 style="margin: 0;">📁 Inward Stock List</h3>
               <div style="display: flex; gap: 10px; align-items: center;">
                 <input type="text" class="input" placeholder="Search Items..." [(ngModel)]="productsSearch" style="max-width: 250px;">
+                <button *ngIf="getSelectedCount('products') > 0" class="btn btn-secondary btn-sm" (click)="openBulkBarcodeModal()" title="Print thermal stickers for selected items">
+                  🏷️ Print Barcodes ({{getSelectedCount('products')}})
+                </button>
                 <button *ngIf="getSelectedCount('products') > 0" class="btn btn-danger btn-sm" (click)="deleteSelectedMultiple('products')">
                   🗑️ Delete Selected ({{getSelectedCount('products')}})
                 </button>
@@ -618,7 +621,8 @@
                         ⭐ Dist: ₹{{ p.distributorPrice | number:'1.2-2' }}
                       </div>
                     </td>
-                    <td style="display: flex; gap: 5px;">
+                    <td style="display: flex; gap: 4px; flex-wrap: wrap;">
+                      <button class="btn btn-secondary btn-sm" (click)="openBarcodeModal(p)" title="Generate & Print Thermal Barcode Stickers">🏷️ Barcode</button>
                       <button class="btn btn-primary btn-sm" (click)="onEditProduct(p)">Edit</button>
                       <button class="btn btn-danger btn-sm" (click)="onDeleteProduct(p.id)">Delete</button>
                     </td>
@@ -1417,7 +1421,7 @@
                   <th style="cursor: pointer" (click)="sortBy('stocks', 'costPrice')">Landed Cost Basis <span *ngIf="stocksSort === 'costPrice'">{{stocksSortDesc ? '▼' : '▲'}}</span></th>
                   <th style="cursor: pointer" (click)="sortBy('stocks', 'currentStock')">Current Stock <span *ngIf="stocksSort === 'currentStock'">{{stocksSortDesc ? '▼' : '▲'}}</span></th>
                   <th>Inventory Status</th>
-                  <th *ngIf="currentUser?.role === 'SUPER_ADMIN' || currentUser?.role === 'ADMIN'">Action</th>
+                  <th>Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -1450,12 +1454,13 @@
                     <span class="badge badge-warning" *ngIf="s.currentStock > 0 && s.currentStock < 20">LOW STOCK</span>
                     <span class="badge badge-danger" *ngIf="s.currentStock <= 0">OUT OF STOCK</span>
                   </td>
-                  <td *ngIf="currentUser?.role === 'SUPER_ADMIN' || currentUser?.role === 'ADMIN'">
-                    <button class="btn btn-danger btn-sm" (click)="onDeleteProduct(s.productId)">Delete</button>
+                  <td>
+                    <button class="btn btn-secondary btn-sm" style="margin-right: 4px;" (click)="openBarcodeModal(s)" title="Generate & Print Thermal Barcode Stickers">🏷️ Barcode</button>
+                    <button *ngIf="currentUser?.role === 'SUPER_ADMIN' || currentUser?.role === 'ADMIN'" class="btn btn-danger btn-sm" (click)="onDeleteProduct(s.productId)">Delete</button>
                   </td>
                 </tr>
                 <tr *ngIf="(stocks | searchFilter:stocksSearch).length === 0">
-                  <td [attr.colspan]="(currentUser?.role === 'SUPER_ADMIN' || currentUser?.role === 'ADMIN') ? 10 : 9" class="text-center text-muted pad-30">No inventory records found.</td>
+                  <td colspan="10" class="text-center text-muted pad-30">No inventory records found.</td>
                 </tr>
               </tbody>
             </table>
@@ -2332,8 +2337,139 @@
             </div>
           </div>
         </div>
-
       </section>
+
+      <!-- ======================================================= -->
+      <!-- THERMAL BARCODE LABEL GENERATOR & PRINT MODAL -->
+      <!-- ======================================================= -->
+      <div *ngIf="showBarcodeModal" class="modal-overlay">
+        <div class="modal-card" style="max-width: 720px; width: 100%;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color);">
+            <h3 style="margin: 0; display: flex; align-items: center; gap: 8px;">
+              <span>🏷️ Thermal Barcode Label Generator</span>
+            </h3>
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeBarcodeModal()" style="padding: 2px 8px; font-weight: bold;">✕</button>
+          </div>
+
+          <div class="barcode-modal-body">
+            <!-- Left: Settings & Configurations -->
+            <div>
+              <div style="background: var(--bg-hover); padding: 10px 14px; border-radius: var(--radius-md); margin-bottom: 14px; border: 1px solid var(--border-subtle);">
+                <div style="font-size: 0.82rem; color: var(--text-muted);">
+                  {{ barcodeModalProducts.length > 1 ? (barcodeModalProducts.length + ' Items Selected for Batch Printing') : 'Selected Item' }}
+                </div>
+                <strong style="font-size: 0.95rem; color: var(--text-primary);">
+                  {{ barcodeModalProduct?.name || barcodeModalProduct?.productName }}
+                </strong>
+                <div style="font-size: 0.78rem; color: var(--text-secondary); margin-top: 2px;">
+                  Size: <strong>{{ barcodeModalProduct?.size }}</strong> | Color: <strong>{{ barcodeModalProduct?.color }}</strong> | Price: <strong>₹{{ barcodeModalProduct?.sellingPrice }}</strong>
+                </div>
+                <div *ngIf="barcodeModalProduct?.barcode" class="barcode-pill" style="margin-top: 4px;">
+                  <span>🏷️</span> {{ barcodeModalProduct?.barcode }}
+                </div>
+              </div>
+
+              <!-- Thermal Roll Label Size Preset -->
+              <div class="form-group" style="margin-bottom: 14px;">
+                <label style="font-weight: 700; font-size: 0.85rem;">Sticker / Label Size (Roll Preset)</label>
+                <div class="preset-chip-group">
+                  <button type="button" class="preset-chip" [class.active]="barcodeLabelSize === '50x25'" (click)="setBarcodeLabelSize('50x25')">
+                    50 × 25 mm (2" × 1")
+                  </button>
+                  <button type="button" class="preset-chip" [class.active]="barcodeLabelSize === '50x38'" (click)="setBarcodeLabelSize('50x38')">
+                    50 × 38 mm (2" × 1.5")
+                  </button>
+                  <button type="button" class="preset-chip" [class.active]="barcodeLabelSize === '38x25'" (click)="setBarcodeLabelSize('38x25')">
+                    38 × 25 mm (Compact)
+                  </button>
+                  <button type="button" class="preset-chip" [class.active]="barcodeLabelSize === '80mm'" (click)="setBarcodeLabelSize('80mm')">
+                    80 mm (POS Receipt)
+                  </button>
+                </div>
+              </div>
+
+              <!-- Quantity to Print -->
+              <div class="form-group" style="margin-bottom: 14px;">
+                <label style="font-weight: 700; font-size: 0.85rem;">
+                  Number of Stickers to Print {{ barcodeModalProducts.length > 1 ? '(Per Item)' : '' }}
+                </label>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <button type="button" class="qty-btn" (click)="adjustBarcodeQty(-1)" style="width: 32px; height: 32px;">-</button>
+                  <input type="number" [(ngModel)]="barcodePrintQty" min="1" max="999" style="width: 80px; text-align: center; font-weight: bold; font-size: 1rem; padding: 6px;" />
+                  <button type="button" class="qty-btn" (click)="adjustBarcodeQty(1)" style="width: 32px; height: 32px;">+</button>
+                  <div class="preset-chip-group" style="margin: 0; margin-left: 6px;">
+                    <button type="button" class="preset-chip" (click)="setBarcodeQty(1)">1 pc</button>
+                    <button type="button" class="preset-chip" (click)="setBarcodeQty(barcodeModalProduct?.setSize || 4)">Set ({{ barcodeModalProduct?.setSize || 4 }})</button>
+                    <button type="button" class="preset-chip" (click)="setBarcodeQty(10)">10 pcs</button>
+                    <button *ngIf="(barcodeModalProduct?.currentStock || 0) > 0" type="button" class="preset-chip" (click)="setBarcodeQty(barcodeModalProduct.currentStock)">All Stock ({{ barcodeModalProduct.currentStock }})</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Label Content Options -->
+              <div class="form-group" style="margin-bottom: 10px;">
+                <label style="font-weight: 700; font-size: 0.85rem; margin-bottom: 6px; display: block;">Include on Sticker</label>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 0.82rem;">
+                  <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                    <input type="checkbox" [(ngModel)]="barcodeIncludeStore" (change)="renderBarcodePreview()" /> Store Name
+                  </label>
+                  <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                    <input type="checkbox" [(ngModel)]="barcodeIncludePrice" (change)="renderBarcodePreview()" /> MRP / Price
+                  </label>
+                  <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                    <input type="checkbox" [(ngModel)]="barcodeIncludeBrand" (change)="renderBarcodePreview()" /> Brand Tag
+                  </label>
+                  <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                    <input type="checkbox" [(ngModel)]="barcodeIncludeSize" (change)="renderBarcodePreview()" /> Size & Color
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right: Live Thermal Sticker Preview -->
+            <div>
+              <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 6px; text-align: center;">
+                🏷️ Live Thermal Roll Sticker Preview
+              </div>
+              <div class="thermal-liner-preview">
+                <div class="thermal-sticker" [ngClass]="'size-' + barcodeLabelSize">
+                  <div *ngIf="barcodeIncludeStore" class="sticker-store">
+                    {{ companyProfile.name || 'CASA ENTERPRISES' }}
+                  </div>
+                  <div class="sticker-title">
+                    {{ barcodeModalProduct?.name || barcodeModalProduct?.productName || 'Apparel Item' }}
+                  </div>
+                  <div class="sticker-meta" *ngIf="(barcodeIncludeBrand && barcodeModalProduct?.designBrand) || (barcodeIncludeSize && (barcodeModalProduct?.size || barcodeModalProduct?.color))">
+                    <span *ngIf="barcodeIncludeBrand && barcodeModalProduct?.designBrand">{{ barcodeModalProduct.designBrand }}</span>
+                    <span *ngIf="barcodeIncludeSize && barcodeModalProduct?.size">Size: <strong>{{ barcodeModalProduct.size }}</strong></span>
+                    <span *ngIf="barcodeIncludeSize && barcodeModalProduct?.color">{{ barcodeModalProduct.color }}</span>
+                  </div>
+                  <div class="sticker-barcode-box">
+                    <svg id="thermal-preview-svg"></svg>
+                  </div>
+                  <div *ngIf="barcodeIncludePrice" class="sticker-footer">
+                    <span class="sticker-mrp">MRP: ₹{{ barcodeModalProduct?.sellingPrice }}</span>
+                    <span class="sticker-tax">(Incl. all taxes)</span>
+                  </div>
+                </div>
+              </div>
+              <div style="text-align: center; margin-top: 8px; font-size: 0.74rem; color: var(--text-muted);">
+                Sharp vector Code-128 format &bull; 100% laser scanner compliant
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-actions" style="margin-top: 20px;">
+            <button type="button" class="btn btn-secondary" (click)="closeBarcodeModal()">Cancel</button>
+            <button type="button" class="btn btn-info" (click)="downloadBarcodePdf()" title="Download printable PDF format">
+              💾 Download PDF
+            </button>
+            <button type="button" class="btn btn-primary" (click)="printThermalLabels()" style="font-weight: 700;">
+              🖨️ Print Labels (Thermal Printer)
+            </button>
+          </div>
+        </div>
+      </div>
 
     </div>
   </main>
