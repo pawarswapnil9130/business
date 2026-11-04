@@ -1,9 +1,10 @@
-import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as JsBarcode from 'jsbarcode';
+import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 import { firstValueFrom } from 'rxjs';
 
 @Component({
@@ -11,7 +12,7 @@ import { firstValueFrom } from 'rxjs';
   templateUrl: './dashboard.component.html',
   styles: []
 })
-export class DashboardComponent implements OnInit {
+export class DashboardComponent implements OnInit, OnDestroy {
   currentTab = 'dashboard'; // 'dashboard', 'products', 'manufacturing', 'trading', 'inventory', 'sales', 'reports', 'users'
   currentUser: any = null;
   isMobileMenuOpen = false;
@@ -558,6 +559,16 @@ export class DashboardComponent implements OnInit {
   lastScannedItem: any = null;
   @ViewChild('barcodeInputRef') barcodeInputRef!: ElementRef;
 
+  // Webcam Barcode Scanner State
+  isWebcamScanning = false;
+  isWebcamStarting = false;
+  html5QrCode: Html5Qrcode | null = null;
+  availableCameras: Array<{ id: string; label: string }> = [];
+  selectedCameraId: string = '';
+  webcamScannerError: string = '';
+  lastScannedCode: string = '';
+  lastScannedTime: number = 0;
+
   // Thermal Barcode Label Generator State
   showBarcodeModal = false;
   barcodeModalProduct: any = null;
@@ -590,10 +601,17 @@ export class DashboardComponent implements OnInit {
     this.loadTab(this.currentTab);
   }
 
+  ngOnDestroy() {
+    this.stopWebcamScanner();
+  }
+
   loadTab(tab: string) {
     this.closeMobileMenu();
     if (this.currentUser?.role === 'EMPLOYEE' && tab !== 'inventory' && tab !== 'sales') {
       tab = 'sales';
+    }
+    if (tab !== 'sales' && this.isWebcamScanning) {
+      this.stopWebcamScanner();
     }
     this.currentTab = tab;
     this.clearMessages();
@@ -1749,6 +1767,8 @@ export class DashboardComponent implements OnInit {
     this.posBillingMode = mode;
     if (mode === 'BARCODE') {
       setTimeout(() => this.focusBarcodeInput(), 100);
+    } else {
+      this.stopWebcamScanner();
     }
   }
 
@@ -1835,6 +1855,145 @@ export class DashboardComponent implements OnInit {
         }
       });
     }
+  }
+
+  // WEBCAM BARCODE SCANNER LOGIC
+  toggleWebcamScanner() {
+    if (this.isWebcamScanning) {
+      this.stopWebcamScanner();
+    } else {
+      this.startWebcamScanner();
+    }
+  }
+
+  async startWebcamScanner() {
+    this.webcamScannerError = '';
+    this.isWebcamStarting = true;
+    this.isWebcamScanning = true;
+
+    setTimeout(async () => {
+      try {
+        const container = document.getElementById('webcam-barcode-reader');
+        if (!container) {
+          this.webcamScannerError = 'Camera viewfinder container not ready.';
+          this.isWebcamStarting = false;
+          return;
+        }
+
+        // Query available camera devices
+        try {
+          const devices = await Html5Qrcode.getCameras();
+          if (devices && devices.length > 0) {
+            this.availableCameras = devices;
+            if (!this.selectedCameraId) {
+              const backCam = devices.find(d => /back|rear|environment/i.test(d.label));
+              this.selectedCameraId = backCam ? backCam.id : devices[0].id;
+            }
+          }
+        } catch (camErr) {
+          console.warn('Camera device enumeration warning:', camErr);
+        }
+
+        if (this.html5QrCode) {
+          try {
+            if (this.html5QrCode.isScanning) {
+              await this.html5QrCode.stop();
+            }
+            this.html5QrCode.clear();
+          } catch (e) {}
+        }
+
+        this.html5QrCode = new Html5Qrcode('webcam-barcode-reader', {
+          formatsToSupport: [
+            Html5QrcodeSupportedFormats.CODE_128,
+            Html5QrcodeSupportedFormats.EAN_13,
+            Html5QrcodeSupportedFormats.EAN_8,
+            Html5QrcodeSupportedFormats.UPC_A,
+            Html5QrcodeSupportedFormats.UPC_E,
+            Html5QrcodeSupportedFormats.CODE_39,
+            Html5QrcodeSupportedFormats.CODE_93,
+            Html5QrcodeSupportedFormats.QR_CODE
+          ],
+          verbose: false
+        });
+
+        const cameraConfig = this.selectedCameraId ? this.selectedCameraId : { facingMode: 'environment' };
+
+        await this.html5QrCode.start(
+          cameraConfig,
+          {
+            fps: 15,
+            qrbox: (viewfinderWidth: number, viewfinderHeight: number) => {
+              const w = Math.min(Math.floor(viewfinderWidth * 0.85), 360);
+              const h = Math.min(Math.floor(viewfinderHeight * 0.55), 180);
+              return { width: Math.max(w, 200), height: Math.max(h, 120) };
+            },
+            aspectRatio: 1.6
+          },
+          (decodedText: string) => {
+            this.handleWebcamDecodedCode(decodedText);
+          },
+          () => {
+            // Per-frame frame analysis message (ignored)
+          }
+        );
+
+        this.isWebcamStarting = false;
+      } catch (err: any) {
+        console.error('Failed to start webcam scanner:', err);
+        this.webcamScannerError = err?.message || 'Camera permission denied or camera not accessible.';
+        this.isWebcamStarting = false;
+        this.isWebcamScanning = false;
+      }
+    }, 150);
+  }
+
+  async onCameraDeviceChange() {
+    if (this.html5QrCode) {
+      try {
+        if (this.html5QrCode.isScanning) {
+          await this.html5QrCode.stop();
+        }
+        this.html5QrCode.clear();
+      } catch (e) {}
+      this.html5QrCode = null;
+    }
+    this.startWebcamScanner();
+  }
+
+  async stopWebcamScanner() {
+    this.isWebcamScanning = false;
+    this.isWebcamStarting = false;
+    this.webcamScannerError = '';
+    if (this.html5QrCode) {
+      try {
+        if (this.html5QrCode.isScanning) {
+          await this.html5QrCode.stop();
+        }
+        this.html5QrCode.clear();
+      } catch (err) {
+        console.warn('Error closing webcam scanner:', err);
+      }
+      this.html5QrCode = null;
+    }
+  }
+
+  handleWebcamDecodedCode(decodedText: string) {
+    const code = (decodedText || '').trim();
+    if (!code) return;
+
+    const now = Date.now();
+    // Cooldown: prevent the same barcode from duplicate-scanning repeatedly within 2.5 seconds
+    if (code === this.lastScannedCode && (now - this.lastScannedTime) < 2500) {
+      return;
+    }
+
+    this.lastScannedCode = code;
+    this.lastScannedTime = now;
+
+    // Trigger standard scan handler to add to cart
+    this.barcodeInput = code;
+    this.onBarcodeScanned();
   }
 
   addProductToSalesCart(prod: any, qty = 1) {

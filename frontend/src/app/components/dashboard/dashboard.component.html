@@ -1545,6 +1545,72 @@
                 >
                   ➕ Scan / Add
                 </button>
+                <button 
+                  type="button" 
+                  class="btn" 
+                  [class.btn-danger]="isWebcamScanning"
+                  [class.btn-success]="!isWebcamScanning"
+                  style="white-space: nowrap; padding: 10px 16px; font-weight: 600; display: flex; align-items: center; gap: 6px;"
+                  (click)="toggleWebcamScanner()"
+                  [disabled]="isWebcamStarting"
+                  [title]="isWebcamScanning ? 'Turn off webcam scanner' : 'Scan barcodes using your laptop/webcam camera'"
+                >
+                  <span>📷</span>
+                  <span>{{ isWebcamScanning ? 'Stop Camera' : 'Scan with Webcam' }}</span>
+                </button>
+              </div>
+
+              <!-- Live Webcam Barcode Scanner Viewfinder Panel -->
+              <div *ngIf="isWebcamScanning" class="webcam-scanner-panel">
+                <div class="webcam-scanner-header">
+                  <div class="webcam-title-group">
+                    <span class="webcam-pulse-indicator"></span>
+                    <strong>📷 Live Webcam Barcode Scanner</strong>
+                    <span class="badge" style="background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid #10b981; font-size: 0.72rem; padding: 2px 7px; border-radius: 9999px;">Camera Active</span>
+                  </div>
+                  <div class="webcam-tools">
+                    <div *ngIf="availableCameras.length > 1" class="camera-select-wrap">
+                      <select class="form-select form-select-sm" [(ngModel)]="selectedCameraId" (change)="onCameraDeviceChange()" style="font-size: 0.78rem; padding: 3px 8px; background: #1e293b; color: #fff; border: 1px solid #475569; border-radius: 6px;">
+                        <option *ngFor="let cam of availableCameras" [value]="cam.id">{{ cam.label || 'Camera ' + cam.id }}</option>
+                      </select>
+                    </div>
+                    <button type="button" class="btn-close-camera" (click)="stopWebcamScanner()" title="Close Camera">✕</button>
+                  </div>
+                </div>
+
+                <div class="webcam-viewport-box">
+                  <div *ngIf="isWebcamStarting" class="webcam-starting-spinner">
+                    <span class="status-indicator-dot online"></span> Initializing Camera Stream...
+                  </div>
+
+                  <!-- Container where Html5Qrcode attaches video -->
+                  <div id="webcam-barcode-reader" class="webcam-reader-render"></div>
+
+                  <!-- Animated Targeting Reticle HUD Overlay -->
+                  <div class="webcam-hud">
+                    <div class="hud-frame">
+                      <div class="hud-reticle top-left"></div>
+                      <div class="hud-reticle top-right"></div>
+                      <div class="hud-reticle bottom-left"></div>
+                      <div class="hud-reticle bottom-right"></div>
+                      <div class="hud-laser-scanline"></div>
+                    </div>
+                    <div class="hud-instruction">Align barcode inside the green frame & hold steady</div>
+                  </div>
+                </div>
+
+                <div *ngIf="webcamScannerError" class="webcam-error-alert">
+                  ⚠️ {{ webcamScannerError }}
+                </div>
+
+                <div class="webcam-footer-bar">
+                  <span class="webcam-status-text">
+                    ⚡ Point barcode tag 15–20 cm away • Compatible with Code-128, EAN, UPC & QR
+                  </span>
+                  <button type="button" class="btn btn-sm btn-secondary" (click)="stopWebcamScanner()" style="font-size: 0.76rem; padding: 3px 10px;">
+                    ✕ Stop Camera
+                  </button>
+                </div>
               </div>
 
               <!-- Live Audio / Visual Scan Feedback -->
@@ -1562,7 +1628,7 @@
               </div>
 
               <div style="margin-top: 10px; font-size: 0.78rem; color: #64748b; display: flex; align-items: center; justify-content: space-between;">
-                <span>💡 Tip: Standard laser barcode guns automatically type the code and press Enter to instantly add 1 pc to cart.</span>
+                <span>💡 Tip: You can scan with a laser gun, your webcam, or manually type SKU and press Enter.</span>
                 <button type="button" class="btn btn-sm btn-link" style="padding: 0; font-size: 0.78rem;" (click)="focusBarcodeInput()">🎯 Focus Scanner</button>
               </div>
             </div>
