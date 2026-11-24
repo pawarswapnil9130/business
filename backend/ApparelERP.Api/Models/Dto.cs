@@ -386,4 +386,33 @@ namespace ApparelERP.Api.Models.Dto
     {
         public string OrderStatus { get; set; } = "CONFIRMED"; // 'PENDING', 'CONFIRMED', 'PROCESSING', 'DISPATCHED', 'DELIVERED', 'CANCELLED'
     }
+
+    public class RazorpayCreateOrderRequestDto
+    {
+        public string? Notes { get; set; }
+        public List<CustomerOrderItemCreateDto> Items { get; set; } = new();
+    }
+
+    public class RazorpayCreateOrderResponseDto
+    {
+        public string RazorpayOrderId { get; set; } = string.Empty;
+        public long Amount { get; set; } // in paise (e.g. 150000 = ₹1500.00)
+        public decimal AmountRupees { get; set; }
+        public string Currency { get; set; } = "INR";
+        public string KeyId { get; set; } = string.Empty;
+        public string InvoiceNo { get; set; } = string.Empty;
+        public string BusinessName { get; set; } = "CASA ENTERPRISES";
+        public string CustomerName { get; set; } = string.Empty;
+        public string CustomerPhone { get; set; } = string.Empty;
+        public string CustomerEmail { get; set; } = string.Empty;
+    }
+
+    public class RazorpayVerifyPaymentDto
+    {
+        public string RazorpayPaymentId { get; set; } = string.Empty;
+        public string RazorpayOrderId { get; set; } = string.Empty;
+        public string RazorpaySignature { get; set; } = string.Empty;
+        public string? Notes { get; set; }
+        public List<CustomerOrderItemCreateDto> Items { get; set; } = new();
+    }
 }

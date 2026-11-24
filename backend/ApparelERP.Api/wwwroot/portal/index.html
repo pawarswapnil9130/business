@@ -423,8 +423,11 @@
       <div class="order-submit-error" id="drawer-order-error" style="display: none;"></div>
 
       <button class="btn-checkout-primary" id="btn-submit-order" onclick="proceedToPayment()">
-        <span class="btn-checkout-text">PROCEED TO PAYMENT</span>
+        <span class="btn-checkout-text">⚡ PAY VIA RAZORPAY</span>
         <span class="btn-checkout-price" id="btn-checkout-price-preview">₹0.00</span>
+      </button>
+      <button type="button" onclick="openManualBankTransfer()" style="width: 100%; margin-top: 10px; background: transparent; border: none; color: #64748b; font-size: 0.8rem; text-decoration: underline; cursor: pointer; padding: 4px;">
+        Or pay via Direct Bank Transfer (NEFT / RTGS)
       </button>
     </div>
 
@@ -643,6 +646,9 @@
 
   <!-- Floating Toast Notification -->
   <div class="toast-notification" id="toast-msg"></div>
+
+  <!-- Razorpay Checkout Gateway SDK -->
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
   <!-- Main JavaScript Application Logic -->
   <script src="app.js"></script>

@@ -2,8 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -468,6 +472,416 @@ namespace ApparelERP.Api.Controllers
             }
 
             return CreatedAtAction(nameof(GetCustomerOrderById), new { id = salesOrder.Id }, MapToCustomerOrderDto(salesOrder));
+        }
+
+        // ==========================================
+        // 5. RAZORPAY GATEWAY CHECKOUT INTEGRATION
+        // ==========================================
+
+        [HttpPost("orders/create-razorpay-order")]
+        [Authorize(Roles = "CUSTOMER")]
+        public async Task<ActionResult<RazorpayCreateOrderResponseDto>> CreateRazorpayOrder(RazorpayCreateOrderRequestDto dto)
+        {
+            var customerId = GetCurrentCustomerId();
+            if (customerId == null) return Unauthorized();
+
+            var customer = await _context.Customers.FindAsync(customerId.Value);
+            if (customer == null || customer.Status != "ACTIVE") return Unauthorized();
+
+            if (dto.Items == null || dto.Items.Count == 0)
+            {
+                return BadRequest(new { message = "Order must contain at least one item." });
+            }
+
+            var isDistributor = customer.CustomerType.Equals("DISTRIBUTOR", StringComparison.OrdinalIgnoreCase);
+
+            decimal totalTaxable = 0;
+            decimal totalGst = 0;
+            var orderItems = new List<SalesOrderItem>();
+
+            foreach (var itemDto in dto.Items)
+            {
+                if (itemDto.Quantity <= 0) continue;
+
+                var product = await _context.Products.FindAsync(itemDto.ProductId);
+                if (product == null || !product.IsActive)
+                {
+                    return BadRequest(new { message = $"Product with ID {itemDto.ProductId} is not available." });
+                }
+
+                var stockSummary = await _context.StockSummaries.FirstOrDefaultAsync(s => s.ProductId == product.Id);
+                var currentStock = stockSummary?.CurrentStock ?? 0;
+                var setSize = product.SetSize > 0 ? product.SetSize : 4;
+                var maxAvailableSets = setSize > 0 ? (currentStock / setSize) : currentStock;
+
+                if (itemDto.Quantity > currentStock)
+                {
+                    var requestedSets = setSize > 0 ? (itemDto.Quantity / setSize) : itemDto.Quantity;
+                    return BadRequest(new { 
+                        message = $"Insufficient stock for '{product.Name}'. Only {maxAvailableSets} Sets ({currentStock} pcs) are available, but {requestedSets} Sets were requested." 
+                    });
+                }
+
+                var unitPrice = isDistributor && product.DistributorPrice > 0 
+                    ? product.DistributorPrice 
+                    : product.SellingPrice;
+
+                var subtotalExclTax = itemDto.Quantity * unitPrice;
+                var gstAmount = subtotalExclTax * (product.GstPercent / 100.0m);
+                var lineTotal = subtotalExclTax + gstAmount;
+
+                totalTaxable += subtotalExclTax;
+                totalGst += gstAmount;
+
+                orderItems.Add(new SalesOrderItem
+                {
+                    ProductId = product.Id,
+                    ItemType = "PCS",
+                    Quantity = itemDto.Quantity,
+                    UnitPrice = unitPrice,
+                    GstPercent = product.GstPercent,
+                    Discount = 0.00m,
+                    SubTotal = lineTotal
+                });
+            }
+
+            var finalAmount = totalTaxable + totalGst;
+            var invoiceNo = $"WS-{DateTime.UtcNow:yyyyMMddHHmmss}-{customer.Id}";
+            var amountInPaise = (long)Math.Round(finalAmount * 100, MidpointRounding.AwayFromZero);
+
+            var keyId = _configuration["Razorpay:KeyId"] ?? Environment.GetEnvironmentVariable("RAZORPAY_KEY_ID") ?? "rzp_live_TumCIxUf4bQr05";
+            var keySecret = _configuration["Razorpay:KeySecret"] ?? Environment.GetEnvironmentVariable("RAZORPAY_KEY_SECRET") ?? "eSwGGU0loHzLSxgTuBL5FaZN";
+
+            using var httpClient = new HttpClient();
+            var authBytes = Encoding.UTF8.GetBytes($"{keyId}:{keySecret}");
+            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(authBytes));
+
+            var razorpayPayload = new
+            {
+                amount = amountInPaise,
+                currency = "INR",
+                receipt = invoiceNo,
+                notes = new Dictionary<string, string>
+                {
+                    { "source_app", "CASA Wholesale Portal" },
+                    { "business", "Casa Enterprises" },
+                    { "channel", "Wholesale Portal" },
+                    { "customer_name", $"{customer.ShopName} ({customer.OwnerName})" },
+                    { "customer_phone", customer.Phone ?? "" },
+                    { "invoice_no", invoiceNo },
+                    { "order_notes", dto.Notes ?? "" }
+                }
+            };
+
+            var jsonContent = new StringContent(JsonSerializer.Serialize(razorpayPayload), Encoding.UTF8, "application/json");
+            var response = await httpClient.PostAsync("https://api.razorpay.com/v1/orders", jsonContent);
+            var responseBody = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return BadRequest(new { message = $"Razorpay order creation failed: {responseBody}" });
+            }
+
+            using var doc = JsonDocument.Parse(responseBody);
+            var razorpayOrderId = doc.RootElement.GetProperty("id").GetString() ?? "";
+
+            // Pre-create SalesOrder as PENDING (will be confirmed via Frontend callback OR Razorpay Webhook)
+            var salesOrder = new SalesOrder
+            {
+                InvoiceNo = invoiceNo,
+                CustomerId = customer.Id,
+                CustomerName = $"{customer.ShopName} ({customer.OwnerName})",
+                CustomerPhone = customer.Phone,
+                OrderStatus = "PENDING",
+                OrderSource = "WHOLESALE_PORTAL",
+                TotalAmount = totalTaxable,
+                TotalGst = totalGst,
+                FinalAmount = finalAmount,
+                SalesDate = DateTime.UtcNow,
+                PaymentProofUrl = $"RZP_ORDER:{razorpayOrderId}",
+                Items = orderItems
+            };
+
+            _context.SalesOrders.Add(salesOrder);
+            await _context.SaveChangesAsync();
+
+            return Ok(new RazorpayCreateOrderResponseDto
+            {
+                RazorpayOrderId = razorpayOrderId,
+                Amount = amountInPaise,
+                AmountRupees = finalAmount,
+                Currency = "INR",
+                KeyId = keyId,
+                InvoiceNo = invoiceNo,
+                BusinessName = "CASA ENTERPRISES",
+                CustomerName = customer.OwnerName,
+                CustomerPhone = customer.Phone ?? "",
+                CustomerEmail = customer.Email ?? ""
+            });
+        }
+
+        [HttpPost("orders/verify-razorpay-payment")]
+        [Authorize(Roles = "CUSTOMER")]
+        public async Task<ActionResult<CustomerOrderDto>> VerifyRazorpayPayment(RazorpayVerifyPaymentDto dto)
+        {
+            var customerId = GetCurrentCustomerId();
+            if (customerId == null) return Unauthorized();
+
+            var customer = await _context.Customers.FindAsync(customerId.Value);
+            if (customer == null || customer.Status != "ACTIVE") return Unauthorized();
+
+            if (string.IsNullOrWhiteSpace(dto.RazorpayOrderId) || 
+                string.IsNullOrWhiteSpace(dto.RazorpayPaymentId) || 
+                string.IsNullOrWhiteSpace(dto.RazorpaySignature))
+            {
+                return BadRequest(new { message = "Incomplete Razorpay payment response payload." });
+            }
+
+            var keySecret = _configuration["Razorpay:KeySecret"] ?? Environment.GetEnvironmentVariable("RAZORPAY_KEY_SECRET") ?? "eSwGGU0loHzLSxgTuBL5FaZN";
+
+            var payload = $"{dto.RazorpayOrderId}|{dto.RazorpayPaymentId}";
+            using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(keySecret));
+            var hashBytes = hmac.ComputeHash(Encoding.UTF8.GetBytes(payload));
+            var computedSignature = Convert.ToHexString(hashBytes).ToLowerInvariant();
+
+            if (!string.Equals(computedSignature, dto.RazorpaySignature, StringComparison.OrdinalIgnoreCase))
+            {
+                return BadRequest(new { message = "Payment signature verification failed. Untrusted payment transaction." });
+            }
+
+            // Check if order was already confirmed (e.g. by Webhook)
+            var existingOrder = await _context.SalesOrders
+                .Include(so => so.Items)
+                .ThenInclude(i => i.Product)
+                .FirstOrDefaultAsync(so => so.PaymentProofUrl == $"RZP_ORDER:{dto.RazorpayOrderId}" || 
+                                           so.PaymentProofUrl == $"RAZORPAY_PAID:{dto.RazorpayOrderId}");
+
+            if (existingOrder != null)
+            {
+                if (existingOrder.OrderStatus != "CONFIRMED")
+                {
+                    existingOrder.OrderStatus = "CONFIRMED";
+                    existingOrder.TransactionId = dto.RazorpayPaymentId;
+                    existingOrder.PaymentProofUrl = $"RAZORPAY_PAID:{dto.RazorpayOrderId}";
+                    await _context.SaveChangesAsync();
+
+                    foreach (var item in existingOrder.Items)
+                    {
+                        await _inventoryService.RecordStockDeductionAsync(item.ProductId, item.ItemType, item.Quantity, existingOrder.Id);
+                    }
+                }
+                return Ok(MapToCustomerOrderDto(existingOrder));
+            }
+
+            // Fallback: If for any reason pre-created order wasn't found, create and confirm now
+            if (dto.Items == null || dto.Items.Count == 0)
+            {
+                return BadRequest(new { message = "Order must contain at least one item." });
+            }
+
+            var isDistributor = customer.CustomerType.Equals("DISTRIBUTOR", StringComparison.OrdinalIgnoreCase);
+            decimal fallbackTaxable = 0;
+            decimal fallbackGst = 0;
+            var fallbackItems = new List<SalesOrderItem>();
+
+            foreach (var itemDto in dto.Items)
+            {
+                if (itemDto.Quantity <= 0) continue;
+                var product = await _context.Products.FindAsync(itemDto.ProductId);
+                if (product == null || !product.IsActive) continue;
+
+                var unitPrice = isDistributor && product.DistributorPrice > 0 ? product.DistributorPrice : product.SellingPrice;
+                var subtotalExclTax = itemDto.Quantity * unitPrice;
+                var gstAmount = subtotalExclTax * (product.GstPercent / 100.0m);
+                var lineTotal = subtotalExclTax + gstAmount;
+
+                fallbackTaxable += subtotalExclTax;
+                fallbackGst += gstAmount;
+
+                fallbackItems.Add(new SalesOrderItem
+                {
+                    ProductId = product.Id,
+                    ItemType = "PCS",
+                    Quantity = itemDto.Quantity,
+                    UnitPrice = unitPrice,
+                    GstPercent = product.GstPercent,
+                    Discount = 0.00m,
+                    SubTotal = lineTotal
+                });
+            }
+
+            var fallbackFinal = fallbackTaxable + fallbackGst;
+            var invoiceNo = $"WS-{DateTime.UtcNow:yyyyMMddHHmmss}-{customer.Id}";
+
+            var newOrder = new SalesOrder
+            {
+                InvoiceNo = invoiceNo,
+                CustomerId = customer.Id,
+                CustomerName = $"{customer.ShopName} ({customer.OwnerName})",
+                CustomerPhone = customer.Phone,
+                OrderStatus = "CONFIRMED",
+                OrderSource = "WHOLESALE_PORTAL",
+                TotalAmount = fallbackTaxable,
+                TotalGst = fallbackGst,
+                FinalAmount = fallbackFinal,
+                SalesDate = DateTime.UtcNow,
+                TransactionId = dto.RazorpayPaymentId,
+                PaymentProofUrl = $"RAZORPAY_PAID:{dto.RazorpayOrderId}",
+                Items = fallbackItems
+            };
+
+            _context.SalesOrders.Add(newOrder);
+            await _context.SaveChangesAsync();
+
+            foreach (var item in newOrder.Items)
+            {
+                await _inventoryService.RecordStockDeductionAsync(item.ProductId, item.ItemType, item.Quantity, newOrder.Id);
+            }
+
+            return Ok(MapToCustomerOrderDto(newOrder));
+        }
+
+        // ==========================================
+        // 6. RAZORPAY WEBHOOK (BACKGROUND FULFILLMENT)
+        // ==========================================
+
+        [HttpPost("orders/webhook")]
+        [AllowAnonymous]
+        public async Task<IActionResult> RazorpayWebhook()
+        {
+            try
+            {
+                string rawBody;
+                using (var reader = new StreamReader(Request.Body, Encoding.UTF8))
+                {
+                    rawBody = await reader.ReadToEndAsync();
+                }
+
+                var webhookSecret = _configuration["Razorpay:WebhookSecret"] 
+                    ?? Environment.GetEnvironmentVariable("RAZORPAY_WEBHOOK_SECRET") 
+                    ?? "casa_webhook_sec_99a8b7c6d5e4";
+
+                // 1. Verify Webhook Signature if signature header is provided
+                if (Request.Headers.TryGetValue("X-Razorpay-Signature", out var signatureHeader))
+                {
+                    using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(webhookSecret));
+                    var hashBytes = hmac.ComputeHash(Encoding.UTF8.GetBytes(rawBody));
+                    var computedSignature = Convert.ToHexString(hashBytes).ToLowerInvariant();
+
+                    if (!string.Equals(computedSignature, signatureHeader.ToString(), StringComparison.OrdinalIgnoreCase))
+                    {
+                        Console.WriteLine("[Razorpay Webhook ERROR] Invalid Webhook Signature.");
+                        return BadRequest(new { error = "Invalid webhook signature" });
+                    }
+                }
+
+                // 2. Parse Webhook Event JSON
+                using var doc = JsonDocument.Parse(rawBody);
+                var root = doc.RootElement;
+                var eventType = root.TryGetProperty("event", out var ev) ? ev.GetString() : "";
+
+                Console.WriteLine($"[Razorpay Webhook] Received Event: {eventType}");
+
+                if (!root.TryGetProperty("payload", out var payload))
+                {
+                    return Ok(new { message = "No payload present" });
+                }
+
+                JsonElement paymentEntity = default;
+                if (payload.TryGetProperty("payment", out var p) && p.TryGetProperty("entity", out var pe))
+                {
+                    paymentEntity = pe;
+                }
+
+                JsonElement orderEntity = default;
+                if (payload.TryGetProperty("order", out var o) && o.TryGetProperty("entity", out var oe))
+                {
+                    orderEntity = oe;
+                }
+
+                string? sourceApp = null;
+                string? business = null;
+                string? invoiceNo = null;
+                string? razorpayOrderId = null;
+                string? razorpayPaymentId = null;
+
+                if (paymentEntity.ValueKind != JsonValueKind.Undefined)
+                {
+                    if (paymentEntity.TryGetProperty("id", out var pid)) razorpayPaymentId = pid.GetString();
+                    if (paymentEntity.TryGetProperty("order_id", out var oid)) razorpayOrderId = oid.GetString();
+                    if (paymentEntity.TryGetProperty("notes", out var notes))
+                    {
+                        if (notes.TryGetProperty("source_app", out var sa)) sourceApp = sa.GetString();
+                        if (notes.TryGetProperty("business", out var b)) business = b.GetString();
+                        if (notes.TryGetProperty("invoice_no", out var inv)) invoiceNo = inv.GetString();
+                    }
+                }
+
+                if (orderEntity.ValueKind != JsonValueKind.Undefined)
+                {
+                    if (razorpayOrderId == null && orderEntity.TryGetProperty("id", out var oid)) razorpayOrderId = oid.GetString();
+                    if (orderEntity.TryGetProperty("notes", out var notes))
+                    {
+                        if (sourceApp == null && notes.TryGetProperty("source_app", out var sa)) sourceApp = sa.GetString();
+                        if (business == null && notes.TryGetProperty("business", out var b)) business = b.GetString();
+                        if (invoiceNo == null && notes.TryGetProperty("invoice_no", out var inv)) invoiceNo = inv.GetString();
+                    }
+                }
+
+                // =====================================================================
+                // 3. MULTI-APP ISOLATION FILTER:
+                // Safely ignore payments belonging to InterviewDesk, Billing_ERP, etc.
+                // =====================================================================
+                var isCasaPayment = string.Equals(business, "Casa Enterprises", StringComparison.OrdinalIgnoreCase) ||
+                                    string.Equals(sourceApp, "CASA Wholesale Portal", StringComparison.OrdinalIgnoreCase);
+
+                if (!isCasaPayment)
+                {
+                    Console.WriteLine($"[Razorpay Webhook] Ignored payment '{razorpayPaymentId}': belongs to other application ({sourceApp ?? "External App / InterviewDesk"}).");
+                    return Ok(new { status = "ignored", reason = "belongs to another application" });
+                }
+
+                // =====================================================================
+                // 4. PROCESS CASA ENTERPRISES WHOLESALE PAYMENT
+                // =====================================================================
+                var salesOrder = await _context.SalesOrders
+                    .Include(so => so.Items)
+                    .FirstOrDefaultAsync(so => 
+                        (!string.IsNullOrEmpty(razorpayOrderId) && so.PaymentProofUrl == $"RZP_ORDER:{razorpayOrderId}") ||
+                        (!string.IsNullOrEmpty(invoiceNo) && so.InvoiceNo == invoiceNo) ||
+                        (!string.IsNullOrEmpty(razorpayPaymentId) && so.TransactionId == razorpayPaymentId));
+
+                if (salesOrder == null)
+                {
+                    Console.WriteLine($"[Razorpay Webhook] Order not found for invoice '{invoiceNo}' or order '{razorpayOrderId}'.");
+                    return Ok(new { status = "ignored", reason = "order record not found" });
+                }
+
+                if (salesOrder.OrderStatus == "CONFIRMED")
+                {
+                    Console.WriteLine($"[Razorpay Webhook] Order #{salesOrder.InvoiceNo} already confirmed. No action needed.");
+                    return Ok(new { status = "already_confirmed", invoiceNo = salesOrder.InvoiceNo });
+                }
+
+                // Confirm order and deduct stock in the background!
+                salesOrder.OrderStatus = "CONFIRMED";
+                salesOrder.TransactionId = razorpayPaymentId ?? salesOrder.TransactionId;
+                salesOrder.PaymentProofUrl = $"RAZORPAY_PAID:{razorpayOrderId}";
+                await _context.SaveChangesAsync();
+
+                foreach (var item in salesOrder.Items)
+                {
+                    await _inventoryService.RecordStockDeductionAsync(item.ProductId, item.ItemType, item.Quantity, salesOrder.Id);
+                }
+
+                Console.WriteLine($"[Razorpay Webhook SUCCESS] Confirmed Wholesale Order #{salesOrder.InvoiceNo} via background webhook!");
+                return Ok(new { status = "success", invoiceNo = salesOrder.InvoiceNo });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[Razorpay Webhook Exception] {ex.Message}");
+                return StatusCode(500, new { error = ex.Message });
+            }
         }
 
         [HttpGet("orders")]

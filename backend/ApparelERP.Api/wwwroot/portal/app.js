@@ -582,13 +582,173 @@ function renderCartDrawer() {
 let companyProfileData = null;
 
 async function proceedToPayment() {
+  if (!state.token) {
+    closeCartDrawer();
+    openLoginModal();
+    showToast("Please log in to your account to checkout.");
+    return;
+  }
+
+  const cartEntries = Object.values(state.cart);
+  if (cartEntries.length === 0) {
+    showToast("Your cart is empty.");
+    return;
+  }
+
+  const btn = document.getElementById('btn-submit-order');
+  const btnText = btn.querySelector('.btn-checkout-text');
+  const originalText = btnText ? btnText.textContent : '⚡ PAY VIA RAZORPAY';
+
+  btn.disabled = true;
+  if (btnText) btnText.textContent = 'CONNECTING TO RAZORPAY...';
+
+  const notes = document.getElementById('drawer-order-notes')?.value.trim() || '';
+  const items = cartEntries.map(({ product, setsCount, quantity }) => ({
+    productId: product.id,
+    quantity,
+    setsCount: setsCount || 1
+  }));
+
+  try {
+    const res = await fetch(`${API_BASE}/customer/orders/create-razorpay-order`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${state.token}`
+      },
+      body: JSON.stringify({ items, notes })
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.message || "Failed to initialize payment.");
+    }
+
+    const orderData = await res.json();
+
+    if (typeof Razorpay === 'undefined') {
+      throw new Error("Razorpay gateway SDK failed to load. Please check your internet connection.");
+    }
+
+    const options = {
+      key: orderData.keyId,
+      amount: orderData.amount, // in paise
+      currency: orderData.currency || "INR",
+      name: "CASA ENTERPRISES",
+      description: `Wholesale Order #${orderData.invoiceNo}`,
+      image: "favicon.svg",
+      order_id: orderData.razorpayOrderId,
+      prefill: {
+        name: orderData.customerName || state.customer?.ownerName || state.customer?.shopName || "",
+        contact: orderData.customerPhone || state.customer?.phone || "",
+        email: orderData.customerEmail || state.customer?.email || ""
+      },
+      notes: {
+        business: "Casa Enterprises",
+        invoiceNo: orderData.invoiceNo,
+        orderSource: "Wholesale Portal"
+      },
+      theme: {
+        color: "#0f172a"
+      },
+      handler: async function (response) {
+        await verifyAndCompleteRazorpayPayment(response, items, notes);
+      },
+      modal: {
+        ondismiss: function () {
+          btn.disabled = false;
+          if (btnText) btnText.textContent = originalText;
+        }
+      }
+    };
+
+    const rzp = new Razorpay(options);
+    rzp.on('payment.failed', function (response) {
+      alert("Payment failed: " + (response.error.description || "Transaction declined by bank."));
+      btn.disabled = false;
+      if (btnText) btnText.textContent = originalText;
+    });
+    rzp.open();
+
+  } catch (error) {
+    console.error("Razorpay initiation error:", error);
+    alert(error.message);
+    btn.disabled = false;
+    if (btnText) btnText.textContent = originalText;
+  }
+}
+
+async function verifyAndCompleteRazorpayPayment(razorpayResponse, items, notes) {
+  showToast("Payment received! Verifying and generating invoice...");
+
+  try {
+    const payload = {
+      razorpayOrderId: razorpayResponse.razorpay_order_id,
+      razorpayPaymentId: razorpayResponse.razorpay_payment_id,
+      razorpaySignature: razorpayResponse.razorpay_signature,
+      items,
+      notes
+    };
+
+    const res = await fetch(`${API_BASE}/customer/orders/verify-razorpay-payment`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${state.token}`
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.message || "Payment verification failed.");
+    }
+
+    const data = await res.json();
+
+    // Clear cart state
+    state.cart = {};
+    updateCartBadges();
+    closeCartDrawer();
+
+    // Refresh catalog to sync updated stock
+    if (typeof loadCatalog === 'function') loadCatalog();
+
+    // Show Flipkart-style Success Modal if available
+    const totalSets = items.reduce((s, i) => s + (i.setsCount || 1), 0);
+    const totalPcs = items.reduce((s, i) => s + i.quantity, 0);
+
+    const invoiceEl = document.getElementById('success-order-invoice-no');
+    const qtyEl = document.getElementById('success-total-qty');
+    const modal = document.getElementById('modal-order-success');
+
+    if (invoiceEl) invoiceEl.textContent = `Invoice #${data.invoiceNo}`;
+    if (qtyEl) qtyEl.textContent = `${totalSets} Sets (${totalPcs} Pieces)`;
+
+    if (modal) {
+      modal.style.display = 'flex';
+    } else {
+      showToast(`🎉 Order Placed Successfully! (Invoice #${data.invoiceNo})`);
+    }
+
+    setTimeout(() => {
+      if (typeof fetchCustomerOrders === 'function') fetchCustomerOrders();
+    }, 1500);
+
+  } catch (error) {
+    console.error("Payment verification error:", error);
+    alert("Payment verification issue: " + error.message);
+  }
+}
+
+async function openManualBankTransfer() {
   const items = Object.values(state.cart);
   if (items.length === 0) return;
 
-  // Show loading
   const btn = document.getElementById('btn-submit-order');
+  const btnText = btn.querySelector('.btn-checkout-text');
   btn.disabled = true;
-  btn.querySelector('.btn-checkout-text').textContent = 'LOADING PAYMENT DETAILS...';
+  if (btnText) btnText.textContent = 'LOADING BANK DETAILS...';
 
   try {
     const res = await fetch(`${API_BASE}/settings/company_profile`);
@@ -600,7 +760,7 @@ async function proceedToPayment() {
   }
 
   btn.disabled = false;
-  btn.querySelector('.btn-checkout-text').textContent = 'PROCEED TO PAYMENT';
+  if (btnText) btnText.textContent = '⚡ PAY VIA RAZORPAY';
 
   // Calculate Grand Total
   let grandTotal = 0;
