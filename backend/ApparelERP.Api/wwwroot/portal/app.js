@@ -49,6 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const dropdown = document.getElementById('account-dropdown');
     if (accountWrapper && !accountWrapper.contains(e.target) && dropdown) {
       dropdown.classList.remove('open');
+      dropdown.classList.remove('show');
     }
   });
 });
@@ -962,8 +963,13 @@ async function submitWholesaleOrder() {
 // MODAL CONTROLLERS & 2-STEP OTP AUTHENTICATION
 // =======================================================
 
-function toggleAccountDropdown() {
-  document.getElementById('account-dropdown')?.classList.toggle('open');
+function toggleAccountDropdown(e) {
+  if (e) e.stopPropagation();
+  const dropdown = document.getElementById('account-dropdown');
+  if (dropdown) {
+    dropdown.classList.toggle('show');
+    dropdown.classList.toggle('open');
+  }
 }
 
 function handleAccountButtonClick() {
